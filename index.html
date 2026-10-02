@@ -1046,9 +1046,9 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
 /* 돌아가는 눈금 고리·훑는 팔: 별도 요소를 CSS 로 돌려 그래픽 가속을 쓴다 */
 .ob-dials{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
 .ob-rs{position:absolute;overflow:visible}
-.ob-rs.ra{animation:obRot 480s steps(720) infinite}   /* 아주 느린 회전은 끊어서 갱신(눈에 안 띄는 대신 매 프레임 다시 그리지 않음) */
-.ob-rs.rb{animation:obRot 300s steps(450) infinite reverse}
-.ob-rs.arm{animation:obSweep 26s steps(260) infinite alternate}
+.ob-rs.ra{animation:obRot 480s linear infinite}
+.ob-rs.rb{animation:obRot 300s linear infinite reverse}
+.ob-rs.arm{animation:obSweep 26s ease-in-out infinite alternate}
 @keyframes obRot{to{rotate:360deg}}
 @keyframes obSweep{from{rotate:-58deg}to{rotate:58deg}}
 .screen.pre .ob-dials{opacity:0}
@@ -1104,15 +1104,15 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
 .ob-orb:focus-visible{outline:none}
 .ob-orb:focus-visible .ob-ring,.ob-orb.sel .ob-ring{border-color:var(--yellow);inset:-14px;opacity:1}
 .ob-orb i,.ob-orb .ob-sph,.ob-orb .ob-sph::after{position:absolute;pointer-events:none}
-.ob-halo{inset:-95%;border-radius:50%;animation:obBreath 5.4s ease-in-out infinite;animation-delay:var(--bd,0s);
+.ob-halo{inset:-95%;border-radius:50%;mix-blend-mode:screen;animation:obBreath 5.4s ease-in-out infinite;animation-delay:var(--bd,0s);
   background:radial-gradient(circle,rgba(255,236,160,.46) 0%,rgba(255,210,80,.26) 17%,rgba(255,176,45,.12) 33%,rgba(255,150,30,.045) 48%,transparent 66%)}
 @keyframes obBreath{0%,100%{opacity:.78;scale:.95}50%{opacity:1;scale:1.07}}
-.ob-fl{left:50%;top:50%;animation:obFlare 5.4s ease-in-out infinite;animation-delay:var(--bd,0s)}
+.ob-fl{left:50%;top:50%;mix-blend-mode:screen;filter:blur(.7px);animation:obFlare 5.4s ease-in-out infinite;animation-delay:var(--bd,0s)}
 .ob-fl.h{width:300%;height:2px;margin:-1px 0 0 -150%;background:linear-gradient(90deg,transparent,rgba(255,236,160,.0) 12%,rgba(255,244,196,.72) 50%,rgba(255,236,160,0) 88%,transparent)}
 .ob-fl.v{width:2px;height:170%;margin:-85% 0 0 -1px;background:linear-gradient(180deg,transparent,rgba(255,236,160,.0) 14%,rgba(255,244,196,.5) 50%,rgba(255,236,160,0) 86%,transparent)}
 @keyframes obFlare{0%,100%{opacity:.5}50%{opacity:.95}}
-.ob-ring{inset:-10px;border-radius:50%;border:1px dashed rgba(255,226,130,.5);opacity:.85;animation:obSpin 46s steps(460) infinite;transition:inset .3s,border-color .3s}
-.ob-ring.r2{inset:-20px;border:1px solid rgba(255,226,130,.16);animation-duration:70s;animation-timing-function:steps(350);animation-direction:reverse}
+.ob-ring{inset:-10px;border-radius:50%;border:1px dashed rgba(255,226,130,.5);opacity:.85;animation:obSpin 46s linear infinite;transition:inset .3s,border-color .3s}
+.ob-ring.r2{inset:-20px;border:1px solid rgba(255,226,130,.16);animation-duration:70s;animation-direction:reverse}
 @keyframes obSpin{to{rotate:360deg}}
 /* 구체: 가운데는 밝고 가장자리는 어두운 호박빛 + 하이라이트 + 바깥으로 번지는 빛 */
 .ob-sph{inset:0;border-radius:50%;display:grid;place-items:center;overflow:hidden;
