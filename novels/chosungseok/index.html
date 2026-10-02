@@ -1,0 +1,681 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>라시안컷 소설</title>
+<style>html,body{margin:0;background:#02030a}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Noto+Serif+KR:wght@300;400;500&family=Share+Tech+Mono&display=swap">
+<style>
+/* 레이아웃: 고정된 우주 캔버스 위에 가운데 정렬된 한 줄짜리 본문 기둥. 위에서부터 오프너(챕터 표시) → 본문 → 끝맺음. 우주 한 가지 분위기로만 만든 페이지라 라이트/다크를 나누지 않는다. */
+:root{
+  --bg:#02030a; --ink:#E6E3F2; --ink-2:#B3B0CA; --say:#FFFFFF;
+  --gold:#E9D8A6; --amber:#FFB45A; --lilac:#9C8CFF; --cyan:#6FD0FF;
+  --line:rgba(233,216,166,.3); --glass:rgba(5,7,18,.78);
+  --f-body:'Noto Serif KR','Nanum Myeongjo','Batang',serif;
+  --f-disp:'Cinzel','Noto Serif KR','Batang',serif;
+  --f-mono:'Share Tech Mono','D2Coding','Consolas',ui-monospace,monospace;
+  --gut:clamp(18px,5vw,40px);
+  --fs:clamp(17px,.5vw + 15.4px,20px); --fz:1;
+  --ease:cubic-bezier(.2,.7,.2,1);
+  --veil:0;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{background:var(--bg);-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:calc(var(--fs)*var(--fz));line-height:1.9;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
+.mono{font-family:var(--f-mono);letter-spacing:.14em;text-transform:uppercase}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+[hidden]{display:none!important}
+
+/* ---------- 배경 ---------- */
+#space{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;background:var(--bg)}
+#veil{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:var(--veil);
+  background:radial-gradient(ellipse 62% 100% at 50% 50%,rgba(2,3,10,.5),rgba(2,3,10,.34) 60%,rgba(2,3,10,.12) 100%)}
+.edge{position:fixed;left:0;right:0;z-index:3;pointer-events:none;opacity:var(--veil)}
+.edge.t{top:0;height:calc(92px + env(safe-area-inset-top,0px));background:linear-gradient(rgba(2,3,10,.92),rgba(2,3,10,0))}
+.edge.b{bottom:0;height:calc(120px + env(safe-area-inset-bottom,0px));background:linear-gradient(rgba(2,3,10,0),rgba(2,3,10,.9))}
+
+/* ---------- HUD ---------- */
+#hud{position:fixed;left:0;right:0;top:0;z-index:20;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:max(14px,env(safe-area-inset-top,0px)) var(--gut) 0;pointer-events:none}
+#hud>*{pointer-events:auto}
+.hb{display:inline-flex;align-items:center;gap:10px;min-height:42px;padding:0 16px 0 12px;border:1px solid var(--line);background:rgba(4,6,16,.55);color:var(--gold);font-family:var(--f-mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transition:border-color .25s,box-shadow .25s,color .25s}
+.hb svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.hb:hover{border-color:var(--amber);color:#fff2cf;box-shadow:0 0 22px rgba(255,180,90,.28)}
+.hb.tool{padding:0 14px}
+.hud-in{opacity:0;translate:0 24px}
+body.live .hud-in{animation:rise .9s var(--ease) both}
+body.live .hud-in.d2{animation-delay:.12s}
+
+#panel{position:fixed;z-index:21;right:var(--gut);top:calc(max(14px,env(safe-area-inset-top,0px)) + 52px);width:min(310px,calc(100% - var(--gut)*2));padding:18px 18px 20px;border:1px solid var(--line);background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);display:none;flex-direction:column;gap:18px;box-shadow:0 18px 60px rgba(0,0,0,.55)}
+#panel.show{display:flex;animation:rise .45s var(--ease) both}
+#panel.hide{display:flex;animation:fall .35s ease-in both;pointer-events:none}
+#panel h2{margin:0;font-weight:400;font-size:11px;color:var(--gold);opacity:.8}
+.row{display:flex;flex-direction:column;gap:9px}
+.row>label,.row>span.lb{font-family:var(--f-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2)}
+.seg{display:flex;border:1px solid var(--line)}
+.seg button{flex:1;min-height:38px;font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;color:var(--ink-2);transition:background .2s,color .2s}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:rgba(255,180,90,.16);color:#fff2cf;box-shadow:inset 0 -2px 0 var(--amber)}
+.seg button:hover{color:#fff}
+.stp{display:flex;align-items:center;border:1px solid var(--line)}
+.stp button{width:44px;min-height:38px;font-family:var(--f-mono);font-size:16px;color:var(--gold)}
+.stp output{flex:1;text-align:center;font-family:var(--f-mono);font-size:13px;letter-spacing:.1em}
+
+#prog{position:fixed;z-index:15;right:max(10px,env(safe-area-inset-right,0px));top:22%;height:56%;width:14px;display:flex;flex-direction:column;align-items:center;pointer-events:none;opacity:0}
+body.live #prog{animation:fadein 1.2s .6s both}
+#prog .ln{position:relative;flex:1;width:1px;background:linear-gradient(transparent,rgba(233,216,166,.28) 12%,rgba(233,216,166,.28) 88%,transparent)}
+#prog .ln i{position:absolute;left:50%;top:0;width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;background:#ffe9b8;box-shadow:0 0 10px 2px rgba(255,180,90,.8)}
+#prog b{margin-top:8px;font-family:var(--f-mono);font-weight:400;font-size:9px;letter-spacing:.08em;color:rgba(233,216,166,.6)}
+
+/* ---------- 본문 ---------- */
+main{position:relative;z-index:2}
+.opener{min-height:94svh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:6px;padding:54svh var(--gut) 5svh;text-align:center}
+.chk{font-family:var(--f-disp);font-size:clamp(13px,1.5vw,17px);letter-spacing:.62em;padding-left:.62em;color:var(--gold)}
+.chn{font-family:var(--f-disp);font-weight:400;font-size:clamp(60px,9vw,108px);line-height:1;color:#fff3d4;text-shadow:0 0 26px rgba(255,180,90,.55),0 0 90px rgba(255,140,60,.28)}
+.cue{margin-top:clamp(18px,4svh,40px);display:flex;flex-direction:column;align-items:center;gap:10px;font-size:10px;color:rgba(233,216,166,.62);opacity:0;transition:opacity .8s}
+.cue.on{opacity:1}
+.cue i{display:block;width:1px;height:38px;background:linear-gradient(rgba(233,216,166,0),#ffe9b8);transform-origin:top;animation:cue 2.2s ease-in-out infinite}
+@keyframes cue{0%{transform:scaleY(0)}55%{transform:scaleY(1);opacity:1}100%{transform:scaleY(1);opacity:0}}
+
+.chapter{width:min(34em,calc(100% - var(--gut)*2));margin:0 auto;padding-top:2svh}
+.chapter+.chapter{margin-top:34svh}
+.chhead{display:flex;flex-direction:column;align-items:center;gap:4px;margin:0 0 4.5em;text-align:center}
+.chhead .chn{font-size:clamp(56px,9vw,100px)}
+.p{margin:0 0 1.3em;line-height:2.02;word-break:keep-all;overflow-wrap:break-word;text-wrap:pretty;color:var(--ink);text-shadow:0 0 14px rgba(2,3,10,.95),0 1px 2px rgba(2,3,10,.9)}
+.p.d{position:relative;margin-bottom:1.15em;padding-left:1.15em;color:var(--say)}
+.p.d::before{content:"";position:absolute;left:0;top:.5em;bottom:.5em;width:2px;border-radius:2px;background:linear-gradient(var(--lilac),rgba(156,140,255,.1));transform:scaleY(0);transform-origin:top;transition:transform .9s var(--ease)}
+.p.d.on::before{transform:scaleY(1)}
+.w{white-space:nowrap}
+.c{display:inline-block;opacity:0}
+.on .c{animation:cin 1.05s var(--ease) both;animation-delay:calc(var(--i)*var(--st,16ms))}
+@keyframes cin{
+  0%{opacity:0;transform:translateY(.8em) scale(1.35);filter:blur(5px);color:#ffd08a;text-shadow:0 0 22px rgba(255,170,80,1),0 0 4px rgba(255,214,150,.9)}
+  45%{opacity:1;transform:translateY(0) scale(1.06);filter:blur(0);color:#fff1cf;text-shadow:0 0 16px rgba(255,190,110,.85)}
+  100%{opacity:1;transform:none;filter:none}
+}
+.c.g{color:#fff0c2;text-shadow:0 0 14px rgba(255,196,96,.6),0 0 2px rgba(255,236,190,.8)}
+.fx-off .c{opacity:1!important;animation:none!important;transform:none!important;filter:none!important}
+
+.orn{display:grid;place-items:center;margin:3.4em 0 3em;color:var(--gold);opacity:0;transform:translateY(26px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
+.orn.on{opacity:1;transform:none}
+.orn svg{width:34px;height:34px;overflow:visible;fill:none;stroke:currentColor;stroke-width:1.3;stroke-linecap:round;filter:drop-shadow(0 0 8px rgba(255,180,90,.65))}
+.orn svg .e{transform-origin:12px 12px;animation:spin 14s linear infinite}
+.fx-off .orn,.fx-off .hud-in{opacity:1;transform:none;translate:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.end{width:min(34em,calc(100% - var(--gut)*2));margin:0 auto;padding:2em 0 calc(18svh + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center;opacity:0;transform:translateY(26px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
+.end.on{opacity:1;transform:none}
+.end .orn{opacity:1;transform:none;margin:1em 0 .4em}
+.end .orn svg{width:48px;height:48px}
+.endk{font-size:12px;color:var(--gold)}
+.acts{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:6px}
+.btn{display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:0 20px;border:1px solid var(--line);background:rgba(4,6,16,.55);color:var(--gold);font-family:var(--f-mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;transition:border-color .25s,box-shadow .25s,color .25s}
+.btn:hover{border-color:var(--amber);color:#fff2cf;box-shadow:0 0 22px rgba(255,180,90,.28)}
+.nxt{font-size:11px;color:rgba(233,216,166,.5)}
+
+/* ---------- 전환 막(연결 중) ---------- */
+#gate{position:fixed;inset:0;z-index:200;display:none;place-items:center;background:var(--bg)}
+#gate.show{display:grid}
+#gate .box{display:flex;flex-direction:column;align-items:center;gap:16px;width:min(300px,76vw)}
+#gate.in{animation:rise .6s var(--ease) both}
+#gate.out{animation:fall .85s ease-in both;pointer-events:none}
+#gate .ring{position:relative;width:clamp(116px,14vw,160px);aspect-ratio:1;display:grid;place-items:center}
+#gate .ring svg.r{position:absolute;inset:0;width:100%;height:100%;overflow:visible;fill:none;stroke:#e9d8a6}
+#gate .ring .a1{transform-origin:0 0;animation:spin 3.6s linear infinite}
+#gate .ring .a2{transform-origin:0 0;animation:spin 6s linear infinite reverse}
+#gate .ico{width:46%;height:46%;color:#ffd993;filter:drop-shadow(0 0 10px rgba(255,180,90,.8))}
+#gate .ico svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
+#gate .lab{font-size:12px;color:var(--gold)}
+#gate .bar{width:100%;height:3px;background:rgba(233,216,166,.18);position:relative;overflow:hidden}
+#gate .bar i{position:absolute;inset:0;background:var(--amber);transform-origin:left;transform:scaleX(0);box-shadow:0 0 12px var(--amber)}
+#gate.show .bar i{animation:fillbar 1s cubic-bezier(.4,.1,.3,1) forwards}
+@keyframes fillbar{to{transform:scaleX(1)}}
+
+@keyframes rise{from{opacity:0;translate:0 34px}to{opacity:1;translate:0 0}}
+@keyframes fall{from{opacity:1;translate:0 0}to{opacity:0;translate:0 34px}}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+
+@media (max-width:560px){
+  #prog{display:none}
+  .hb{padding:0 12px 0 10px;font-size:11px}
+  .hb.tool{padding:0 11px}
+  .p{line-height:1.96}
+  #veil{background:rgba(2,3,10,.42)}
+}
+noscript .ns{position:relative;z-index:5;max-width:34em;margin:20vh auto;padding:0 var(--gut);color:var(--ink)}
+
+/* ---------- 계속 움직이는 글자 효과 ---------- */
+.p{transition:opacity .5s ease-out}
+.opener .chn{animation:numglow 5.2s ease-in-out infinite,numfloat 7s ease-in-out infinite}
+@keyframes numglow{0%,100%{text-shadow:0 0 22px rgba(255,180,90,.45),0 0 70px rgba(255,140,60,.2)}50%{text-shadow:0 0 34px rgba(255,190,110,.85),0 0 120px rgba(255,150,70,.42)}}
+@keyframes numfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.opener .chk{animation:kbreath 6s ease-in-out infinite}
+@keyframes kbreath{0%,100%{letter-spacing:.62em}50%{letter-spacing:.7em}}
+.c.g{animation:gemshine 5.5s ease-in-out infinite;animation-delay:calc(var(--i)*70ms + 1.6s)}
+@keyframes gemshine{0%,70%,100%{color:#fff0c2;text-shadow:0 0 14px rgba(255,196,96,.6),0 0 2px rgba(255,236,190,.8)}82%{color:#ffffff;text-shadow:0 0 26px rgba(255,214,130,1),0 0 6px rgba(255,255,255,.95)}}
+.on .c.g{animation:cin 1.05s var(--ease) both,gemshine 5.5s ease-in-out infinite;animation-delay:calc(var(--i)*var(--st,16ms)),calc(var(--i)*var(--st,16ms) + 1.6s)}
+.p.d::after{content:"";position:absolute;left:0;top:.5em;width:2px;height:1.1em;border-radius:2px;background:linear-gradient(transparent,#fff,transparent);opacity:0}
+.p.d.on::after{animation:barrun 4.6s ease-in-out infinite;animation-delay:1.4s}
+@keyframes barrun{0%{opacity:0;transform:translateY(0)}12%{opacity:.95}60%{opacity:.95}78%,100%{opacity:0;transform:translateY(calc(100% + 1.2em))}}
+.orn svg{animation:ornglow 4.4s ease-in-out infinite}
+@keyframes ornglow{0%,100%{filter:drop-shadow(0 0 5px rgba(255,180,90,.45))}50%{filter:drop-shadow(0 0 15px rgba(255,190,110,.95))}}
+.fx-off .opener .chn,.fx-off .opener .chk,.fx-off .c.g,.fx-off .p.d::after,.fx-off .orn svg{animation:none}
+
+</style>
+</head>
+<body>
+<canvas id="space" aria-hidden="true"></canvas>
+<div id="veil" aria-hidden="true"></div>
+<div class="edge t" aria-hidden="true"></div>
+<div class="edge b" aria-hidden="true"></div>
+
+<header id="hud">
+  <a class="hb hud-in" id="btnBack" href="../../index.html" aria-label="소설 모음집으로 돌아가기">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H4"/><path d="M10 5.5L3.5 12 10 18.5"/></svg><span>모음집</span>
+  </a>
+  <button class="hb tool hud-in d2" id="btnTool" type="button" aria-expanded="false" aria-controls="panel" aria-label="읽기 설정">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18L9 6l5 12"/><path d="M5.8 14h6.4"/><path d="M15.5 18l2.7-6.5 2.7 6.5"/><path d="M16.3 16.2h3.8"/></svg>
+  </button>
+</header>
+
+<aside id="panel" aria-label="읽기 설정">
+  <h2 class="mono">Reading // 읽기 설정</h2>
+  <div class="row"><span class="lb">글자 크기</span>
+    <div class="stp"><button id="szDown" type="button" aria-label="글자 작게">−</button><output id="szVal" aria-live="polite">100%</output><button id="szUp" type="button" aria-label="글자 크게">+</button></div></div>
+  <div class="row"><span class="lb">글자 나타나는 속도</span>
+    <div class="seg" id="segFx"><button type="button" data-v="off" aria-pressed="false">끔</button><button type="button" data-v="fast" aria-pressed="false">빠름</button><button type="button" data-v="normal" aria-pressed="true">보통</button><button type="button" data-v="slow" aria-pressed="false">느림</button></div></div>
+  <div class="row"><span class="lb">우주 배경 움직임</span>
+    <div class="seg" id="segBg"><button type="button" data-v="on" aria-pressed="true">켬</button><button type="button" data-v="off" aria-pressed="false">끔</button></div></div>
+</aside>
+
+<div id="prog" aria-hidden="true"><div class="ln"><i id="progDot"></i></div><b id="progPct">0%</b></div>
+
+<main id="story"></main>
+<noscript><div class="ns">이 소설은 자바스크립트가 켜져 있어야 읽을 수 있습니다.</div><style>#gate{display:none!important}</style></noscript>
+
+<div id="gate" class="show" aria-hidden="true">
+  <div class="box">
+    <div class="ring">
+      <svg class="r" viewBox="-100 -100 200 200"><circle r="78" opacity=".3"/><circle class="a1" r="90" stroke="#ffb45a" stroke-width="2" stroke-dasharray="46 34"/><circle class="a2" r="66" stroke="#c9a94c" stroke-width="1.4" stroke-dasharray="6 10"/></svg>
+      <div class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.4"/><ellipse cx="12" cy="12" rx="9.8" ry="2.5" transform="rotate(-12 12 12)"/><path d="M6.6 9.2a6.2 6.2 0 0 1 10.8 0"/><path d="M7.6 15.4a6 6 0 0 0 8.8 0"/></svg></div>
+    </div>
+    <div class="lab mono">Linking</div>
+    <div class="bar"><i></i></div>
+  </div>
+</div>
+<script>
+const STORY = [{"n":1,"items":[{"t":"밥 안 먹어?","d":1,"mood":"calm"},{"t":"배가 고프지 않은 아침이었다. 문 너머의 목소리가 누구의 것인지는 보지 않아도 알았다. 이성하. 매일 아침 내 방 문을 두드리는 사람은 그녀뿐이었다. 그녀는 교도관이고, 나는 죄수다. 몇 개월 전까지만 해도 내 인생이 이렇게 될 줄은 상상도 못 했는데. 그래도 아직은 행복했다. 사랑하는 사람이 곁에 있으니까. 이 감옥으로 온 걸 천만다행으로 여겨야 하는지도 모른다."},{"t":"나는 돌아누운 채 투덜거리듯 대답했다."},{"t":"…안 먹어.","d":1},{"t":"성하는 그래도 먹는 게 낫지 않겠냐며 나를 달랬다. 나는 가끔 짧게 대꾸할 뿐 대화를 이어 가지 않았다. 그럴 이유가 없었고, 무엇보다 오늘은 기분이 가라앉은 날이었다. 그녀는 몇 분쯤 문 앞에 서 있다가 말없이 돌아갔다. 발소리가 멀어지고 나서야 나는 숨을 내쉬었다."},{"t":"운동장으로 나가 벤치에 앉았다. 품에는 광물 도감 몇 권이 있었다. 석영, 형석, 황철석. 책장을 넘기며 이름을 하나씩 입속으로 굴렸다. 광석을 모으는 일은 이 안에서 내게 남은 유일한 취미였고, 나는 그 시간을 방해받고 싶지 않았다.","brk":1},{"t":"그러나 오래가지 못했다. 책 위로 그림자가 드리웠다. 고개를 들자 우락부락한 덩치의 남자가 나를 내려다보고 있었다. 그는 아무 말 없이 내 손에서 책을 낚아채더니, 내가 손을 뻗기도 전에 세 번에 걸쳐 찢어 바닥에 던졌다."},{"t":"애새끼가 이런 거나 읽고 앉았네.","d":1},{"t":"찢어진 페이지가 바람에 굴러갔다. 귀 끝이 뜨거워졌다. 화가 치밀어 올라 나는 주먹을 쥐고 일어섰다. 싸움이 벌어지기 직전, 운동장 저편에서 걸어오는 성하가 보였다."},{"t":"그녀는 한마디도 없이 남자를 순식간에 때려눕혔다. 그러고는 곧장 내게 몸을 돌려, 짝, 내 뺨을 때렸다."},{"t":"뺨이 얼얼했다. 이유는 알았다. 이 책들 때문이다."},{"t":"내가 다른 책 좀 보라고 했잖아… 유치하지도 않아?","d":1},{"t":"맞은 뺨보다 그 말이 더 아팠다. 유치하다는 건 나도 알고 있었다. 이런 일로 싸운 것도 한두 번이 아니었다. 성하의 손은 아직 허공에 떠 있었다. 때린 쪽이 더 놀란 얼굴이었다. 나는 먼저 사과하고 방으로 돌아갔다."},{"t":"낡은 침대에 누워 눈을 감았다. 분명, 분명히 이렇지 않았는데."},{"t":"얼마나 지났을까, 문이 살그머니 열렸다."},{"t":"괜찮아?","d":1},{"t":"성하였다. 놀리러 온 건지 사과하러 온 건지는 알 수 없었지만, 신경 쓰지 않기로 했다."},{"t":"아까는 미안했어. 나도 모르게 짜증이 나서… 원하면 네가 읽고 싶은 책, 같이 읽어줄게.","d":1},{"t":"화는 이미 풀린 지 오래였다. 그런데도 책을 읽고 싶지는 않았다. 혼자 있고 싶은 걸까 생각했지만, 아니었다. 어쩌면 나는 그녀와 함께 있고 싶었던 건지도 모른다. 게다가 언제까지고 이렇게 뚱해 있을 수는 없는 노릇이었다. 나는 침대에서 천천히 일어나 그녀에게 성큼성큼 다가갔다."},{"t":"괜찮아. 사람이 그럴 수도 있는 거지 뭐. 내가 잘못했어.","d":1},{"t":"안도한 그녀를 나는 가만히 끌어안았다. 이 평화가 계속되면 얼마나 좋을까. 그 평화가 점심때까지밖에 가지 않으리라는 건, 그때의 나는 알지 못했다."},{"t":"점심 무렵이었다. 낮잠에 빠져 있던 나는 어딘가에서 터진 비명에 눈을 떴다. 한 번으로 끝나지 않았다. 비명은 복도를 따라 번졌고, 곧 쇠 부딪치는 소리와 무언가 쓰러지는 소리가 뒤따랐다. 졸린 눈을 비비며 방을 나선 나는 그대로 굳어 버렸다.","brk":1,"mood":"dread"},{"t":"얼굴이 없는 자들이 복도에 서 있었다. 말 그대로였다. 눈도 코도 입도 없는 매끈한 머리가 간수와 죄수를 가리지 않고 죽이고 있었다. 입이 없는 것들은 소리조차 내지 않았다. 비명은 전부 쓰러지는 사람들의 것이었다."},{"t":"머릿속이 하얘졌다. 무슨 상황인지 전혀 이해되지 않았다. 이해할 시간도 없었다. 나는 방으로 돌아가 침대 밑을 더듬었다. 손끝에 차가운 나이프가 닿았다. 숨겨 둔 물건이 이런 식으로 쓰일 줄은 몰랐다."},{"t":"나이프를 쥐고 복도로 나갔다. 첫 번째를 어떻게 쓰러뜨렸는지는 기억나지 않는다. 두 번째, 세 번째. 손이 떨렸지만 멈출 수 없었다. 한 명, 또 한 명, 천천히 베어 나갔다. 그래도 복도 끝에서는 새로운 것들이 끝없이 나타났고, 나는 한 걸음씩 밀렸다. 등이 벽에 닿았다. 눈앞에서 얼굴 없는 머리가 내 쪽으로 기울었다."},{"t":"그때 누군가 내 팔을 낚아챘다."},{"t":"일어나!","d":1},{"t":"성하였다. 그녀는 나를 끌고 복도를 내달렸다. 계단을 오르고 문을 몇 개 지나 어느 모퉁이에서 겨우 멈췄다. 나는 숨이 목까지 차올라 그대로 다리가 풀렸고, 바닥에 주저앉았다."},{"t":"여기서 탈출해야 해. 옥상에 헬리콥터가 있어. 거기로 가자.","d":1},{"t":"헬리콥터. 구조. 그리고 그다음. 머릿속에 그려진 건 그 순서였다. 이 소동이 끝나면 나는 다시 그 방으로 돌아가고, 아침마다 그 문 앞에서 같은 질문을 듣게 되겠지. 나는 생각이 달랐다."},{"t":"…더 이상 이렇게 살기는 싫어. 난… 너와 함께 도망치고 싶어.","d":1},{"t":"성하의 눈이 커졌다. 한동안 아무 말도 없이 나를 내려다보았다. 복도 저편에서 쾅, 하고 문 부서지는 소리가 났다. 그러자 그녀가 숨을 삼키듯 웃었다."},{"t":"…그럴까?","d":1},{"t":"망설임은 단 한 순간도 없었다. 그녀도 이곳이 지긋지긋했던 걸까. 하기야 나 역시 예전에 하던 일이 교도관보다는 나았을지언정, 금방 질리곤 했으니까. 성하의 숨은 처음엔 떨렸지만 금세 적응한 사람처럼 가라앉았다."},{"t":"우리는 소란을 틈타 몰래 빠져나와 주차장에 세워 둔 성하의 차에 올랐다."},{"t":"목적지는 정해져 있었다. 스텔마레. 가장 살기 좋은 다섯 나라 중에서도 손에 꼽히는, 더없이 평온한 나라였다. 항구까지는 아직 먼데 연료 계기판은 바닥을 가리키고 있었다. 성하가 전에 장거리 여행을 다녀오고서 기름을 채워 두지 않았던 탓이다. 우리는 길가의 주유소에 차를 세웠다."},{"t":"주유가 시작되는 걸 보고 나는 자판기 앞으로 갔다. 별빛 탄산. 새콤달콤하면서 톡 쏘는 맛이 일품이라 내가 좋아하는 음료다. 캔을 따서 한 모금씩 마시는 동안만큼은 방금 전의 일들이 조금 먼 곳의 이야기처럼 느껴졌다."},{"t":"다 마신 캔을 버리고 돌아서려는 순간, 앞에 그것이 서 있었다."},{"t":"교도소에서 본 얼굴 없는 자였다. 어떻게 여기까지 따라온 건지는 알 수 없었다. 손에는 아무 무기도 없었다. 그런데도 강했다. 발차기 한 번에 나는 허리가 꺾여 바닥을 굴렀다. 숨이 쉬어지지 않았다. 나를 이렇게 한 방에 무력화시킨 존재는 처음이었다."},{"t":"그것이 한 걸음 더 다가왔을 때, 그 뒤에서 칼날이 솟았다. 검 한 자루가 얼굴 없는 자의 몸을 관통했고, 그것은 힘이 빠진 듯 무너졌다. 뒤에 서 있던 건 주유소 사장이었다."},{"t":"그는 이게 도대체 무슨 일이냐는 표정이었다. 나는 숨을 고르며 아는 대로 설명했다. 교도소가 습격당한 일, 얼굴 없는 자들, 우리가 도망쳐 나온 이유까지. 사장은 말없이 듣다가 가게로 들어가더니 카타나를 닮은 검 한 자루를 들고 나왔다."},{"t":"가져가. 그 칼로는 모자랄 거다.","d":1},{"t":"친절한 사람이었다. 나는 고개를 숙여 감사를 전하고 검을 받아 들었다."},{"t":"가게에서 나와 보니 차 옆에 성하가 없었다. 두리번거리는데, 뒤쪽에서 재빠르게 뛰어오는 발소리가 들렸다."},{"t":"어디 갔다 온 거야?","d":1},{"t":"에헤헤… 미안, 화장실 좀 갔다 오느라…","d":1},{"t":"우리가 차에 오르려는데 사장이 다가와 한 가지를 일러 주었다."},{"t":"갈림길이 나오면 절대 왼쪽으로는 가지 마.","d":1},{"t":"하지만 항구로 가려면 왼쪽이 맞았고, 그 길밖에 없었다. 성하와 눈이 마주쳤다. 둘 다 아무 말도 하지 않았다. 우리는 그의 충고를 무시하기로 했다."},{"t":"핸들은 왼쪽으로 꺾였다."},{"t":"항구에 도착하자 부두 끝에 사람 하나가 서 있었다. 얼굴에는 가면을 쓰고 있어서 표정을 읽을 수 없었다. 그가 우리를 향해 손을 흔들었다.","brk":1,"mood":"sea"},{"t":"안녕, 너희들 혹시 여기는 처음이니?","d":1},{"t":"…몇 번 와 본 적은 있어요.","d":1},{"t":"저는 처음입니다.","d":1},{"t":"그는 이유도 말하지 않은 채 우리에게 배 한 척을 내주었다. 원양어선처럼 생긴 낡은 배였다. 믿어도 되는 사람인지는 알 수 없었다. 다만 우리를 해칠 사람이라면 굳이 배를 내줄 이유가 없었다. 게다가 다른 방법도 없었기에 일단 그 배를 타기로 했다. 가면의 남자는 내게 조작법을 가르쳐 주고는 동행하겠다고 제안했고, 우리 둘 다 승낙했다."},{"t":"그는 승낙해 줬으니 자기소개를 하겠다며 가면을 벗었다."},{"t":"드러난 얼굴은 낯설지 않았다. 어디선가 분명히 본 이목구비였다. 하지만 어디였는지는 떠오르지 않았다."},{"t":"노아라고 합니다.","d":1},{"t":"그는 그 말만 남기고 가면을 다시 썼다."},{"t":"그러고 보니, 얼굴 없는 자들이 나타난 뒤로 무언가 이상했다. 나는 무심코 아침에 읽던 도감의 목차를 떠올리려 했다. 석영, 형석, 그리고 그다음. 입속으로 굴리던 이름 하나가 거기 없었다. 몇 번을 더듬어도 그 자리는 텅 비어 있었다. 머릿속이 조금씩 비워지는 느낌이었다. 나만 그런 건지 알 수 없어서 성하에게 물었다.","mood":"gate"},{"t":"성하야, 혹시 느끼고 있니? 기억이 사라지고 있는 것 같은데…","d":1},{"t":"응. 나도 느끼고 있어. 조금 심각한 것 같아.","d":1},{"t":"그러자 노아가 가면 몇 개를 더 꺼내 우리에게 내밀었다."},{"t":"이걸 써 보시죠. 기억이 돌아올 겁니다.","d":1},{"t":"반신반의하며 가면을 썼다. 그 순간, 막혀 있던 곳이 뚫리듯 모든 게 한꺼번에 돌아왔다. 빈자리에는 '황철석'이라는 이름이 도로 들어찼다. 입이 다물어지지 않았다. 마법 같았다."},{"t":"노아는 이 현상을 알고 있는 눈치였다. 나는 그에게 얼굴 없는 자들이 무엇인지 물었다."},{"t":"이중 차원이라고 부르는 현상입니다. 꽤 희귀해서 들어 보신 적은 없을 거예요.","d":1},{"t":"잠깐 말을 끊었다가 그가 이었다."},{"t":"이 현상이 일어나는 동안에는 기억이 조금씩 소멸됩니다. 중앙에 있는 왜곡된 관문이 우리의 기억을 빨아들이거든요. 하지만 이 가면만 있으면 금방 회복할 수 있어요.","d":1},{"t":"나와 성하는 '이중 차원'이라는 말을 어디선가 어렴풋이 들은 적이 있었다. 하지만 그게 정확히 무엇인지는 몰랐다. 이제는 안다. 지금 내가, 그 한가운데에 있으니까."}]}];
+(() => {
+'use strict';
+addEventListener('error', () => { const g = document.getElementById('gate'); if (g) g.className = ''; document.body.classList.add('live'); });
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const smooth = (a, b, v) => { const t = clamp((v - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+const mulberry = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+
+/* ==========================================================================
+   설정 (이 기기에만 저장). 모음집에서 '애니메이션 끔'을 골랐다면 그 값도 따른다.
+   ========================================================================== */
+const KEY = 'rsc.novel.';
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(KEY + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(KEY + k, JSON.stringify(v)); } catch (e) {} },
+};
+let siteMotion = 'slow';
+try { const v = localStorage.getItem('rsc.motion'); if (v) siteMotion = JSON.parse(v); } catch (e) {}
+const HARD_OFF = siteMotion === 'off'; // 모음집과 같은 규칙: 기기의 '모션 줄이기' 설정과 상관없이 사용자가 고른 값만 따른다
+const STEP = { fast: [9, 1100], normal: [20, 2300], slow: [36, 3600] };
+const cfg = {
+  size: clamp(+store.get('size', 100) || 100, 85, 140),
+  fx: HARD_OFF ? 'off' : (['off', 'fast', 'normal', 'slow'].includes(store.get('fx', 'normal')) ? store.get('fx', 'normal') : 'normal'),
+  bg: HARD_OFF ? 'off' : (store.get('bg', 'on') === 'off' ? 'off' : 'on'),
+};
+function applyCfg() {
+  document.documentElement.style.setProperty('--fz', (cfg.size / 100).toFixed(2));
+  document.body.classList.toggle('fx-off', cfg.fx === 'off');
+}
+
+/* ==========================================================================
+   본문 렌더링 — 글자마다 올라오며 나타나도록 span으로 쪼갠다
+   ========================================================================== */
+const ICON_HOLE = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.4"/><g class="e"><ellipse cx="12" cy="12" rx="9.8" ry="2.5" transform="rotate(-12 12 12)"/></g><path d="M6.6 9.2a6.2 6.2 0 0 1 10.8 0"/><path d="M7.6 15.4a6 6 0 0 0 8.8 0"/></svg>';
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+function splitChars(text, startIdx = 0) {
+  const gem = new Set(); const re = /석영|형석|황철석/g; let m;
+  while ((m = re.exec(text))) for (let k = m.index; k < m.index + m[0].length; k++) gem.add(k);
+  let html = '', n = startIdx, pos = 0;
+  text.split(' ').forEach((word, wi) => {
+    if (wi) { html += ' '; pos++; }
+    let w = '';
+    for (const ch of word) { w += '<span class="c' + (gem.has(pos) ? ' g' : '') + '" style="--i:' + (n++) + '">' + esc(ch) + '</span>'; pos += ch.length; }
+    html += '<span class="w">' + w + '</span>';
+  });
+  return { html, count: n - startIdx };
+}
+const reveal = []; // 아직 나타나지 않은 요소들(위에서부터 순서대로)
+function renderStory() {
+  const root = $('#story'); root.innerHTML = '';
+  STORY.forEach((ch, ci) => {
+    const first = ci === 0;
+    if (first) {
+      const op = document.createElement('section'); op.className = 'opener'; op.id = 'opener';
+      op.innerHTML = '<div class="chk"></div><div class="chn"></div><div class="cue mono" id="cue"><span>Scroll</span><i></i></div>';
+      root.appendChild(op);
+      const k = splitChars('CHAPTER'), n = splitChars(String(ch.n));
+      $('.chk', op).innerHTML = k.html; $('.chn', op).innerHTML = n.html;
+          }
+    const sec = document.createElement('article'); sec.className = 'chapter'; sec.dataset.n = ch.n;
+    if (!first) {
+      const hd = document.createElement('header'); hd.className = 'chhead';
+      const k = splitChars('CHAPTER'), n = splitChars(String(ch.n));
+      hd.innerHTML = '<div class="chk">' + k.html + '</div><div class="chn">' + n.html + '</div>'; hd.dataset.len = k.count + n.count;
+      sec.appendChild(hd); reveal.push({ el: hd, kind: 'text', len: k.count + n.count });
+    }
+    ch.items.forEach(p => {
+      if (p.brk) { const o = document.createElement('div'); o.className = 'orn'; o.setAttribute('aria-hidden', 'true'); o.innerHTML = ICON_HOLE; sec.appendChild(o); reveal.push({ el: o, kind: 'plain' }); }
+      const el = document.createElement('p'); el.className = 'p' + (p.d ? ' d' : '');
+      const s = splitChars(p.t); el.innerHTML = s.html;
+      if (p.mood) el.dataset.mood = p.mood;
+      sec.appendChild(el); reveal.push({ el, kind: 'text', len: s.count });
+    });
+    root.appendChild(sec);
+  });
+  const end = document.createElement('footer'); end.className = 'end'; end.id = 'end';
+  end.innerHTML = '<div class="orn big" aria-hidden="true">' + ICON_HOLE + '</div><div class="endk mono">Chapter ' + STORY[STORY.length - 1].n + ' // End</div>' +
+    '<div class="acts"><a class="btn" id="endBack" href="../../index.html">모음집으로 돌아가기</a><button class="btn" id="toTop" type="button">처음으로</button></div>' +
+    '<div class="nxt mono">Next chapter // 준비 중</div>';
+  root.appendChild(end); reveal.push({ el: end, kind: 'plain' });
+  $('#toTop').addEventListener('click', () => window.scrollTo({ top: 0, behavior: cfg.fx === 'off' ? 'auto' : 'smooth' }));
+}
+function showEl(r, instant) {
+  const el = r.el;
+  if (r.kind === 'text' && !instant && cfg.fx !== 'off') {
+    const [base, cap] = STEP[cfg.fx] || STEP.normal;
+    el.style.setProperty('--st', Math.min(base, cap / Math.max(1, r.len)).toFixed(2) + 'ms');
+  } else if (r.kind === 'text') el.style.setProperty('--st', '0ms');
+  el.classList.add('on');
+  if (instant) el.style.transition = 'none';
+}
+/* 화면 가운데에 가까운 문단은 또렷하게, 위아래로 멀어질수록 은은하게 가라앉는다 */
+let pEls = [];
+function focusText() {
+  if (!pEls.length) pEls = $$('.p');
+  const vh = innerHeight, mid = vh * .5, off = cfg.fx === 'off';
+  for (const el of pEls) {
+    const b = el.getBoundingClientRect();
+    if (b.bottom < -80 || b.top > vh + 80) { if (el._f !== 1) { el.style.opacity = ''; el._f = 1; } continue; }
+    const d = (mid >= b.top && mid <= b.bottom) ? 0 : Math.min(Math.abs(b.top - mid), Math.abs(b.bottom - mid)) / (vh * .62);
+    const f = off ? 1 : +(1 - .45 * smooth(.3, 1, d)).toFixed(2);
+    if (el._f !== f) { el._f = f; el.style.opacity = f === 1 ? '' : f; }
+  }
+}
+function sweep() {
+  const vh = innerHeight;
+  while (reveal.length) {
+    const r = reveal[0], b = r.el.getBoundingClientRect();
+    if (b.bottom < 0) { showEl(r, true); reveal.shift(); continue; }       // 이미 지나간 곳은 바로 보이게
+    if (b.top < vh * 0.86) { showEl(r, false); reveal.shift(); continue; }  // 화면 아래쪽에 들어오면 글자가 올라오며 나타남
+    break;
+  }
+}
+
+/* ==========================================================================
+   우주: 성운 + 별 + 블랙홀 (캔버스 한 장)
+   ========================================================================== */
+const Space = (() => {
+  const cv = $('#space'), cx = cv.getContext('2d', { alpha: false });
+  let lastVeil = '', W = 0, H = 0, DPR = 1, ready = false, igniteAt = -1, lastT = 0, running = false, raf = 0;
+  const rnd = mulberry(20260930);
+  const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
+
+  /* ---- 성운(값 노이즈 두 겹 + 도메인 워핑) : 팔레트 3개를 한 번만 그려 두고 분위기에 따라 섞는다 ---- */
+  const hash2 = (ix, iy, s) => { let h = Math.imul(ix, 374761393) + Math.imul(iy, 668265263) + Math.imul(s, 1442695041) | 0; h = Math.imul(h ^ h >>> 13, 1274126177); h ^= h >>> 16; return (h >>> 0) / 4294967296; };
+  const vnoise = (x, y, s) => {
+    const ix = Math.floor(x), iy = Math.floor(y), fx = x - ix, fy = y - iy;
+    const u = fx * fx * fx * (fx * (fx * 6 - 15) + 10), v = fy * fy * fy * (fy * (fy * 6 - 15) + 10);
+    const a = hash2(ix, iy, s), b = hash2(ix + 1, iy, s), c = hash2(ix, iy + 1, s), d = hash2(ix + 1, iy + 1, s);
+    return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+  };
+  const fbm = (x, y, oct, s) => { let v = 0, a = .5, f = 1; for (let i = 0; i < oct; i++) { v += a * vnoise(x * f, y * f, s + i * 17); f *= 2.03; a *= .5; } return v; };
+  const PAL = [
+    [[22, 16, 84], [70, 46, 172], [46, 112, 216], [228, 112, 172]],   // 차분한 보라·푸른빛
+    [[8, 38, 76], [16, 100, 142], [46, 178, 198], [194, 246, 236]],   // 바다: 청록
+    [[58, 8, 22], [150, 24, 48], [226, 84, 56], [255, 198, 130]],     // 불길함: 붉은빛
+  ];
+  const ramp = (st, t) => { const f = clamp(t, 0, .9999) * 3, i = Math.floor(f), u = f - i, a = st[i], b = st[i + 1]; return [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u, a[2] + (b[2] - a[2]) * u]; };
+  let neb = [];
+  function genNebula() {
+    const w = 400, h = 230, D = new Float32Array(w * h), C = new Float32Array(w * h);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const nx = x / w * 3.4, ny = y / h * 2.1, i = y * w + x;
+      const qx = fbm(nx, ny, 4, 1), qy = fbm(nx + 5.2, ny + 1.3, 4, 2);
+      const v = fbm(nx + 2.6 * qx, ny + 2.6 * qy, 5, 3), big = fbm(nx * .45 + 7.1, ny * .45 + 2.4, 3, 4);
+      const rr = fbm(nx * 2.3 + 20 + 1.6 * qx, ny * 2.3 + 9 + 1.6 * qy, 4, 6), ridge = 1 - Math.abs(2 * rr - 1);
+      D[i] = Math.min(1, smooth(.34, .84, v) * (.22 + .95 * smooth(.26, .74, big)) * (.5 + 1.0 * ridge * ridge));
+      C[i] = clamp(fbm(nx * .8 + 11.3, ny * .8 + 4.7, 3, 5) * .75 + v * .45, 0, 1);
+    }
+    neb = PAL.map(st => {
+      const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d'), im = x.createImageData(w, h), d = im.data;
+      for (let i = 0; i < w * h; i++) { const col = ramp(st, C[i]), a = Math.pow(D[i], 1.25), k = .55 + .6 * D[i]; d[i * 4] = Math.min(255, col[0] * k); d[i * 4 + 1] = Math.min(255, col[1] * k); d[i * 4 + 2] = Math.min(255, col[2] * k); d[i * 4 + 3] = a * 215; }
+      x.putImageData(im, 0, 0); return c;
+    });
+  }
+
+  /* ---- 별 ---- */
+  const SC = ['255,255,255', '255,255,255', '255,255,255', '205,222,255', '190,205,255', '255,238,206', '255,214,190'];
+  let stars = [];
+  const glows = {};
+  const glow = rgb => glows[rgb] || (glows[rgb] = (() => { const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d'), g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, `rgba(${rgb},1)`); g.addColorStop(.12, `rgba(${rgb},.55)`); g.addColorStop(.4, `rgba(${rgb},.12)`); g.addColorStop(1, `rgba(${rgb},0)`); x.fillStyle = g; x.fillRect(0, 0, 64, 64); return c; })());
+  function makeStars() {
+    const n = Math.min(1250, Math.round(W * H / 1650)); stars = [];
+    for (let i = 0; i < n; i++) {
+      const r = rnd(), z = r < .6 ? 0 : r < .9 ? 1 : 2;
+      stars.push({ x: rnd() * W, y: rnd() * H, z, s: z === 0 ? .55 + rnd() * .5 : z === 1 ? .85 + rnd() * .7 : 1.3 + rnd() * 1.1, a: .3 + rnd() * .7, ph: rnd() * 6.283, sp: .5 + rnd() * 1.8, c: SC[(rnd() * SC.length) | 0], big: z === 2 && rnd() < .5 });
+    }
+  }
+  let meteor = null, nextMeteor = 5;
+
+  /* ---- 블랙홀 스프라이트: 후광(렌즈 효과로 휘어진 원반) + 원반, 그리고 그림자 앞을 지나는 원반 아랫부분 ---- */
+  const P = 210, XR = 5.4, YR = 2.9, TILT = -.1, K = .11;
+  let bhBack = null, bhFront = null;
+  const mk = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
+  function buildBH() {
+    const sw = Math.round(2 * XR * P), sh = Math.round(2 * YR * P);
+    const diskLayer = half => {
+      const c = mk(sw, sh), x = c.getContext('2d');
+      x.save(); x.translate(sw / 2, sh / 2); x.rotate(TILT); x.scale(1, K);
+      if (half) { x.beginPath(); if (half === 'front') x.rect(-6 * P, -.012 * P, 12 * P, 6 * P); else x.rect(-6 * P, -6 * P, 12 * P, 6.012 * P); x.clip(); }
+      const g = x.createRadialGradient(0, 0, 1.42 * P, 0, 0, 4.1 * P), s = v => (v - 1.42) / (4.1 - 1.42);
+      g.addColorStop(0, 'rgba(255,248,230,0)'); g.addColorStop(s(1.5), 'rgba(255,248,230,1)'); g.addColorStop(s(1.95), 'rgba(255,220,156,.95)'); g.addColorStop(s(2.6), 'rgba(255,164,76,.72)'); g.addColorStop(s(3.3), 'rgba(222,98,42,.34)'); g.addColorStop(1, 'rgba(120,40,20,0)');
+      x.fillStyle = g; x.beginPath(); x.arc(0, 0, 4.1 * P, 0, 6.2832); x.arc(0, 0, 1.4 * P, 0, 6.2832, true); x.fill('evenodd');
+      const r2 = mulberry(5); x.globalCompositeOperation = 'lighter';
+      for (let i = 0; i < 90; i++) { const rho = 1.55 + Math.pow(r2(), 1.5) * 2.4; x.strokeStyle = `rgba(255,${200 + (r2() * 50 | 0)},${140 + (r2() * 90 | 0)},${.025 + r2() * .07})`; x.lineWidth = (.01 + r2() * .04) * P; x.beginPath(); x.arc(0, 0, rho * P, 0, 6.2832); x.stroke(); }
+      x.restore();
+      // 도플러: 왼쪽은 밝고 오른쪽은 어둡게
+      x.globalCompositeOperation = 'destination-in'; const dg = x.createLinearGradient(0, 0, sw, 0); dg.addColorStop(0, 'rgba(0,0,0,1)'); dg.addColorStop(.5, 'rgba(0,0,0,.78)'); dg.addColorStop(1, 'rgba(0,0,0,.4)'); x.fillStyle = dg; x.fillRect(0, 0, sw, sh);
+      return c;
+    };
+    // 후광: 원반 뒤쪽이 렌즈 효과로 그림자 위·아래로 휘어 올라온 모습
+    const halo = mk(sw, sh), hx = halo.getContext('2d');
+    { // 아치: 그림자 위로 휘어 올라온 원반의 뒷모습(위쪽이 가장 두껍고 밝다)
+      hx.save(); hx.translate(sw / 2, sh / 2);
+      const g = hx.createRadialGradient(0, 0, .99 * P, 0, 0, 1.55 * P), q = v => (v - .99) / .56;
+      g.addColorStop(0, 'rgba(255,240,200,0)'); g.addColorStop(q(1.005), 'rgba(255,240,196,.82)'); g.addColorStop(q(1.1), 'rgba(255,214,142,.78)'); g.addColorStop(q(1.24), 'rgba(255,166,84,.6)'); g.addColorStop(q(1.34), 'rgba(232,118,52,.34)'); g.addColorStop(q(1.43), 'rgba(190,80,36,.1)'); g.addColorStop(1, 'rgba(120,40,20,0)');
+      hx.fillStyle = g; hx.fillRect(-6 * P, -6 * P, 12 * P, 12 * P); hx.restore();
+      hx.globalCompositeOperation = 'destination-in';
+      const vg = hx.createLinearGradient(0, sh / 2 - 2.0 * P, 0, sh / 2 + 2.0 * P); vg.addColorStop(0, 'rgba(0,0,0,1)'); vg.addColorStop(.3, 'rgba(0,0,0,1)'); vg.addColorStop(.5, 'rgba(0,0,0,.34)'); vg.addColorStop(.7, 'rgba(0,0,0,.5)'); vg.addColorStop(1, 'rgba(0,0,0,.4)');
+      hx.fillStyle = vg; hx.fillRect(0, 0, sw, sh);
+      const dg = hx.createLinearGradient(0, 0, sw, 0); dg.addColorStop(0, 'rgba(0,0,0,1)'); dg.addColorStop(.5, 'rgba(0,0,0,.84)'); dg.addColorStop(1, 'rgba(0,0,0,.52)'); hx.fillStyle = dg; hx.fillRect(0, 0, sw, sh);
+      hx.globalCompositeOperation = 'lighter'; // 그림자 가장자리의 가느다란 빛 고리
+      const pr = hx.createRadialGradient(sw / 2, sh / 2, .985 * P, sw / 2, sh / 2, 1.16 * P);
+      pr.addColorStop(0, 'rgba(255,252,240,0)'); pr.addColorStop(.1, 'rgba(255,250,236,.7)'); pr.addColorStop(.3, 'rgba(255,226,160,.3)'); pr.addColorStop(1, 'rgba(255,190,100,0)');
+      hx.fillStyle = pr; hx.fillRect(0, 0, sw, sh); }
+    bhBack = mk(sw, sh); { const x = bhBack.getContext('2d'); x.drawImage(halo, 0, 0); x.drawImage(diskLayer(null), 0, 0); }
+    bhFront = mk(sw, sh); { const x = bhFront.getContext('2d'); x.save(); x.beginPath(); x.arc(sw / 2, sh / 2, .995 * P, 0, 6.2832); x.clip(); x.drawImage(diskLayer('front'), 0, 0); x.restore(); }
+  }
+  const parts = Array.from({ length: 360 }, (_, i) => { const rho = 1.5 + Math.pow(rnd(), 1.6) * 2.5, hot = i < 16; return { rho: hot ? 1.6 + rnd() * 1.6 : rho, th: rnd() * 6.2832, len: hot ? .5 + rnd() * .7 : .05 + rnd() * .13, w: hot ? 1.6 + rnd() * 1.2 : .5 + rnd() * 1.2, a: hot ? .55 + rnd() * .35 : .12 + rnd() * .38, c: hot ? 1 + (rnd() * 2 | 0) : Math.min(5, ((rho - 1.5) / 2.5 * 6) | 0), hot }; });
+  const infall = Array.from({ length: 26 }, () => ({ t0: rnd() * 6, dur: 5 + rnd() * 5, rho0: 3.3 + rnd() * .9, th0: rnd() * 6.2832 }));
+  const waves = [];
+  const PCOL = ['255,246,226', '255,226,170', '255,198,122', '255,162,82', '232,112,52', '170,72,36'];
+
+  /* ---- 분위기: 장면에 따라 성운 색과 블랙홀 크기가 부드럽게 바뀐다 ---- */
+  const MOODS = {
+    calm: { w: [1, 0, 0], bh: 1, glow: 1, swirl: 0 },
+    dread: { w: [.16, 0, 1], bh: 1.06, glow: 1.12, swirl: 0 },
+    sea: { w: [0, 1, .08], bh: .96, glow: 1, swirl: 0 },
+    gate: { w: [1, .3, 0], bh: 1.42, glow: 1.5, swirl: 1 },
+  };
+  const cur = { w: [1, 0, 0], bh: 1, glow: 1, swirl: 0 };
+  let moodKey = 'calm';
+  const marks = []; // {el, mood}
+  function setMarks() { marks.length = 0; $$('[data-mood]').forEach(el => marks.push({ el, mood: el.dataset.mood })); }
+  function moodNow() { let m = 'calm'; for (const k of marks) { if (k.el.getBoundingClientRect().top <= innerHeight * .6) m = k.mood; else break; } return m; }
+
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 1.75); W = innerWidth; H = innerHeight;
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR); cx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    makeStars(); if (!running) frame(performance.now(), true);
+  }
+
+  function frame(t, still) {
+    raf = 0;
+    const dt = Math.min(.05, (t - lastT) / 1000 || .016); lastT = t;
+    const sy = window.scrollY, maxS = Math.max(1, document.documentElement.scrollHeight - H), p = clamp(sy / maxS, 0, 1);
+    const open = smooth(0, H * .85, sy), still0 = still || cfg.bg === 'off';
+    const T = still0 ? 4 : t / 1000;
+    mouse.x = lerp(mouse.x, mouse.tx, .05); mouse.y = lerp(mouse.y, mouse.ty, .05);
+    { const vv = open.toFixed(3); if (vv !== lastVeil) { lastVeil = vv; document.documentElement.style.setProperty('--veil', vv); } }
+
+    // 분위기 보간
+    const tgt = MOODS[moodKey] || MOODS.calm, k = 1 - Math.exp(-dt * 1.3);
+    for (let i = 0; i < 3; i++) cur.w[i] = lerp(cur.w[i], tgt.w[i], still0 ? 1 : k);
+    cur.bh = lerp(cur.bh, tgt.bh, still0 ? 1 : k); cur.glow = lerp(cur.glow, tgt.glow, still0 ? 1 : k); cur.swirl = lerp(cur.swirl, tgt.swirl, still0 ? 1 : k);
+
+    // 블랙홀 위치·크기: 처음엔 화면 위쪽 한가운데에 크게, 스크롤하면 오른쪽 위 구석으로 물러난다
+    const narrow = W < 760, base = Math.min(W * .12, H * .155);
+    const bx0 = W * .5 + mouse.x * 6, by0 = H * (narrow ? .28 : .3) + mouse.y * 4, bx1 = W * (narrow ? .78 : .82), by1 = H * (narrow ? .13 : .17);
+    const bx = lerp(bx0, bx1, open), by = lerp(by0, by1, open) - p * H * .03;
+    const R = Math.max(22, lerp(base, base * .5, open) * cur.bh);
+    const since = igniteAt < 0 ? -9 : still0 ? 9 : T - igniteAt, ign = smooth(.3, 3, since), dim = lerp(1, .62, open) * (cur.swirl > .2 ? lerp(1, 1.35, cur.swirl) : 1);
+
+    cx.globalCompositeOperation = 'source-over'; cx.globalAlpha = 1; cx.fillStyle = '#02030a'; cx.fillRect(0, 0, W, H);
+
+    // 성운 (두 겹: 하나는 좌우로 뒤집어 어긋나게)
+    if (neb.length) {
+      const ns = Math.max(W * 1.3 / 400, H * 1.38 / 230), nw = 400 * ns, nh = 230 * ns, ox = -(nw - W) / 2 + mouse.x * -14 + Math.sin(T * .05) * 10, oy = -(nh - H) * (.1 + .8 * p) + Math.cos(T * .04) * 6;
+      cx.globalCompositeOperation = 'lighter'; cx.imageSmoothingEnabled = true; cx.imageSmoothingQuality = 'high';
+      const fade = lerp(.9, .72, open) * smooth(0, 1.8, since + .2);
+      for (let i = 0; i < 3; i++) {
+        if (cur.w[i] < .01) continue;
+        cx.globalAlpha = cur.w[i] * .72 * fade; cx.drawImage(neb[i], ox, oy, nw, nh);
+        cx.save(); cx.translate(W, 0); cx.scale(-1, 1); cx.globalAlpha = cur.w[i] * .4 * fade; cx.drawImage(neb[i], ox * .6 - W * .12, oy * .8 - H * .08, nw * 1.1, nh * 1.1); cx.restore();
+      }
+      cx.globalAlpha = 1;
+    }
+
+    // 별: 가까운 별일수록 스크롤에 더 크게 움직이고, 블랙홀 가까이에서는 중력 렌즈로 바깥으로 밀려난다
+    const par = [.03, .08, .16], tE = R * 1.6;
+    cx.globalCompositeOperation = 'lighter';
+    const starFade = smooth(0, 1.2, since + .1);
+    for (const s of stars) {
+      let x = s.x + mouse.x * -(3 + s.z * 5), y = ((s.y - sy * par[s.z]) % H + H) % H;
+      const dx = x - bx, dy = y - by, d = Math.hypot(dx, dy) || 1;
+      if (d < R * 9) {
+        let d2 = .5 * (d + Math.sqrt(d * d + 4 * tE * tE)), ang = Math.atan2(dy, dx) + (still0 ? cur.swirl * .33 * Math.pow(R * 3 / d, 1.15) : T * .13 * Math.pow(R * 3 / d, 1.4) * (.55 + cur.swirl * 1.3));
+        x = bx + Math.cos(ang) * d2; y = by + Math.sin(ang) * d2;
+      }
+      if (x < -8 || x > W + 8 || y < -8 || y > H + 8) continue;
+      const tw = still0 ? 1 : .62 + .38 * Math.sin(T * s.sp + s.ph), a = s.a * tw * starFade;
+      if (s.big) { const g = glow(s.c), r = 7 + s.s * 6; cx.globalAlpha = a * .75; cx.drawImage(g, x - r, y - r, r * 2, r * 2); }
+      cx.globalAlpha = a; cx.fillStyle = 'rgb(' + s.c + ')'; cx.fillRect(x - s.s / 2, y - s.s / 2, s.s, s.s);
+    }
+    cx.globalAlpha = 1;
+
+    // 유성
+    if (!still0) {
+      nextMeteor -= dt; if (nextMeteor < 0 && !meteor) { meteor = { x: W * (.35 + rnd() * .6), y: -20, vx: -(520 + rnd() * 380), vy: 300 + rnd() * 240, life: 0 }; nextMeteor = 7 + rnd() * 9; }
+      if (meteor) { const m = meteor; m.x += m.vx * dt; m.y += m.vy * dt; m.life += dt; const sp = Math.hypot(m.vx, m.vy), ux = m.vx / sp, uy = m.vy / sp, L = 150, g = cx.createLinearGradient(m.x, m.y, m.x - ux * L, m.y - uy * L); const fa = Math.min(1, m.life * 4) * (1 - open * .6); g.addColorStop(0, `rgba(255,244,222,${.85 * fa})`); g.addColorStop(1, 'rgba(255,244,222,0)'); cx.strokeStyle = g; cx.lineWidth = 1.4; cx.beginPath(); cx.moveTo(m.x, m.y); cx.lineTo(m.x - ux * L, m.y - uy * L); cx.stroke(); if (m.y > H + 40 || m.x < -200) meteor = null; }
+    }
+
+    // 블랙홀
+    if (bhBack && ign > .001) {
+      const breath = still0 ? 1 : 1 + .014 * Math.sin(T * .9), Rb = R * breath, rot = still0 ? 0 : Math.sin(T * .27) * .016;
+      const sc = Rb / P, sw = bhBack.width * sc, sh = bhBack.height * sc, pulse = still0 ? 1 : 1 + .07 * Math.sin(T * .9) + .035 * Math.sin(T * 2.3 + 1);
+      // 바깥 빛무리
+      { const g = cx.createRadialGradient(bx, by, Rb * .9, bx, by, Rb * 6); const ga = .15 * ign * dim * cur.glow * pulse; g.addColorStop(0, `rgba(255,176,92,${ga})`); g.addColorStop(.3, `rgba(255,140,70,${ga * .45})`); g.addColorStop(1, 'rgba(255,120,60,0)'); cx.globalCompositeOperation = 'lighter'; cx.fillStyle = g; cx.fillRect(bx - Rb * 6, by - Rb * 6, Rb * 12, Rb * 12); }
+      cx.save(); cx.translate(bx, by); cx.rotate(rot); cx.translate(-bx, -by);
+      cx.globalCompositeOperation = 'lighter'; cx.globalAlpha = Math.min(1, ign * dim * (.88 + .12 * pulse)); cx.drawImage(bhBack, bx - sw / 2, by - sh / 2, sw, sh);
+      drawParts(false, bx, by, Rb, ign * dim, T, still0, TILT);
+      drawInfall(false, bx, by, Rb, ign * dim, T, still0, TILT);
+      cx.globalCompositeOperation = 'source-over'; cx.globalAlpha = Math.min(1, ign * 1.6); cx.fillStyle = '#000'; cx.beginPath(); cx.arc(bx, by, Rb * .997, 0, 6.2832); cx.fill();
+      cx.globalCompositeOperation = 'lighter'; cx.globalAlpha = Math.min(1, ign * dim * (.9 + .1 * pulse)); cx.drawImage(bhFront, bx - sw / 2, by - sh / 2, sw, sh);
+      drawParts(true, bx, by, Rb, ign * dim, T, still0, TILT);
+      drawInfall(true, bx, by, Rb, ign * dim, T, still0, TILT);
+      cx.restore();
+      // 그림자 가장자리 빛 고리 + 그 위를 도는 빛 한 점
+      cx.globalCompositeOperation = 'lighter';
+      cx.globalAlpha = ign * dim * (.3 + .1 * (pulse - 1) * 6); cx.strokeStyle = 'rgb(255,246,226)'; cx.lineWidth = Math.max(1, Rb * .012); cx.beginPath(); cx.arc(bx, by, Rb * 1.012, 0, 6.2832); cx.stroke();
+      if (!still0) {
+        const head = T * .85, rr = Rb * 1.03, lw2 = Math.max(1.4, Rb * .02);
+        cx.lineCap = 'round';
+        for (let i = 0; i < 18; i++) { const a0 = head - i * .045, a1 = head - (i + 1) * .045, f = 1 - i / 18; cx.globalAlpha = ign * dim * .85 * f * f; cx.strokeStyle = i < 2 ? 'rgb(255,252,240)' : 'rgb(255,214,140)'; cx.lineWidth = lw2 * (.45 + .55 * f); cx.beginPath(); cx.arc(bx, by, rr, a1, a0); cx.stroke(); }
+        const hx = bx + Math.cos(head) * rr, hy = by + Math.sin(head) * rr, gr = Rb * .22, gg = cx.createRadialGradient(hx, hy, 0, hx, hy, gr); gg.addColorStop(0, 'rgba(255,248,226,.95)'); gg.addColorStop(.3, 'rgba(255,200,120,.4)'); gg.addColorStop(1, 'rgba(255,160,80,0)');
+        cx.globalAlpha = ign * dim; cx.fillStyle = gg; cx.fillRect(hx - gr, hy - gr, gr * 2, gr * 2);
+        // 점화·장면이 바뀔 때 퍼져 나가는 파문
+        while (waves.length && T - waves[0] > 3) waves.shift();
+        for (const w of waves) { const e = (T - w) / 2.6; if (e < 0 || e > 1) continue; cx.globalAlpha = .5 * Math.pow(1 - e, 2) * ign; cx.strokeStyle = 'rgb(255,214,150)'; cx.lineWidth = Math.max(1, Rb * .05 * (1 - e)); cx.beginPath(); cx.arc(bx, by, Rb * (1.1 + e * 7.5), 0, 6.2832); cx.stroke(); }
+      }
+      cx.globalAlpha = 1; cx.globalCompositeOperation = 'source-over';
+    }
+
+    if (running && !still) raf = requestAnimationFrame(frame);
+  }
+  function drawParts(front, bx, by, R, amp, T, still0, tilt) {
+    const cs = Math.cos(tilt), sn = Math.sin(tilt), lw = clamp(R / 120, .7, 2.4);
+    cx.lineCap = 'round';
+    for (const q of parts) {
+      const th = q.th + (still0 ? 0 : T * 1.5 / Math.pow(q.rho, 1.5));
+      const s0 = Math.sin(th); if ((s0 > 0) !== front) continue;
+      const dop = .62 - .38 * Math.cos(th);
+      if (q.hot) { // 혜성처럼 꼬리가 긴 밝은 덩어리
+        const n = 9;
+        for (let j = 0; j < n; j++) {
+          const a0 = th - q.len * j / n, a1 = th - q.len * (j + 1) / n, f = 1 - j / n;
+          const x0 = q.rho * Math.cos(a0) * R, y0 = q.rho * Math.sin(a0) * K * R, x1 = q.rho * Math.cos(a1) * R, y1 = q.rho * Math.sin(a1) * K * R;
+          cx.globalAlpha = Math.min(1, q.a * dop * amp * f * f * 1.7); cx.strokeStyle = j < 2 ? 'rgb(255,248,226)' : 'rgb(' + PCOL[q.c] + ')'; cx.lineWidth = q.w * lw * (.5 + .7 * f); cx.beginPath();
+          cx.moveTo(bx + x0 * cs - y0 * sn, by + x0 * sn + y0 * cs); cx.lineTo(bx + x1 * cs - y1 * sn, by + x1 * sn + y1 * cs); cx.stroke();
+        }
+        continue;
+      }
+      cx.globalAlpha = q.a * dop * amp;
+      cx.strokeStyle = 'rgb(' + PCOL[q.c] + ')'; cx.lineWidth = q.w * lw; cx.beginPath();
+      for (let j = 0; j < 3; j++) { const a = th + q.len * j / 2, ex = q.rho * Math.cos(a) * R, ey = q.rho * Math.sin(a) * K * R, X = bx + ex * cs - ey * sn, Y = by + ex * sn + ey * cs; if (j) cx.lineTo(X, Y); else cx.moveTo(X, Y); }
+      cx.stroke();
+    }
+    cx.globalAlpha = 1;
+  }
+  /* 원반 바깥에서 소용돌이치며 그림자로 빨려 드는 빛 */
+  function drawInfall(front, bx, by, R, amp, T, still0, tilt) {
+    if (still0) return;
+    const cs = Math.cos(tilt), sn = Math.sin(tilt), lw = clamp(R / 120, .8, 2.4);
+    cx.lineCap = 'round';
+    for (const f of infall) {
+      let u = (T - f.t0) / f.dur; if (u > 1) { f.t0 = T + rnd() * .6; f.dur = 5 + rnd() * 5; f.rho0 = 3.3 + rnd() * .9; f.th0 = rnd() * 6.2832; u = 0; } if (u < 0) continue;
+      const rho = lerp(f.rho0, 1.04, Math.pow(u, 1.55)), th = f.th0 + 7.2 * Math.pow(u, .72), al = Math.pow(Math.sin(Math.PI * Math.min(1, u * 1.04)), .8);
+      if ((Math.sin(th) > 0) !== front) continue;
+      for (let j = 0; j < 7; j++) {
+        const a0 = th - j * .07, a1 = th - (j + 1) * .07, fr = 1 - j / 7, u0 = Math.max(0, u - j * .008), r0 = lerp(f.rho0, 1.04, Math.pow(u0, 1.55));
+        const x0 = r0 * Math.cos(a0) * R, y0 = r0 * Math.sin(a0) * K * R, x1 = r0 * Math.cos(a1) * R, y1 = r0 * Math.sin(a1) * K * R;
+        cx.globalAlpha = Math.min(1, .75 * amp * al * fr * (.6 - .35 * Math.cos(th))); cx.strokeStyle = j < 2 ? 'rgb(255,246,220)' : 'rgb(255,190,110)'; cx.lineWidth = lw * (.5 + .7 * fr);
+        cx.beginPath(); cx.moveTo(bx + x0 * cs - y0 * sn, by + x0 * sn + y0 * cs); cx.lineTo(bx + x1 * cs - y1 * sn, by + x1 * sn + y1 * cs); cx.stroke();
+      }
+    }
+    cx.globalAlpha = 1;
+  }
+  function loop() { if (!running) return; raf = requestAnimationFrame(frame); }
+  return {
+    init() { genNebula(); buildBH(); resize(); ready = true; setMarks(); },
+    start(t0) { igniteAt = t0 == null ? 0 : t0; waves.push(igniteAt + .5); if (cfg.bg === 'off') { running = false; frame(performance.now(), true); } else { running = true; lastT = performance.now(); loop(); } },
+    ignite() { igniteAt = (performance.now() / 1000) - 0; if (cfg.bg === 'off') frame(performance.now(), true); },
+    setBg(on) { cfg.bg = on ? 'on' : 'off'; if (on) { if (!running) { running = true; lastT = performance.now(); loop(); } } else { running = false; cancelAnimationFrame(raf); frame(performance.now(), true); } },
+    resize, mood(k) { if (k !== moodKey) { if (igniteAt >= 0 && running) waves.push(performance.now() / 1000); moodKey = k; } }, moodNow, draw() { if (!running) frame(performance.now(), true); },
+    pointer(x, y) { mouse.tx = x; mouse.ty = y; },
+    get ready() { return ready; }, sprites() { return { bhBack, bhFront }; }, setMarks, get mood_() { return moodKey; }, get running() { return running; },
+  };
+})();
+
+/* ==========================================================================
+   전환 막: 들어올 때 열리고, 나갈 때 닫힌다 (올라오며 나타나고 내려가며 사라짐)
+   ========================================================================== */
+const Gate = {
+  el: $('#gate'),
+  async open() { // 시작할 때 막을 걷는다
+    const g = this.el; g.className = 'show';
+    await new Promise(r => setTimeout(r, HARD_OFF ? 40 : 1250));
+    g.className = 'show out'; await new Promise(r => setTimeout(r, HARD_OFF ? 20 : 820)); g.className = '';
+  },
+  async leave(href) {
+    const g = this.el; g.className = 'show in'; $('.lab', g).textContent = 'Returning';
+    let gone = false; addEventListener('pagehide', () => { gone = true; }, { once: true });
+    await new Promise(r => setTimeout(r, HARD_OFF ? 20 : 1100));
+    location.href = href;
+    setTimeout(() => { if (!gone) { g.className = 'show out'; setTimeout(() => { g.className = ''; }, 900); } }, 4500);
+  },
+};
+
+/* ==========================================================================
+   화면 요소들
+   ========================================================================== */
+function bindHud() {
+  const panel = $('#panel'), tb = $('#btnTool');
+  const closeP = () => { if (!panel.classList.contains('show')) return; panel.classList.remove('show'); panel.classList.add('hide'); tb.setAttribute('aria-expanded', 'false'); setTimeout(() => panel.classList.remove('hide'), HARD_OFF ? 10 : 360); };
+  const openP = () => { panel.classList.remove('hide'); panel.classList.add('show'); tb.setAttribute('aria-expanded', 'true'); };
+  tb.addEventListener('click', e => { e.stopPropagation(); panel.classList.contains('show') ? closeP() : openP(); });
+  panel.addEventListener('click', e => e.stopPropagation());
+  document.addEventListener('click', closeP);
+  const sync = () => {
+    $('#szVal').textContent = cfg.size + '%';
+    $$('#segFx button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === cfg.fx)));
+    $$('#segBg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === cfg.bg)));
+    $('#szDown').disabled = cfg.size <= 85; $('#szUp').disabled = cfg.size >= 140;
+  };
+  $('#szDown').addEventListener('click', () => { cfg.size = Math.max(85, cfg.size - 5); store.set('size', cfg.size); applyCfg(); sync(); sweep(); focusText(); });
+  $('#szUp').addEventListener('click', () => { cfg.size = Math.min(140, cfg.size + 5); store.set('size', cfg.size); applyCfg(); sync(); sweep(); focusText(); });
+  $('#segFx').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; cfg.fx = b.dataset.v; store.set('fx', cfg.fx); applyCfg(); sync(); focusText(); });
+  $('#segBg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; Space.setBg(b.dataset.v === 'on'); store.set('bg', cfg.bg); sync(); });
+  sync();
+  const back = href => e => { if (e && (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button)) return; if (e) e.preventDefault(); Gate.leave(href); };
+  [$('#btnBack'), $('#endBack')].forEach(a => a && a.addEventListener('click', back(a.getAttribute('href'))));
+  addEventListener('keydown', e => { if (e.key === 'Escape') { if (panel.classList.contains('show')) closeP(); else back($('#btnBack').getAttribute('href'))(); } });
+  addEventListener('pointermove', e => Space.pointer(e.clientX / innerWidth - .5, e.clientY / innerHeight - .5), { passive: true });
+  addEventListener('pageshow', e => { if (e.persisted) { Gate.el.className = ''; } });
+}
+
+let tick = 0;
+function onScroll() {
+  if (tick) return; tick = requestAnimationFrame(() => {
+    tick = 0; sweep(); focusText();
+    const sy = scrollY, max = Math.max(1, document.documentElement.scrollHeight - innerHeight), p = clamp(sy / max, 0, 1);
+    const dot = $('#progDot'); if (dot) dot.style.top = (p * 100).toFixed(2) + '%'; const pc = $('#progPct'); if (pc) pc.textContent = Math.round(p * 100) + '%';
+    const cue = $('#cue'); if (cue) cue.classList.toggle('on', sy < 40 && cueReady);
+    Space.mood(Space.moodNow()); Space.draw();
+  });
+}
+let cueReady = false;
+
+/* ==========================================================================
+   시작
+   ========================================================================== */
+function start() {
+  document.body.classList.toggle('fx-off', cfg.fx === 'off');
+  applyCfg(); renderStory(); bindHud();
+  Space.init();
+  addEventListener('scroll', onScroll, { passive: true });
+  addEventListener('resize', () => { Space.resize(); sweep(); });
+  Gate.open().then(() => {
+    document.body.classList.add('live');
+    Space.start((performance.now() / 1000)); // 블랙홀 점화
+    setTimeout(() => { // 오프너 글자: CHAPTER 가 한 글자씩 나온 뒤 숫자가 떠오른다
+      const op = $('#opener'); if (!op) return;
+      const k = $('.chk', op), n = $('.chn', op);
+      k.style.setProperty('--st', '85ms'); n.style.setProperty('--st', '1ms'); $$('.c', n).forEach(c => c.style.setProperty('--i', 1000));
+      k.classList.add('on'); n.classList.add('on');
+      setTimeout(() => { cueReady = true; $('#cue').classList.toggle('on', scrollY < 40); }, cfg.fx === 'off' ? 100 : 2600);
+    }, cfg.fx === 'off' ? 0 : 700);
+    sweep(); onScroll(); focusText();
+  });
+  window.NV = { Space, sweep, cfg, Gate };
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+})();
+
+</script>
+</body>
+</html>
