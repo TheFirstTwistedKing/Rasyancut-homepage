@@ -5319,11 +5319,11 @@ const CONFIG = {
   // 아직 기능이 정해지지 않아 자리만 잡아 둔 상태입니다. name(이름) · info(내용, 문단은 \n) · icon(아이콘 모양) 을 채우면 그대로 반영됩니다.
   // info 를 비워 두면 "아직 기록된 정보가 없습니다"로 표시됩니다. icon 은 아래 IC 목록의 이름 중에서 고르세요.
   observ: [
-    { name: '신호 I',   info: '', icon: 'eye' },
-    { name: '신호 II',  info: '', icon: 'knot' },
+    { name: '신호 I',   info: '', icon: 'chairwarp' },
+    { name: '신호 II',  info: '', icon: 'rssglobe' },
     { name: '코어',     info: '', icon: 'sigil', core: true },
-    { name: '신호 III', info: '', icon: 'shard' },
-    { name: '신호 IV',  info: '', icon: 'spiral' },
+    { name: '신호 III', info: '', icon: 'desktop' },
+    { name: '신호 IV',  info: '', icon: 'shardeye' },
   ],
   // 관측소 바깥 세계 지도 위의 도시·마을·신호·관문·세계화·미확인 신호는 world_items(데이터 파일)에서 만들어 observ.js 안에 들어갑니다.
 };
@@ -5401,6 +5401,11 @@ const IC = {
   knot: '<path d="M3.5 7.5c3.2-3.4 5.6 3.6 8.5 0s5.4-3.4 8.5 0"/><path d="M3.5 16.5c3.2-3.4 5.6 3.6 8.5 0s5.4-3.4 8.5 0"/><path d="M12 7.5c-2.8 2.6 2.8 6.4 0 9"/>',
   shard: '<path d="M12 2.4l5.6 7.4-3.2 12-5.2-.1L6.4 10z"/><path d="M12 2.4l-1.2 8.4 5.8-1"/><path d="M10.8 10.8l-1.6 11"/>',
   spiral: '<path d="M12 12.4a1.4 1.4 0 1 1 2.8 0 3.6 3.6 0 1 1-7.2 0 5.8 5.8 0 1 1 11.6 0 8 8 0 0 1-8 8"/>',
+  /* 관측소 신호기 4개 (각 신호기가 여는 연출을 나타내는 심볼) */
+  chairwarp: '<path d="M8.2 3h7.6a2 2 0 0 1 2 2v7H6.2V5a2 2 0 0 1 2-2z"/><path d="M4.6 12.4h14.8v3H4.6z"/><path d="M12 15.4v4M12 19.4l-5 2M12 19.4l5 2"/><path d="M1.6 8c.9-1.1 1.7 1.1 2.6 0"/><path d="M19.8 8c.9-1.1 1.7 1.1 2.6 0"/><path d="M1.6 12c.9-1.1 1.7 1.1 2.6 0" opacity=".6"/><path d="M19.8 12c.9-1.1 1.7 1.1 2.6 0" opacity=".6"/>',
+  rssglobe: '<path d="M12 2.4l7.4 2.6v6c0 4.6-3.1 8.2-7.4 9.8-4.3-1.6-7.4-5.2-7.4-9.8V5z"/><circle cx="12" cy="11.4" r="4.3"/><path d="M12 7.1c-2.2 1.3-2.2 7.3 0 8.6 2.2-1.3 2.2-7.3 0-8.6z"/><path d="M7.7 11.4h8.6"/>',
+  desktop: '<rect x="2.6" y="3.4" width="18.8" height="13.4" rx="1.4"/><path d="M2.6 7h18.8"/><path d="M5 5.2h.01M7 5.2h.01"/><path d="M8.6 9.4h4.2l2.2 2.2v4H8.6z"/><path d="M12.8 9.4v2.2H15"/><path d="M9 20.6h6M12 16.8v3.8"/>',
+  shardeye: '<path d="M2.4 12S6.2 5.4 12 5.4 21.6 12 21.6 12 17.8 18.6 12 18.6 2.4 12 2.4 12z"/><circle cx="12" cy="12" r="2.8"/><path d="M13.8 2.4l-2.2 4.8 2.6 2.2-2.8 3.2 2.4 2.6-1.4 4.4"/><path d="M3.2 4.6l2.8 2M20.8 4.6l-2.8 2M3.2 19.4l2.8-2M20.8 19.4l-2.8-2"/>',
   comm: '<path d="M12 21V11.4"/><circle cx="12" cy="9.2" r="2"/><path d="M7.9 5.6a5.6 5.6 0 0 0 0 7.2"/><path d="M16.1 5.6a5.6 5.6 0 0 1 0 7.2"/><path d="M4.6 3a9.8 9.8 0 0 0 0 12.4"/><path d="M19.4 3a9.8 9.8 0 0 1 0 12.4"/><path d="M8 21h8"/>',
   ladder: '<path d="M6 2.8v18.4"/><path d="M18 2.8v18.4"/><path d="M6 7h12"/><path d="M6 12h12"/><path d="M6 17h12"/>',
   seal: '<path d="M5 3h10l4 4v14H5z"/><path d="M15 3v4h4"/><path d="M8.4 10.4h7"/><path d="M8.4 13.6h4"/><circle cx="14.4" cy="17.4" r="2"/>',
