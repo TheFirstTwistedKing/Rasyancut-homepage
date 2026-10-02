@@ -1840,7 +1840,7 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
       <h3 class="ob-wh">접근 신호 없음</h3>
       <p class="ob-wp mono">NO ACCESS SIGNAL</p>
       <p class="ob-wd">관측 범위를 벗어났습니다. 지도 안쪽으로 돌아가세요.</p>
-      <div class="ob-wc mono">연결 끊김까지 <b id="obWcnt">5.0</b>초</div>
+      <div class="ob-wc mono">연결 끊김까지 <b id="obWcnt">20.0</b>초</div>
       <div class="ob-wbar"><i id="obWbar"></i></div>
     </aside>
     <div class="ob-cut" id="obCut" aria-hidden="true"><i class="t"></i><i class="b"></i><i class="ln"></i></div>
@@ -7453,12 +7453,12 @@ const Decode = (() => {
    · 지도 위 신호: 도시 · 마을 · 신호 · 관문 · 세계화(스스로 움직이는 요새) · 미확인 신호('?' 구역의 모든 신호).
      하나를 누르면 그 신호가 확대되고, 옆에 설명 창이 뜹니다. (데이터: world_items — 이름·설명·위치·궤도)
    · 관측소 안: 원형 아이콘 5개(대칭 호) · 천문 관측기 눈금 · 노란 실. 가운데 아이콘은 출력 상승 모드를 클리어해야 열립니다.
-   · 원반 가장자리 밖으로 나가려 하면 '접근 신호 없음' 경고가 뜨고, 5초(WARN_SEC) 안에 돌아오지 않으면 연결이 끊긴 뒤
+   · 원반 가장자리 밖으로 나가려 하면 '접근 신호 없음' 경고가 뜨고, 20초(WARN_SEC, 더 멀리 나갈수록 카운트다운이 빨라짐) 안에 돌아오지 않으면 연결이 끊긴 뒤
      '새 관측기를 생성하시겠습니까?' 팝업이 나옵니다. 누르면 관측소(소버린 아일랜드) 한가운데에서 다시 시작합니다.
    · 실의 모양은 SEED 값으로 고정됩니다(화면 크기가 같으면 늘 같은 모양).
    ========================================================================== */
 const Obs = (() => {
-  const SEED = 2026, WARN_SEC = 5, OBS_U = 100, WIDE = 1.5;     // WIDE: 지도 전체를 이만큼 더 넓게(관측소도 같은 비율로 커진다 → 신호 사이가 멀어지고 이동 거리가 길어진다)
+  const SEED = 2026, WARN_SEC = 20, OUT_X = 6, OBS_U = 100, WIDE = 1.5;     // WIDE: 지도 전체를 이만큼 더 넓게(관측소도 같은 비율로 커진다 → 신호 사이가 멀어지고 이동 거리가 길어진다)
   const MD = { cx: 1000, cy: 562, R: 1100, cell: 110 };            // 세계 원반(지도 단위): 중심 · 반지름 · 격자 한 칸
   const ISLR = MAP.regions.find(r => r.id === 19) || { px: 1511, py: 809 }, ISL = { x: ISLR.px, y: ISLR.py };      // 소버린 아일랜드 = 관측소 중심
   const scr = screens.observ, stage = $('#obStage'), world = $('#obWorld'), obsEl = $('#obObs'), disc = $('#obDisc'), svg = $('#obSvg'), dials = $('#obDials'),
@@ -7699,7 +7699,7 @@ const Obs = (() => {
   const cam = { x: 0, y: 0 }, vel = { x: 0, y: 0 };
   let vx = 0, vy = 0, fly = null, drag = null, dirty = true, raf = 0, lastT = 0, lastF = 0, lastS = 0, lastTel = 0, lastDragEnd = -1e9, moved = false, kbFocus = false, lastChime = 0, lastDom = 0, lastWalk = 0;
   let ctxS = null, ctxM = null, ctxF = null, out = null, inn = null, MP = null, wobs = [];
-  let ph = 'ok', warnT = 0, lastBeep = -1, lostLv = -1, noiseOn = false, tmr = [];   // ph: ok(원반 안) · warn(범위 밖, 카운트다운) · cut(연결 끊김, 팝업) · boot(새 관측기 생성 중)
+  let ph = 'ok', warnT = 0, warnRate = 1, lastBeep = -1, lostLv = -1, noiseOn = false, tmr = [];   // ph: ok(원반 안) · warn(범위 밖, 카운트다운) · cut(연결 끊김, 팝업) · boot(새 관측기 생성 중)
   const mapX = mx => G.RD + (mx - MD.cx) * G.K, mapY = my => G.RD + (my - MD.cy) * G.K;
   const homeX = () => G.OX - G.cx, homeY = () => G.OY - G.cy;
   const atHome = () => Math.abs(cam.x - homeX()) < 3 && Math.abs(cam.y - homeY()) < 3;
@@ -7735,7 +7735,7 @@ const Obs = (() => {
     const RO = Math.max(need, U * 10 / 12, 1000) * WIDE, K = RO / OBS_U, RD = MD.R * K, S = 2 * RD, BR = RO * 1.06;
     const OX = RD + (ISL.x - MD.cx) * K, OY = RD + (ISL.y - MD.cy) * K;
     const trig = clamp(Math.min(W, H) * .2, 64, 160);   // 원반 가장자리 밖으로 이만큼 나가면 경고 / 그보다 2.4배까지만 더 나갈 수 있다
-    Object.assign(G, { W, H, dpr: Math.min(2, window.devicePixelRatio || 1), U, K, S, RD, RO, BR, OX, OY, cx, cy, R, base, core, span, ks: narrow ? .7 : 1, trig, maxov: trig * 2.4, pts: [] });
+    Object.assign(G, { W, H, dpr: Math.min(2, window.devicePixelRatio || 1), U, K, S, RD, RO, BR, OX, OY, cx, cy, R, base, core, span, ks: narrow ? .7 : 1, trig, maxov: trig * 2.4 * OUT_X, pts: [] });   // 신호가 안 잡히는 바깥 범위: 원래의 6배(OUT_X)
     obsEl.style.cssText = `left:${f1(OX - BR)}px;top:${f1(OY - BR)}px;width:${f1(2 * BR)}px;height:${f1(2 * BR)}px`;
     disc.style.cssText = `left:${f1(BR - RO)}px;top:${f1(BR - RO)}px;width:${f1(2 * RO)}px;height:${f1(2 * RO)}px`;
     // 아이콘 N개를 -span ~ +span 사이에 같은 간격으로 (가운데 = 꼭대기). 좌표는 관측소 블록 기준.
@@ -8232,7 +8232,7 @@ const Obs = (() => {
   mini.addEventListener('pointerup', mmUp); mini.addEventListener('pointercancel', mmUp);
   stage.addEventListener('scroll', () => { stage.scrollLeft = 0; stage.scrollTop = 0; });
 
-  /* ---------- 지도 밖으로 나가면: 접근 신호 없음 경고 → 5초 뒤 연결 끊김 → 새 관측기로 부활 ---------- */
+  /* ---------- 지도 밖으로 나가면: 접근 신호 없음 경고 → 20초 뒤(멀수록 더 빨리) 연결 끊김 → 새 관측기로 부활 ---------- */
   const later = (fn, ms) => { const id = setTimeout(fn, ms); tmr.push(id); return id; };
   function setLost(v) {      // 잡음·글리치의 세기(0~1)를 CSS 로 알린다
     v = Math.round(v * 50) / 50; if (v === lostLv) return; lostLv = v;
@@ -8253,10 +8253,12 @@ const Obs = (() => {
   function endWarnUi() { warnEl.classList.remove('on'); warnEl.setAttribute('aria-hidden', 'true'); scr.classList.remove('warn'); }
   function cancelWarn() { ph = 'ok'; endWarnUi(); toast('접근 신호를 다시 잡았습니다'); SND.tone(880, .12, 'sine', .04); SND.tone(1320, .18, 'sine', .035, .1); }
   function tickWarn(dt) {
-    warnT += dt / 1000; const rem = Math.max(0, WARN_SEC - warnT);
+    // 가장자리에서 멀어질수록 카운트다운이 점점 빨라진다: 경계(trig)에서는 1배, 가장 먼 곳(maxov)에서는 7배
+    const fr = clamp((overshoot() - G.trig) / Math.max(1, G.maxov - G.trig), 0, 1), rate = 1 + 6 * fr * fr; warnRate = rate;
+    warnT += dt / 1000 * rate; const rem = Math.max(0, WARN_SEC - warnT);
     wCnt.textContent = rem.toFixed(1); wBar.style.transform = 'scaleX(' + (rem / WARN_SEC).toFixed(3) + ')';
     const sec = Math.floor(warnT);
-    if (sec !== lastBeep) { lastBeep = sec; SND.tone(sec >= 3 ? 1100 : 780, .14, 'square', .045); if (sec >= 3) SND.tone(1100, .14, 'square', .04, .22); }
+    if (sec !== lastBeep) { lastBeep = sec; const late = sec >= WARN_SEC - 5; SND.tone(late ? 1100 : 780, .14, 'square', .045); if (late) SND.tone(1100, .14, 'square', .04, .22); }
     if (warnT >= WARN_SEC) cutOff();
   }
   function cutOff() {      // 연결이 끊기는 연출(잡음 → 위아래에서 닫히는 화면 → 한 줄 빛) + 동시에 팝업
