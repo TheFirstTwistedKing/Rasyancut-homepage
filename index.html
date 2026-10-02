@@ -56,8 +56,6 @@ svg{display:block}
 @keyframes flick{0%,100%{opacity:1}91%{opacity:1}92%{opacity:.86}93%{opacity:1}96%{opacity:.93}97%{opacity:1}}
 .flick{animation:flick 7s steps(1) infinite}
 :root[data-scr="observ"] #fx .grain{animation:none}
-/* 폰: 1px 간격의 주사선은 화면 배율이 소수일 때 물결무늬(모아레)로 깨져 보이므로 끄고, 입자는 정지시킨다 */
-@media (max-width:900px),(pointer:coarse){#fx .scan{display:none}#fx .grain{animation:none}}
 :root[data-fx="off"] #fx .scan,:root[data-fx="off"] #fx .beam,:root[data-fx="off"] #fx .grain{display:none}
 :root[data-fx="off"] .flick{animation:none}
 
