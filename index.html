@@ -8985,57 +8985,77 @@ const Game = (() => {
     objs.sort((a, b) => a.base - b.base);
   }
 
-  /* ---------- 플레이어: 초록·하양 중국 전통 의복을 입고 언월도를 든 남성(픽셀 스프라이트) ---------- */
-  const SK = '#f2c9a1', SKD = '#d9a577', HR = '#17120f', GR = '#2f8a5b', GRD = '#1f6642', WT = '#f4f3ee', WTD = '#cfcdc5', GD = '#e0b84a', BT = '#1a1a1a', PL = '#6e4a28', PLD = '#4a3018', BL = '#dfe6ec', BLD = '#8f9ba5', TASS = '#36a86e';
+  /* ---------- 플레이어: 훤칠한 키에 긴 코트 같은 중국 전통 장포(초록 · 하양), 흐트러진 머리, 언월도를 낮게 든 남성 ---------- */
+  const SK = '#e8c4a4', SKD = '#c9a283', HR = '#1a1c21', HRL = '#343a44', CG = '#3f6355', CGD = '#2b463b', CGL = '#58806f', WT = '#eeede6', WTD = '#bdbbb2', IN = '#14151a', INL = '#262830', PT = '#191a1f', BT = '#0e0f13', GD = '#d9b44a', PL = '#6e4a28', PLD = '#4a3018', BL = '#dfe6ec', BLD = '#8f9ba5', TASS = '#36a86e';
   const SPR = {};
+  const CW = 44, CH = 54;
   function drawChar(g, dir, f) {
     const px = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
-    const bob = f === 1 || f === 3 ? -1 : 0, lf = f === 1 ? 1 : 0, rf = f === 3 ? 1 : 0;
-    const blade = (x, out) => {   // 언월도 날: 폭이 넓은 초승달 모양(바깥쪽으로 휘어짐) + 창끝 + 금 마디 + 녹색 술
-      const R2 = (dy, d0, w, c) => { const x0 = out > 0 ? x + 1 + d0 : x - d0 - w + 1 + 1; px(x0, dy, w, 1, c); };
-      R2(0, -0, 2, BL); R2(1, 0, 2, BL);
-      R2(2, 0, 5, BL); R2(3, 0, 7, BL); R2(4, 1, 7, BL); R2(5, 2, 6, BL); R2(6, 3, 5, BL); R2(7, 3, 4, BL); R2(8, 4, 2, BL);
-      px(x, 2, 2, 8, BLD); R2(3, 7, 1, '#fff'); R2(4, 7, 1, '#fff'); R2(5, 7, 1, '#fff'); R2(2, 4, 1, '#fff');
-      px(x, 10, 2, 1, GD); px(x, 11, 2, 4, TASS); px(x + 1, 15, 1, 2, TASS);
+    const bob = f === 1 || f === 3 ? -1 : 0, lf = f === 1 ? 1 : 0, rf = f === 3 ? 1 : 0, sw = f === 1 ? 1 : f === 3 ? -1 : 0;
+    const blade = (x, out) => {   // 언월도 날(넓은 초승달) + 금 마디 + 녹색 술
+      const R2 = (dy, d0, w, c) => { const x0 = out > 0 ? x + 2 + d0 : x - d0 - w + 2; px(x0, dy, w, 1, c); };
+      R2(0, -1, 2, BL); R2(1, -1, 2, BL); R2(2, 0, 4, BL); R2(3, 0, 6, BL); R2(4, 0, 8, BL);
+      for (let y = 5; y <= 8; y++) R2(y, 0, 9, BL);
+      R2(9, 0, 8, BL); R2(10, 0, 7, BL); R2(11, 1, 6, BL); R2(12, 2, 5, BL); R2(13, 3, 3, BL);
+      px(x, 2, 2, 11, BLD); for (let y = 4; y <= 10; y++) R2(y, y < 9 ? 8 : 7, 1, '#fff'); R2(3, 5, 1, '#fff');
+      px(x, 14, 2, 2, GD); px(x, 16, 2, 5, TASS); px(x + (out > 0 ? 1 : 0), 21, 1, 3, TASS);
     };
     const pole = (x, y0, y1) => { px(x, y0, 2, y1 - y0, PL); px(x, y0, 1, y1 - y0, PLD); };
+    const coat = (y0, y1, x0, x1, flare) => { for (let y = y0; y <= y1; y++) { const e = y > 34 ? Math.min(flare, Math.floor((y - 34) / 5)) : 0; px(x0 - e, y, x1 - x0 + 1 + e * 2, 1, CG); px(x0 - e, y, 1, 1, CGD); px(x1 + e, y, 1, 1, CGD); } };
     if (dir === 'down') {
-      pole(3, 10, 36 + bob); blade(3, -1);
-      px(7, 6 + bob, 10, 3, HR); px(6, 7 + bob, 12, 3, HR); px(9, 3 + bob, 6, 3, HR); px(10, 1 + bob, 4, 3, HR); px(10, 4 + bob, 4, 1, TASS);     // 상투와 머리
-      px(7, 9 + bob, 10, 7, SK); px(7, 9 + bob, 1, 3, HR); px(16, 9 + bob, 1, 3, HR); px(9, 11 + bob, 2, 2, '#16110d'); px(13, 11 + bob, 2, 2, '#16110d'); px(9, 10 + bob, 2, 1, HR); px(13, 10 + bob, 2, 1, HR); px(11, 14 + bob, 2, 1, SKD); px(10, 13 + bob, 1, 1, '#d98a7a'); px(14, 13 + bob, 1, 1, '#d98a7a');
-      px(10, 16 + bob, 4, 2, SKD);
-      px(6, 18 + bob, 12, 12, GR); px(6, 18 + bob, 1, 12, GRD); px(17, 18 + bob, 1, 12, GRD);
-      px(8, 18 + bob, 2, 3, WT); px(9, 20 + bob, 2, 3, WT); px(10, 22 + bob, 2, 2, WT); px(14, 18 + bob, 2, 3, WT); px(13, 20 + bob, 2, 3, WT); px(12, 22 + bob, 1, 2, WT);   // 교령(깃)
-      px(6, 25 + bob, 12, 2, WT); px(6, 27 + bob, 12, 1, WTD); px(11, 25 + bob, 2, 2, GD);                                                      // 허리띠
-      px(4, 19 + bob, 3, 8, GR); px(17, 19 + bob, 3, 8, GR); px(3, 26 + bob, 4, 2, WT); px(17, 26 + bob, 4, 2, WT); px(3, 28 + bob, 3, 2, SK); px(18, 28 + bob, 3, 2, SK);   // 소매 · 손
-      px(7, 30, 4, 2, GR); px(13, 30, 4, 2, GR); px(7, 32, 10, 1, WT);
-      px(7 + lf, 32 + (lf ? -1 : 0), 4, 3, BT); px(13 - rf, 32 + (rf ? -1 : 0), 4, 3, BT); px(7 + lf, 34 + (lf ? -1 : 0), 5, 1, '#000'); px(12 - rf, 34 + (rf ? -1 : 0), 5, 1, '#000');
-      px(3, 28 + bob, 2, 2, SK);
+      pole(10, 24, 50 + bob); blade(10, -1);
+      px(17, 45, 4, 6, PT); px(23, 45, 4, 6, PT);
+      px(16 - lf, 50 - (lf ? 1 : 0), 6, 3, BT); px(22 + rf, 50 - (rf ? 1 : 0), 6, 3, BT);
+      coat(19 + bob, 46 + bob, 15, 29, 2); px(14, 46 + bob, 17, 1, WT); px(13 + sw, 47 + bob, 3, 1, CGD);
+      px(20, 24 + bob, 4, 23, IN); px(21, 24 + bob, 2, 23, INL);                                  // 앞이 열린 사이로 보이는 안감
+      px(19, 21 + bob, 1, 26, WT); px(24, 21 + bob, 1, 26, WT);                                    // 하얀 안깃 선
+      px(14, 19 + bob, 16, 3, CGL); px(13, 20 + bob, 2, 3, CG); px(29, 20 + bob, 2, 3, CG);       // 어깨
+      px(14, 22 + bob, 5, 12, CG); px(26, 22 + bob, 5, 12, CG); px(14, 22 + bob, 1, 12, CGD); px(30, 22 + bob, 1, 12, CGD);   // 소매
+      px(11, 22 + bob, 4, 14, CG); px(29, 22 + bob, 4, 14, CG); px(11, 35 + bob, 4, 1, WT); px(29, 35 + bob, 4, 1, WT);
+      px(11, 36 + bob, 4, 3, PT); px(29, 36 + bob, 4, 3, SK);                                      // 장갑 낀 손 / 맨손
+      px(16, 31 + bob, 13, 2, IN); px(21, 31 + bob, 3, 2, GD);                                     // 허리띠
+      px(18, 17 + bob, 8, 5, IN); px(18, 17 + bob, 8, 1, INL);                                     // 터틀넥
+      px(16, 19 + bob, 4, 5, CGL); px(24, 19 + bob, 4, 5, CGL); px(16, 19 + bob, 1, 5, WT); px(27, 19 + bob, 1, 5, WT);   // 칼라
+      px(18, 8 + bob, 9, 9, SK); px(25, 9 + bob, 2, 7, SKD);                                       // 얼굴
+      px(19, 4 + bob, 7, 2, HR); px(17, 5 + bob, 11, 4, HR); px(16, 8 + bob, 3, 6, HR); px(26, 8 + bob, 3, 8, HR); px(18, 8 + bob, 8, 1, HR); px(19, 9 + bob, 2, 1, HR); px(18, 2 + bob, 2, 3, HR); px(22, 2 + bob, 2, 3, HR); px(25, 3 + bob, 2, 2, HR); px(20, 5 + bob, 3, 1, HRL); px(17, 6 + bob, 4, 1, HRL);
+      px(19, 12 + bob, 2, 2, '#15161a'); px(24, 12 + bob, 2, 2, '#15161a'); px(19, 11 + bob, 3, 1, HR); px(24, 11 + bob, 3, 1, HR); px(19, 12 + bob, 1, 1, '#fff'); px(24, 12 + bob, 1, 1, '#fff'); px(21, 16 + bob, 3, 1, '#a9806a'); px(22, 14 + bob, 1, 1, SKD);
     } else if (dir === 'up') {
-      pole(20, 10, 36 + bob); blade(20, 1);
-      px(7, 4 + bob, 10, 12, HR); px(6, 6 + bob, 12, 8, HR); px(9, 2 + bob, 6, 3, HR); px(10, 0 + bob, 4, 3, HR); px(10, 4 + bob, 4, 1, TASS); px(8, 12 + bob, 8, 2, '#0d0a08');
-      px(10, 16 + bob, 4, 2, SKD);
-      px(6, 18 + bob, 12, 12, GR); px(6, 18 + bob, 1, 12, GRD); px(17, 18 + bob, 1, 12, GRD); px(10, 19 + bob, 4, 6, GRD); px(11, 19 + bob, 2, 6, '#2a7a50');
-      px(6, 25 + bob, 12, 2, WT); px(6, 27 + bob, 12, 1, WTD); px(10, 25 + bob, 4, 2, WTD);
-      px(4, 19 + bob, 3, 8, GR); px(17, 19 + bob, 3, 8, GR); px(3, 26 + bob, 4, 2, WT); px(17, 26 + bob, 4, 2, WT); px(3, 28 + bob, 3, 2, SK); px(18, 28 + bob, 3, 2, SK);
-      px(7, 30, 4, 2, GR); px(13, 30, 4, 2, GR); px(7, 32, 10, 1, WT);
-      px(7 + lf, 32 + (lf ? -1 : 0), 4, 3, BT); px(13 - rf, 32 + (rf ? -1 : 0), 4, 3, BT);
-      px(18, 28 + bob, 3, 2, SK);
-    } else {   // left (오른쪽은 좌우 반전)
-      pole(4, 10, 36 + bob); blade(4, -1);
-      px(8, 6 + bob, 9, 3, HR); px(8, 7 + bob, 10, 7, HR); px(10, 3 + bob, 6, 3, HR); px(11, 1 + bob, 4, 3, HR); px(11, 4 + bob, 4, 1, TASS);
-      px(8, 9 + bob, 7, 7, SK); px(8, 11 + bob, 2, 2, '#16110d'); px(8, 10 + bob, 2, 1, HR); px(8, 14 + bob, 2, 1, SKD); px(14, 9 + bob, 2, 5, HR);
-      px(10, 16 + bob, 4, 2, SKD);
-      px(8, 18 + bob, 9, 12, GR); px(16, 18 + bob, 1, 12, GRD); px(8, 18 + bob, 2, 12, WT); px(10, 18 + bob, 1, 12, WTD);
-      px(8, 25 + bob, 9, 2, WT); px(8, 27 + bob, 9, 1, WTD); px(9, 25 + bob, 2, 2, GD);
-      px(6, 19 + bob, 5, 8, GR); px(6, 26 + bob, 5, 2, WT); px(5, 28 + bob, 3, 2, SK);
-      px(9, 30, 7, 2, GR); px(9, 32, 7, 1, WT);
-      px(8 + lf, 32 + (lf ? -1 : 0), 4, 3, BT); px(12 - rf, 32 + (rf ? -1 : 0), 5, 3, BT); px(8 + lf, 34 + (lf ? -1 : 0), 5, 1, '#000');
+      pole(34, 24, 50 + bob); blade(34, 1);
+      px(17, 45, 4, 6, PT); px(23, 45, 4, 6, PT);
+      px(16 - lf, 50 - (lf ? 1 : 0), 6, 3, BT); px(22 + rf, 50 - (rf ? 1 : 0), 6, 3, BT);
+      coat(17 + bob, 46 + bob, 15, 29, 2); px(14, 46 + bob, 17, 1, WT); px(29 + sw, 47 + bob, 3, 1, CGD);
+      px(21, 24 + bob, 2, 23, CGD); px(15, 24 + bob, 15, 2, CGD); px(15, 26 + bob, 15, 1, CGL);    // 등 중앙 솔기 · 어깨 요크
+      px(16, 31 + bob, 13, 2, IN); px(21, 31 + bob, 3, 2, CGD);
+      px(14, 18 + bob, 16, 3, CGL); px(11, 20 + bob, 4, 16, CG); px(29, 20 + bob, 4, 16, CG); px(11, 35 + bob, 4, 1, WT); px(29, 35 + bob, 4, 1, WT); px(11, 36 + bob, 4, 3, SK); px(29, 36 + bob, 4, 3, PT);
+      px(17, 14 + bob, 10, 5, CGL); px(17, 14 + bob, 10, 1, WT);                                    // 세운 칼라
+      px(17, 3 + bob, 11, 12, HR); px(16, 6 + bob, 13, 8, HR); px(18, 2 + bob, 2, 2, HR); px(22, 1 + bob, 2, 3, HR); px(25, 2 + bob, 2, 2, HR); px(19, 5 + bob, 7, 1, HRL); px(20, 9 + bob, 5, 1, HRL); px(18, 13 + bob, 9, 2, '#0e0f12');
+    } else {      // 왼쪽 옆모습 (오른쪽은 반전)
+      pole(10, 24, 50 + bob); blade(10, -1);
+      px(18, 45, 4, 6, PT); px(23, 45, 4, 6, PT);
+      px(16 + lf * 2, 50 - (lf ? 1 : 0), 7, 3, BT); px(22 - rf * 2, 50 - (rf ? 1 : 0), 7, 3, BT);
+      coat(19 + bob, 46 + bob, 17, 29, 1); px(17, 46 + bob, 14, 1, WT); px(27 + sw, 47 + bob, 4, 1, CGD); px(29 + sw, 40 + bob, 3, 6, CG);
+      px(16, 21 + bob, 1, 25, WT); px(17, 21 + bob, 2, 25, IN);
+      px(17, 19 + bob, 12, 3, CGL); px(16, 31 + bob, 13, 2, IN); px(20, 31 + bob, 3, 2, GD);
+      px(13, 21 + bob, 6, 13, CG); px(13, 21 + bob, 1, 13, CGD); px(12, 34 + bob, 6, 1, WT); px(12, 35 + bob, 5, 3, PT);   // 앞으로 뻗은 팔과 장갑
+      px(18, 16 + bob, 6, 5, IN); px(17, 18 + bob, 3, 4, CGL); px(17, 18 + bob, 1, 4, WT);
+      px(17, 8 + bob, 7, 9, SK); px(16, 11 + bob, 1, 2, SK); px(17, 13 + bob, 2, 1, SKD); px(17, 15 + bob, 3, 1, '#a9806a');
+      px(21, 4 + bob, 9, 11, HR); px(18, 3 + bob, 9, 3, HR); px(17, 5 + bob, 3, 4, HR); px(23, 2 + bob, 2, 3, HR); px(27, 3 + bob, 2, 3, HR); px(20, 2 + bob, 2, 2, HR); px(24, 6 + bob, 4, 1, HRL);
+      px(18, 11 + bob, 2, 2, '#15161a'); px(18, 10 + bob, 3, 1, HR);
     }
   }
+  const outline = c => {        // 윤곽선: 테두리를 어두운 선으로 둘러 작은 그림에서도 형태가 또렷하게
+    const w = c.width, h = c.height, src = c.getContext('2d').getImageData(0, 0, w, h), d = src.data, o = mk(w, h, () => {}), og = o.getContext('2d'), out = og.createImageData(w, h), od = out.data;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      if (d[i + 3] > 40) { od[i] = d[i]; od[i + 1] = d[i + 1]; od[i + 2] = d[i + 2]; od[i + 3] = 255; continue; }
+      let edge = false; for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy; if (nx >= 0 && ny >= 0 && nx < w && ny < h && d[(ny * w + nx) * 4 + 3] > 40) { edge = true; break; } }
+      if (edge) { od[i] = 8; od[i + 1] = 9; od[i + 2] = 12; od[i + 3] = 235; }
+    }
+    og.putImageData(out, 0, 0); return o;
+  };
   function buildSprites() {
-    ['down', 'up', 'left'].forEach(d => { SPR[d] = [0, 1, 2, 3].map(f => mk(38, 36, g => { g.translate(8, 0); drawChar(g, d, f); })); });
-    SPR.right = SPR.left.map(c => mk(38, 36, g => { g.translate(38, 0); g.scale(-1, 1); g.drawImage(c, 0, 0); }));
+    ['down', 'up', 'left'].forEach(d => { SPR[d] = [0, 1, 2, 3].map(f => outline(mk(CW, CH, g => drawChar(g, d, f)))); });
+    SPR.right = SPR.left.map(c => mk(CW, CH, g => { g.translate(CW, 0); g.scale(-1, 1); g.drawImage(c, 0, 0); }));
   }
 
   /* ---------- 메시지 창 · 선택지 ---------- */
@@ -9115,10 +9135,10 @@ const Game = (() => {
     if (P.moving) {
       if (l > 1) { dx /= l; dy /= l; }
       if (Math.abs(dx) > Math.abs(dy)) P.dir = dx > 0 ? 'right' : 'left'; else P.dir = dy > 0 ? 'down' : 'up';
-      const sp = (keys.has('run') ? 150 : 92) * dt;
+      const sp = (keys.has('run') ? 250 : 150) * dt;
       let nx = P.x + dx * sp, ny = P.y + dy * sp;
       if (!hitAt(nx, P.y)) P.x = nx; if (!hitAt(P.x, ny)) P.y = ny;
-      P.t += dt * (keys.has('run') ? 1.5 : 1); P.step += dt; if (P.step > (keys.has('run') ? .2 : .3)) { P.step = 0; SND.step(); }
+      P.t += dt * (keys.has('run') ? 1.5 : 1); P.step += dt; if (P.step > (keys.has('run') ? .16 : .24)) { P.step = 0; SND.step(); }
     } else P.t = 0;
   }
   /* ---------- 그리기 ---------- */
@@ -9135,8 +9155,8 @@ const Game = (() => {
     ctx.setTransform(s, 0, 0, s, -Math.round(camX * s), -Math.round(camY * s));
     ctx.drawImage(floorC, 0, 0);
     const list = objs.filter(o => o.spr).map(o => ({ b: o.base, f: () => ctx.drawImage(o.spr, o.px - (o.x - o.sx) * T * 0 + (o.ox - o.px), o.py + (o.oy - o.py)) }));
-    const fi = P.moving ? [0, 1, 0, 3][Math.floor(P.t / .14) % 4] : 0;
-    list.push({ b: P.y, f: () => { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(P.x, P.y - 2, 13, 5, 0, 0, 7); ctx.fill(); ctx.drawImage(SPR[P.dir][fi], Math.round(P.x - (P.dir === 'right' ? 28 : 40)), Math.round(P.y - 70), 76, 72); } });
+    const fi = P.moving ? [0, 1, 0, 3][Math.floor(P.t / .12) % 4] : 0;
+    list.push({ b: P.y, f: () => { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(P.x, P.y - 1, 12, 4, 0, 0, 7); ctx.fill(); ctx.drawImage(SPR[P.dir][fi], Math.round(P.x - CW / 2), Math.round(P.y - 51)); } });
     list.sort((a, b) => a.b - b.b).forEach(o => o.f());
     // 불빛 · 비네트
     ctx.globalCompositeOperation = 'lighter';
