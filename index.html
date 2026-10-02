@@ -658,14 +658,14 @@ a.card:hover .nico{transform:scale(1.08) rotate(-4deg);filter:drop-shadow(0 0 14
 #drawer .boostbtn{position:relative;width:100%;display:flex;align-items:center;gap:14px;padding:13px 16px;text-align:left;color:var(--lemon);
   border:1px solid var(--gold);background:repeating-linear-gradient(135deg,rgba(255,217,61,.09) 0 9px,transparent 9px 18px),rgba(10,10,10,.65);
   opacity:0;translate:0 22px;transition:box-shadow .25s,border-color .25s,background .25s}
-#drawer.open .boostbtn{animation:rise .6s var(--ease) both;animation-delay:calc(9*55ms + 180ms)}
+#drawer.open .boostbtn{animation:rise .6s var(--ease) both;animation-delay:calc(10*55ms + 180ms)}
 #drawer .boostbtn::before{content:"";position:absolute;left:-1px;top:-1px;bottom:-1px;width:5px;background:repeating-linear-gradient(180deg,var(--yellow) 0 6px,#0a0a0a 6px 12px)}
 #drawer .boostbtn .ic{width:30px;height:30px;flex:none;color:var(--yellow);filter:drop-shadow(0 0 6px rgba(255,217,61,.7))}
 #drawer .boostbtn span{display:block;min-width:0}
 #drawer .boostbtn b{display:block;font-size:17px;font-weight:800;letter-spacing:.06em;color:var(--lemon);line-height:1.3}
 #drawer .boostbtn small{display:block;font-family:var(--f-mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-top:2px}
 #drawer .boostbtn:hover,#drawer .boostbtn:focus-visible{border-color:var(--yellow);box-shadow:0 0 28px rgba(255,217,61,.28),inset 0 0 24px rgba(255,217,61,.08)}
-#drawer .boostbtn:not(.locked){animation-name:rise,bstGlow;animation-duration:.6s,2.6s;animation-delay:calc(9*55ms + 180ms),1.2s;animation-iteration-count:1,infinite;animation-fill-mode:both,none;animation-timing-function:var(--ease),ease-in-out}
+#drawer .boostbtn:not(.locked){animation-name:rise,bstGlow;animation-duration:.6s,2.6s;animation-delay:calc(10*55ms + 180ms),1.2s;animation-iteration-count:1,infinite;animation-fill-mode:both,none;animation-timing-function:var(--ease),ease-in-out}
 @keyframes bstGlow{0%,100%{box-shadow:0 0 0 rgba(255,217,61,0)}50%{box-shadow:0 0 22px rgba(255,217,61,.3)}}
 /* 해금 후: 같은 자리에 잠긴 '코드 번역' */
 #drawer .boostbtn.locked{border-style:dashed;border-color:var(--line);background:rgba(10,10,10,.5);cursor:not-allowed}
@@ -936,7 +936,7 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
 #drawer .boostbtn.reset .ic{color:var(--pale);filter:drop-shadow(0 0 6px rgba(233,216,166,.5))}
 #drawer .boostbtn.reset b{color:var(--pale);font-weight:800}
 #drawer .boostbtn.reset:hover,#drawer .boostbtn.reset:focus-visible{border-color:var(--lemon);box-shadow:0 0 24px rgba(255,243,166,.22),inset 0 0 22px rgba(255,217,61,.07)}
-#drawer.open .boostbtn.reset{animation:rise .6s var(--ease) both;animation-delay:calc(9*55ms + 120ms)}
+#drawer.open .boostbtn.reset{animation:rise .6s var(--ease) both;animation-delay:calc(10*55ms + 120ms)}
 
 /* ==========================================================================
    코드 번역 화면
@@ -1007,7 +1007,7 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
 #drawer .boostbtn.decode .ic{color:var(--yellow);filter:drop-shadow(0 0 6px rgba(255,217,61,.65))}
 #drawer .boostbtn.decode b{color:var(--lemon);font-weight:800}
 #drawer .boostbtn.decode:hover,#drawer .boostbtn.decode:focus-visible{box-shadow:0 0 26px rgba(255,217,61,.3),inset 0 0 22px rgba(255,217,61,.08)}
-#drawer.open .boostbtn.decode{animation:rise .6s var(--ease) both;animation-delay:calc(9*55ms + 180ms)}
+#drawer.open .boostbtn.decode{animation:rise .6s var(--ease) both;animation-delay:calc(10*55ms + 180ms)}
 
 /* ==========================================================================
    관측소 (메인에서 오른쪽으로 넘기면 나오는 화면, 드래그로 둘러보는 지도) + 메인의 '옆으로 넘기기' 표시
@@ -1410,6 +1410,100 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
 @keyframes obFlag{0%,100%{transform:scaleX(1) skewY(0)}50%{transform:scaleX(.78) skewY(7deg)}}
 :root.rm .ob-flag{animation:none}
 
+
+/* ==========================================================================
+   사령관 통신 (메인에서 왼쪽으로 넘기면 나오는 화면) + 메인 왼쪽 가장자리 '옆으로 넘기기' 표시
+   ========================================================================== */
+.sidehint.l{right:auto;left:0;padding:0 12px 0 9px;border-right:0;border-left:2px solid rgba(255,217,61,.35);
+  background:linear-gradient(90deg,rgba(255,217,61,.07),transparent)}
+.sidehint.l:hover{background:linear-gradient(90deg,rgba(255,217,61,.2),transparent)}
+.sidehint.l .ic{transform:none;animation-name:cmdNudge}
+@keyframes cmdNudge{0%,100%{translate:0 0}50%{translate:-5px 0}}
+
+#s-cmd{background:radial-gradient(70% 55% at 72% 24%,rgba(255,217,61,.07),transparent 70%),radial-gradient(50% 50% at 8% 90%,rgba(201,169,76,.08),transparent 70%),#050504}
+#s-cmd .cmd-wrap{position:absolute;inset:0;display:grid;grid-template-columns:clamp(230px,23vw,320px) minmax(0,1fr);gap:clamp(14px,2vw,28px);padding:clamp(70px,10vh,92px) clamp(16px,3vw,46px) clamp(16px,3vh,32px)}
+.cmd-roster{position:relative;display:flex;flex-direction:column;min-height:0;border:1px solid var(--line);background:linear-gradient(180deg,rgba(233,216,166,.05),rgba(10,10,10,.78));padding:12px}
+.cmd-rh{flex:none;font-size:11px;color:var(--gold);padding:4px 6px 12px;border-bottom:1px solid var(--line-2);margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.cmd-rh .ic{width:20px;height:20px;flex:none;color:var(--yellow)}
+.cmd-list{display:flex;flex-direction:column;gap:7px;overflow-y:auto;min-height:0;scrollbar-width:thin;scrollbar-color:rgba(201,169,76,.4) transparent}
+.cmd-it{display:grid;grid-template-columns:34px minmax(0,1fr);gap:11px;align-items:center;text-align:left;padding:9px 10px;border:1px solid var(--line-2);border-left:3px solid var(--line);color:var(--pale);background:rgba(10,10,10,.45);transition:color .2s,border-color .2s,background .2s,box-shadow .25s,transform .25s var(--ease);flex:none}
+.cmd-it .ci{width:34px;height:34px;color:var(--pale)}
+.cmd-it b{display:block;font-weight:700;font-size:15px;line-height:1.25;color:var(--white);word-break:keep-all}
+.cmd-it small{display:block;font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;color:rgba(233,216,166,.62);margin-top:3px;line-height:1.35;word-break:break-word}
+.cmd-it:hover{border-color:var(--gold);border-left-color:var(--yellow);transform:translateX(3px);background:rgba(255,217,61,.06)}
+.cmd-it[aria-selected="true"]{border-color:var(--yellow);border-left-color:var(--yellow);background:rgba(255,217,61,.11);box-shadow:0 0 26px rgba(255,217,61,.14),inset 0 0 24px rgba(255,217,61,.05)}
+.cmd-it[aria-selected="true"] .ci{color:var(--yellow);filter:drop-shadow(0 0 6px rgba(255,217,61,.6))}
+
+.cmd-chat{position:relative;display:flex;flex-direction:column;min-height:0;border:1px solid var(--gold);background:linear-gradient(180deg,rgba(24,20,10,.86),rgba(8,8,8,.93));outline:1px solid rgba(233,216,166,.14);outline-offset:6px;box-shadow:inset 0 0 70px rgba(255,217,61,.05),0 24px 70px rgba(0,0,0,.55)}
+.cmd-head{flex:none;display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid var(--line)}
+.cmd-hic{width:42px;height:42px;flex:none;color:var(--yellow);filter:drop-shadow(0 0 8px rgba(255,217,61,.5))}
+.cmd-hn{min-width:0;display:flex;flex-direction:column;gap:2px}
+.cmd-hn b{font-size:clamp(19px,1.9vw,26px);font-weight:800;letter-spacing:.05em;line-height:1.2;word-break:keep-all}
+.cmd-hn .mono{font-size:10px;color:rgba(233,216,166,.62)}
+.cmd-hn .ko{font-size:12px;color:var(--pale)}
+.cmd-hn .tone{color:var(--lemon)}
+.cmd-sig{margin-left:auto;display:flex;align-items:flex-end;gap:3px;height:20px;flex:none}
+.cmd-sig i{width:4px;background:var(--yellow);box-shadow:0 0 8px rgba(255,217,61,.7);animation:cmdsig 1.6s ease-in-out infinite;animation-delay:calc(var(--k)*.18s)}
+.cmd-sig i:nth-child(1){height:6px}.cmd-sig i:nth-child(2){height:10px}.cmd-sig i:nth-child(3){height:14px}.cmd-sig i:nth-child(4){height:19px}
+@keyframes cmdsig{0%,100%{opacity:1}50%{opacity:.35}}
+.cmd-scan{position:absolute;left:0;right:0;top:0;height:2px;background:var(--lemon);box-shadow:0 0 16px var(--yellow);opacity:0;pointer-events:none;z-index:3}
+.cmd-chat.sw .cmd-scan{animation:cmdscan calc(.7s*min(var(--ts,1),2)) linear}
+.cmd-chat.sw .cmd-log{animation:cmdreveal calc(.7s*min(var(--ts,1),2)) linear}
+@keyframes cmdscan{from{top:0;opacity:1}to{top:100%;opacity:.2}}
+@keyframes cmdreveal{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0)}}
+
+.cmd-log{flex:1;min-height:0;overflow-y:auto;padding:18px clamp(14px,2vw,28px);scrollbar-width:thin;scrollbar-color:rgba(201,169,76,.4) transparent}
+.cmd-lg{display:none;flex-direction:column;gap:14px;min-height:100%;justify-content:flex-end}
+.cmd-lg.on{display:flex}
+.cmd-msg{max-width:min(80%,660px);display:flex;flex-direction:column;gap:4px;animation:rise min(.7s,calc(.3s*var(--ts,1))) var(--ease-soft) both}
+.cmd-msg .by{font-family:var(--f-mono);font-size:10px;letter-spacing:.16em;color:var(--gold)}
+.cmd-msg .tx{position:relative;padding:11px 17px;line-height:1.85;font-size:clamp(15px,1.3vw,19px);word-break:keep-all;overflow-wrap:break-word;border:1px solid var(--line);background:rgba(233,216,166,.05);border-radius:0 14px 14px 14px;color:var(--white)}
+.cmd-msg.cm{align-items:flex-start}
+.cmd-msg.cm .tx{border-left:2px solid var(--yellow)}
+.cmd-msg.me{align-self:flex-end;align-items:flex-end}
+.cmd-msg.me .by{color:rgba(233,216,166,.7)}
+.cmd-msg.me .tx{background:rgba(255,217,61,.1);border-color:rgba(255,217,61,.45);border-radius:14px 0 14px 14px;color:var(--lemon)}
+.cmd-sys{align-self:center;display:flex;align-items:center;gap:12px;width:min(100%,520px);font-family:var(--f-mono);font-size:11px;letter-spacing:.2em;color:rgba(233,216,166,.62);animation:rise min(.7s,calc(.3s*var(--ts,1))) var(--ease-soft) both}
+.cmd-sys::before,.cmd-sys::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--gold))}
+.cmd-sys::after{background:linear-gradient(270deg,transparent,var(--gold))}
+.cmd-dots{display:inline-flex;gap:7px;padding:6px 2px}
+.cmd-dots i{width:6px;height:6px;rotate:45deg;background:var(--yellow);box-shadow:0 0 8px rgba(255,217,61,.8);animation:cmddot 1s ease-in-out infinite;animation-delay:calc(var(--k)*.16s)}
+@keyframes cmddot{0%,100%{opacity:.25;translate:0 0}50%{opacity:1;translate:0 -4px}}
+.cmd-empty{align-self:center;text-align:center;color:rgba(233,216,166,.6);font-size:14px;line-height:1.9;padding:30px 10px}
+
+.cmd-dock{flex:none;border-top:1px solid var(--line);padding:10px clamp(12px,1.6vw,22px) 14px;display:flex;flex-direction:column;gap:10px;height:min(44%,360px);min-height:0}
+.cmd-tabs{flex:none;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.cmd-tabs::-webkit-scrollbar{display:none}
+.cmd-tab{flex:none;padding:7px 14px;font-size:14px;border:1px solid var(--line);color:rgba(233,216,166,.78);white-space:nowrap;transition:background .2s,color .2s,border-color .2s}
+.cmd-tab+.cmd-tab{margin-left:0}
+.cmd-tab:hover{color:var(--yellow);border-color:var(--gold)}
+.cmd-tab[aria-selected="true"]{background:rgba(255,217,61,.16);color:var(--lemon);border-color:var(--yellow);box-shadow:inset 0 -2px 0 var(--yellow)}
+.cmd-tab.rnd{margin-left:auto;border-style:dashed;color:var(--lemon);display:flex;align-items:center;gap:8px}
+.cmd-tab.rnd:hover{background:rgba(255,217,61,.12)}
+.cmd-qs{flex:1;min-height:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));gap:7px;overflow-y:auto;align-content:start;scrollbar-width:thin;scrollbar-color:rgba(201,169,76,.4) transparent;padding-right:4px}
+.cmd-q{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;padding:9px 12px;border:1px solid var(--line-2);background:rgba(233,216,166,.035);color:var(--pale);font-size:14px;line-height:1.5;transition:border-color .2s,background .2s,color .2s,transform .25s var(--ease)}
+.cmd-q:hover,.cmd-q:focus-visible{border-color:var(--yellow);background:rgba(255,217,61,.09);color:var(--lemon);transform:translateY(-2px)}
+.cmd-q .pips{display:flex;gap:4px;flex:none}
+.cmd-q .pips i{width:6px;height:6px;rotate:45deg;border:1px solid rgba(233,216,166,.45)}
+.cmd-q .pips i.on{background:var(--yellow);border-color:var(--yellow);box-shadow:0 0 6px rgba(255,217,61,.7)}
+.cmd-hint{flex:none;font-size:11px;color:rgba(233,216,166,.5)}
+
+@media (max-width:900px){
+  #s-cmd .cmd-wrap{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:12px;padding:70px 12px 12px}
+  .cmd-roster{padding:8px}
+  .cmd-rh{display:none}
+  .cmd-list{flex-direction:row;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+  .cmd-list::-webkit-scrollbar{display:none}
+  .cmd-it{min-width:178px;grid-template-columns:28px minmax(0,1fr);padding:7px 9px}
+  .cmd-it .ci{width:28px;height:28px}
+  .cmd-it b{font-size:13px}
+  .cmd-it small{display:none}
+  .cmd-head{padding:9px 14px}
+  .cmd-hic{width:34px;height:34px}
+  .cmd-msg{max-width:92%}
+  .cmd-dock{height:min(48%,330px)}
+  .cmd-hint{display:none}
+}
 </style>
 <div id="app">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -1487,6 +1581,33 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
     <div class="status mono" data-a data-write="22">Rasyancut archive // <b>online</b><br><span class="ko">수록 소설 <b id="statN">0</b></span></div>
 
     <button class="sidehint" type="button" data-a data-go="observ" aria-label="옆으로 넘기기 — 관측소로 이동"><span data-ic="back" style="display:contents"></span><span class="t mono">OBSERVATORY</span></button>
+    <button class="sidehint l" type="button" data-a data-go="cmd" aria-label="옆으로 넘기기 — 사령관 통신으로 이동"><span data-ic="back" style="display:contents"></span><span class="t mono">COMMAND LINK</span></button>
+  </section>
+
+  <!-- ============ 사령관 통신 (메인에서 왼쪽) ============ -->
+  <section class="screen" id="s-cmd" aria-label="사령관 통신">
+    <button class="backbtn tl" type="button" data-back data-a aria-label="뒤로 (Backspace)"><span data-ic="back" style="display:contents"></span><span data-write="45">Backspace</span></button>
+    <div class="snd-tr" data-a data-snd-mount></div>
+    <div class="cmd-wrap">
+      <aside class="cmd-roster brk" data-a aria-label="사령관 목록">
+        <div class="cmd-rh mono"><span data-ic="comm" style="display:contents"></span><span data-write="36">Command Link</span></div>
+        <div class="cmd-list" id="cmdList" role="tablist" aria-label="사령관"></div>
+      </aside>
+      <section class="cmd-chat brk" data-a aria-label="통신 창">
+        <i class="cmd-scan" aria-hidden="true"></i>
+        <header class="cmd-head">
+          <span class="cmd-hic" id="cmdHic" aria-hidden="true"></span>
+          <div class="cmd-hn"><b class="gild" id="cmdName"></b><span class="mono" id="cmdEn"></span><span class="ko" id="cmdDept"></span></div>
+          <div class="cmd-sig" aria-hidden="true"><i style="--k:0"></i><i style="--k:1"></i><i style="--k:2"></i><i style="--k:3"></i></div>
+        </header>
+        <div class="cmd-log" id="cmdLog" aria-live="polite"></div>
+        <div class="cmd-dock">
+          <div class="cmd-tabs" id="cmdTabs" role="tablist" aria-label="대화 주제"></div>
+          <div class="cmd-qs" id="cmdQs"></div>
+          <div class="cmd-hint ko">질문마다 답변이 5가지씩 있고, 같은 질문을 반복하면 아직 못 들은 답변부터 나옵니다. 마름모가 채워진 만큼 들은 답변입니다.</div>
+        </div>
+      </section>
+    </div>
   </section>
 
   <!-- ============ LORE (소설창) ============ -->
@@ -1809,6 +1930,15 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
   </div>
 </div>
 
+<!-- 사령관 통신 대화 데이터 (data/cmd/<id>.js) -->
+<script src="data/cmd/kanehira.js"></script>
+<script src="data/cmd/avyssion.js"></script>
+<script src="data/cmd/shen.js"></script>
+<script src="data/cmd/memory.js"></script>
+<script src="data/cmd/lucien.js"></script>
+<script src="data/cmd/caeluna.js"></script>
+<script src="data/cmd/solaria.js"></script>
+<script src="data/cmd/overseer.js"></script>
 <script>
 (() => {
 'use strict';
@@ -1828,6 +1958,18 @@ const CONFIG = {
   // 서사별 수록 소설. 소설 사이트가 생기면 { label: '표시 이름', href: '소설 주소' } 를 추가하세요.
   novels: { leviathan: [], nation: [{ label: '초성석', href: 'novels/chosungseok/index.html', icon: 'hole' }], human: [], org: [] },
   introButton: '접근하기',
+  // 사령관 통신(메인에서 왼쪽으로 넘기면 나오는 화면)의 사령관 목록. 대화 내용은 data/cmd/<id>.js 파일에 있습니다.
+  // sn = 관계 탭에서 쓰는 짧은 이름. tone = 성격 한 줄. icon = 위 IC 목록의 아이콘 이름.
+  commanders: [
+    { id: 'kanehira', ko: '카네히라 마사노리', sn: '카네히라', en: 'Kanehira Masanori', dept: 'Stage Management', deptKo: '장 등급제 관리국', tone: '깍듯한 원칙주의자', icon: 'ladder' },
+    { id: 'avyssion', ko: '아비시온 크리토스', sn: '아비시온', en: 'Avyssion Krytos', dept: 'R.S.S.', deptKo: '정보 관리국', tone: '차가운 분석가', icon: 'eye' },
+    { id: 'shen', ko: '선샤오펑', sn: '선샤오펑', en: 'Shěn Xiāofēng', dept: "Leviathan's Register", deptKo: '등록 관리국', tone: '정중하지만 소름 돋는 처리자', icon: 'seal' },
+    { id: 'memory', ko: '메모리 레크레아토르 - III', sn: '메모리 III', en: 'Memory Recreator - III', dept: 'Memorial Extraction', deptKo: '기억 에너지 관리국', tone: '기계적인 AI', icon: 'vial' },
+    { id: 'lucien', ko: '뤼시앙 에코브냉', sn: '뤼시앙', en: 'Lucien Échovenin', dept: "Sovereign's Hand", deptKo: '국제 명령/법 관리국', tone: '논리에 집착하는 법률가', icon: 'scales' },
+    { id: 'caeluna', ko: '카엘루나 게미니스', sn: '카엘루나', en: 'Caeluna Geminis', dept: 'Unbreakable Shield', deptKo: '보안 관리국 · 쌍둥이 자매(달 쪽)', tone: '수줍은 방패', icon: 'shieldmoon' },
+    { id: 'solaria', ko: '솔라리아 루브리나타', sn: '솔라리아', en: 'Solaria Rubrinata', dept: 'Unbreakable Shield', deptKo: '보안 관리국 · 쌍둥이 자매(태양 쪽)', tone: '장난꾸러기 말괄량이', icon: 'shieldsun' },
+    { id: 'overseer', ko: 'AI - Class IV : Overseer', sn: 'Overseer', en: 'Judgement Operation', dept: 'Judgement Operation', deptKo: '국제 전령 전달국', tone: '호기심 많은 AI', icon: 'plane' },
+  ],
   // 관측소(메인에서 오른쪽으로 넘기면 나오는 화면)의 원형 아이콘 5개. 왼쪽 → 오른쪽 순서이고, core: true 인 가운데 아이콘은 출력 상승 모드를 클리어해야 열립니다.
   // 아직 기능이 정해지지 않아 자리만 잡아 둔 상태입니다. name(이름) · info(내용, 문단은 \n) · icon(아이콘 모양) 을 채우면 그대로 반영됩니다.
   // info 를 비워 두면 "아직 기록된 정보가 없습니다"로 표시됩니다. icon 은 아래 IC 목록의 이름 중에서 고르세요.
@@ -1914,6 +2056,14 @@ const IC = {
   knot: '<path d="M3.5 7.5c3.2-3.4 5.6 3.6 8.5 0s5.4-3.4 8.5 0"/><path d="M3.5 16.5c3.2-3.4 5.6 3.6 8.5 0s5.4-3.4 8.5 0"/><path d="M12 7.5c-2.8 2.6 2.8 6.4 0 9"/>',
   shard: '<path d="M12 2.4l5.6 7.4-3.2 12-5.2-.1L6.4 10z"/><path d="M12 2.4l-1.2 8.4 5.8-1"/><path d="M10.8 10.8l-1.6 11"/>',
   spiral: '<path d="M12 12.4a1.4 1.4 0 1 1 2.8 0 3.6 3.6 0 1 1-7.2 0 5.8 5.8 0 1 1 11.6 0 8 8 0 0 1-8 8"/>',
+  comm: '<path d="M12 21V11.4"/><circle cx="12" cy="9.2" r="2"/><path d="M7.9 5.6a5.6 5.6 0 0 0 0 7.2"/><path d="M16.1 5.6a5.6 5.6 0 0 1 0 7.2"/><path d="M4.6 3a9.8 9.8 0 0 0 0 12.4"/><path d="M19.4 3a9.8 9.8 0 0 1 0 12.4"/><path d="M8 21h8"/>',
+  ladder: '<path d="M6 2.8v18.4"/><path d="M18 2.8v18.4"/><path d="M6 7h12"/><path d="M6 12h12"/><path d="M6 17h12"/>',
+  seal: '<path d="M5 3h10l4 4v14H5z"/><path d="M15 3v4h4"/><path d="M8.4 10.4h7"/><path d="M8.4 13.6h4"/><circle cx="14.4" cy="17.4" r="2"/>',
+  vial: '<path d="M9 3h6"/><path d="M10 3v6.2L5.4 18.2a2 2 0 0 0 1.8 2.9h9.6a2 2 0 0 0 1.8-2.9L14 9.2V3"/><path d="M7.6 15.4h8.8"/><circle cx="11" cy="18" r=".6"/>',
+  scales: '<path d="M12 3.4v17.2"/><path d="M6.4 21h11.2"/><path d="M4.4 7.2h15.2"/><path d="M4.4 7.2L2 14a3.2 3.2 0 0 0 4.8 0z"/><path d="M19.6 7.2L17.2 14a3.2 3.2 0 0 0 4.8 0z"/>',
+  shieldmoon: '<path d="M12 2.6l7.6 2.8v6.2c0 4.6-3.2 8.2-7.6 9.8-4.4-1.6-7.6-5.2-7.6-9.8V5.4z"/><path d="M14.6 8.8a3.8 3.8 0 1 0 0 6 4.6 4.6 0 0 1 0-6z"/>',
+  shieldsun: '<path d="M12 2.6l7.6 2.8v6.2c0 4.6-3.2 8.2-7.6 9.8-4.4-1.6-7.6-5.2-7.6-9.8V5.4z"/><circle cx="12" cy="11.8" r="2.3"/><path d="M12 6.8v1.4"/><path d="M12 15.4v1.4"/><path d="M7.2 11.8h1.4"/><path d="M15.4 11.8h1.4"/><path d="M8.6 8.4l1 1"/><path d="M14.4 14.2l1 1"/><path d="M15.4 8.4l-1 1"/><path d="M9.6 14.2l-1 1"/>',
+  plane: '<path d="M3 11.6L21 3.4l-6.4 17.2-3.4-7.6z"/><path d="M11.2 13L21 3.4"/>',
   spk: '<path d="M3.5 9.5v5h3.6l4.9 3.8V5.7L7.1 9.5z"/><path class="w1" d="M15.2 9.2a4 4 0 0 1 0 5.6"/><path class="w2" d="M17.9 6.6a7.6 7.6 0 0 1 0 10.8"/><path class="x" d="M16 9.5l5 5"/><path class="x" d="M21 9.5l-5 5"/>',
 };
 const ic = name => '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">' +
@@ -2279,7 +2429,7 @@ function startMainDialog() { const lines = visited ? [pick(RETURNING)] : GREETIN
 const screens = {}; $$('.screen').forEach(s => { screens[s.id.slice(2)] = s; });
 const META = {
   intro: { ko: '인트로', icon: 'sigil' }, main: { ko: '메인', icon: 'sigil' }, lore: { ko: '소설창', icon: 'book' }, lorelist: { ko: '서사', icon: 'book' },
-  face: { ko: '페이스리아와 오비투아리바', icon: 'face' }, world: { ko: '지도', icon: 'map' }, universe: { ko: '우주지도', icon: 'universe' }, codex: { ko: '세계관', icon: 'codex' }, settings: { ko: '설정', icon: 'wrench' }, observ: { ko: '관측소', icon: 'scope' },
+  face: { ko: '페이스리아와 오비투아리바', icon: 'face' }, world: { ko: '지도', icon: 'map' }, universe: { ko: '우주지도', icon: 'universe' }, codex: { ko: '세계관', icon: 'codex' }, settings: { ko: '설정', icon: 'wrench' }, observ: { ko: '관측소', icon: 'scope' }, cmd: { ko: '사령관 통신', icon: 'comm' },
 };
 const tx = $('#tx'), txName = $('#txName'), txIcon = $('#txIcon');
 let cur = null, curParams = {}, busy = false; const hist = [];
@@ -2375,6 +2525,7 @@ async function go(name, params = {}, opts = {}) {
   busy = true; closeDrawer();
   if (cur === 'boost' && name !== 'boost') Boost.onLeave();
   if (cur === 'observ' && name !== 'observ') Obs.onLeave();
+  if (cur === 'cmd' && name !== 'cmd') Cmd.onLeave();
   const from = cur ? screens[cur] : null, to = screens[name];
   const label = name === 'lorelist' ? loreOf(params.lore).name.replace('\n', ' ') : META[name].ko;
   if (cur && !opts.back && cur !== 'intro') hist.push({ name: cur, params: curParams });
@@ -2427,7 +2578,7 @@ window.RSC = { go, back, Rain, Write, Typer, SND };
 
 /* drawer (hamburger) */
 const drawer = $('#drawer'); let drawerOpen = false;
-const MENU_ITEMS = [['main', '메인 화면', 'sigil'], ['lore', '소설창', 'book'], ['codex', '세계관', 'codex'], ['face', '페이스리아와 오비투아리바', 'face'], ['world', '지도', 'map'], ['universe', '우주지도', 'universe'], ['observ', '관측소', 'scope'], ['settings', '설정', 'wrench'], ['intro', '인트로 다시 보기', 'close']];
+const MENU_ITEMS = [['main', '메인 화면', 'sigil'], ['lore', '소설창', 'book'], ['codex', '세계관', 'codex'], ['face', '페이스리아와 오비투아리바', 'face'], ['world', '지도', 'map'], ['universe', '우주지도', 'universe'], ['observ', '관측소', 'scope'], ['cmd', '사령관 통신', 'comm'], ['settings', '설정', 'wrench'], ['intro', '인트로 다시 보기', 'close']];
 function buildDrawer() {
   const list = $('#drawerList');
   list.innerHTML = '';
@@ -4863,6 +5014,167 @@ ENTER.observ = () => Obs.enter();
 
 
 /* ==========================================================================
+   사령관 통신: 메인에서 왼쪽으로 넘기면 나오는 통신 채팅 화면.
+   · 사령관 8명 × 주제 7개(간단한 대화 · 질문 · 일거리 · 연애 · 음식 · 솔직 토크 · 취미) × 질문 50개, 질문 하나당 답변 5개
+   · 같은 질문을 다시 고르면 답변 5개를 한 바퀴 다 볼 때까지 중복 없이 무작위로 나옴(브라우저에 저장)
+   · '관계' 탭: 다른 사령관을 골라 그 사람에 대한 생각을 들음
+   대화 데이터는 data/cmd/<사령관 id>.js 에서 window.CMD_DATA[id] 로 등록됩니다.
+   ========================================================================== */
+const Cmd = (() => {
+  const CMDS = CONFIG.commanders;
+  const TOPICS = [['talk', '간단한 대화'], ['ask', '질문'], ['work', '일거리'], ['love', '연애'], ['food', '음식'], ['honest', '솔직 토크'], ['hobby', '취미'], ['rel', '관계']];
+  const st = { cid: null, topic: 'talk', pend: null, scrollT: 0, built: false };
+  const logs = {}, greeted = {};
+  let bags = store.get('cmd.bags', {}), seen = store.get('cmd.seen', {}), lastA = store.get('cmd.last', {});
+  const cm = id => CMDS.find(c => c.id === id) || CMDS[0];
+  const data = id => (window.CMD_DATA && window.CMD_DATA[id]) || null;
+  const bits = n => { let c = 0; for (let i = 0; i < 5; i++) if (n & (1 << i)) c++; return c; };
+  const shuffle = n => { const a = Array.from({ length: n }, (_, i) => i); for (let i = n - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  /* 가방 뽑기: 남은 답변 번호에서 하나씩 꺼냄. 비면 다시 섞되, 방금 나온 답변이 곧바로 또 나오지 않게 함 */
+  function draw(key, n) {
+    let b = bags[key];
+    if (!Array.isArray(b) || !b.length || b.some(x => x >= n)) {
+      b = shuffle(n);
+      if (n > 1 && lastA[key] === b[b.length - 1]) [b[0], b[b.length - 1]] = [b[b.length - 1], b[0]];
+    }
+    const i = b.pop(); bags[key] = b; lastA[key] = i; seen[key] = (seen[key] || 0) | (1 << i);
+    store.set('cmd.bags', bags); store.set('cmd.seen', seen); store.set('cmd.last', lastA);
+    return i;
+  }
+  /* 한 주제의 질문 목록: [{ q, a:[답변…], key }] */
+  function list(cid, topic) {
+    const d = data(cid); if (!d) return [];
+    if (topic === 'rel') {
+      const out = []; const r = d.rel || {};
+      CMDS.forEach(o => { if (o.id !== cid && r[o.id] && r[o.id].length) out.push({ q: o.sn + '에 대해서는 어떻게 생각해?', a: r[o.id], key: `${cid}.rel.${o.id}` }); });
+      if (r._all && r._all.length) out.push({ q: '사령관들 전체 분위기는 어때?', a: r._all, key: `${cid}.rel._all` });
+      return out;
+    }
+    return (d[topic] || []).map((it, i) => ({ q: it[0], a: it[1], key: `${cid}.${topic}.${i}` }));
+  }
+  const logOf = cid => {
+    if (!logs[cid]) { const el = document.createElement('div'); el.className = 'cmd-lg'; el.dataset.cid = cid; $('#cmdLog').appendChild(el); logs[cid] = el; }
+    return logs[cid];
+  };
+  const toBottom = () => { const l = $('#cmdLog'); l.scrollTop = l.scrollHeight; };
+  function addSys(cid, text) { const d = document.createElement('div'); d.className = 'cmd-sys'; d.textContent = text; logOf(cid).appendChild(d); toBottom(); }
+  function addMsg(cid, who, name, text, typed) {
+    const m = document.createElement('div'); m.className = 'cmd-msg ' + who;
+    const by = document.createElement('span'); by.className = 'by'; by.textContent = name;
+    const tx = document.createElement('div'); tx.className = 'tx';
+    m.append(by, tx); logOf(cid).appendChild(m);
+    if (typed) { tx.style.minHeight = '1.85em'; clearInterval(st.scrollT); st.scrollT = setInterval(toBottom, 90); Typer.say(tx, text, () => { clearInterval(st.scrollT); toBottom(); }); }
+    else tx.textContent = text;
+    toBottom(); return m;
+  }
+  function addTyping(cid, c) {
+    const m = document.createElement('div'); m.className = 'cmd-msg cm';
+    m.innerHTML = '<span class="by"></span><div class="tx"><span class="cmd-dots" aria-label="입력 중"><i style="--k:0"></i><i style="--k:1"></i><i style="--k:2"></i></span></div>';
+    $('.by', m).textContent = c.sn; logOf(cid).appendChild(m); toBottom(); return m;
+  }
+  /* 답변 도착: 입력 중 표시를 지우고 글자를 적어 내려감 */
+  function deliver() {
+    const p = st.pend; if (!p) return; st.pend = null; clearTimeout(p.timer);
+    p.typing.remove(); addMsg(p.cid, 'cm', cm(p.cid).sn, p.text, !p.instant); if (!p.instant) SND.hover();
+  }
+  /* 아직 도착하지 않았거나 쓰는 중인 답변을 즉시 끝냄 */
+  function flush() {
+    if (st.pend) { st.pend.instant = true; deliver(); }
+    if (!Typer.done) Typer.finish();
+    clearInterval(st.scrollT);
+  }
+  function ask(i) {
+    const c = cm(st.cid), items = list(c.id, st.topic), it = items[i]; if (!it) return;
+    flush(); SND.click();
+    addMsg(c.id, 'me', '설립자', it.q, false);
+    const text = it.a[draw(it.key, it.a.length)];
+    const typing = addTyping(c.id, c);
+    st.pend = { cid: c.id, text, typing, timer: setTimeout(deliver, RM ? 0 : Math.min(1500, (420 + Math.random() * 380) * Math.min(TS, 2.4))), instant: false };
+    paintQs(true);
+  }
+  function renderRoster() {
+    const box = $('#cmdList'); box.innerHTML = '';
+    CMDS.forEach(c => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'cmd-it'; b.setAttribute('role', 'tab'); b.dataset.cid = c.id;
+      b.innerHTML = '<span class="ci">' + ic(c.icon) + '</span><span><b></b><small></small></span>';
+      $('b', b).textContent = c.ko; $('small', b).textContent = c.dept;
+      b.addEventListener('mouseenter', () => SND.hover());
+      b.addEventListener('click', () => select(c.id));
+      box.appendChild(b);
+    });
+  }
+  function renderTabs() {
+    const box = $('#cmdTabs'); box.innerHTML = '';
+    TOPICS.forEach(([k, ko]) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'cmd-tab'; b.setAttribute('role', 'tab'); b.dataset.t = k; b.textContent = ko;
+      b.addEventListener('mouseenter', () => SND.hover());
+      b.addEventListener('click', () => { if (st.topic === k) return; SND.click(); st.topic = k; store.set('cmd.topic', k); paintTabs(); paintQs(); });
+      box.appendChild(b);
+    });
+    const r = document.createElement('button'); r.type = 'button'; r.className = 'cmd-tab rnd'; r.innerHTML = ic('spiral') + '<span>무작위 질문</span>';
+    r.firstChild.style.cssText = 'width:16px;height:16px;display:block';
+    r.addEventListener('mouseenter', () => SND.hover()); r.addEventListener('click', () => randomAsk());
+    box.appendChild(r);
+  }
+  function paintTabs() { $$('#cmdTabs .cmd-tab[data-t]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.t === st.topic))); }
+  function paintRoster() { $$('#cmdList .cmd-it').forEach(b => b.setAttribute('aria-selected', String(b.dataset.cid === st.cid))); }
+  function paintHead() {
+    const c = cm(st.cid);
+    $('#cmdHic').innerHTML = ic(c.icon); $('#cmdName').textContent = c.ko; $('#cmdEn').textContent = c.dept + ' // ' + c.en;
+    const d = $('#cmdDept'); d.textContent = ''; d.append(c.deptKo + ' · '); const t = document.createElement('span'); t.className = 'tone'; t.textContent = c.tone; d.appendChild(t);
+  }
+  function paintQs(keepScroll) {
+    const box = $('#cmdQs'), top = box.scrollTop; box.innerHTML = '';
+    const items = list(st.cid, st.topic);
+    if (!items.length) { const e = document.createElement('div'); e.className = 'cmd-empty'; e.textContent = data(st.cid) ? '이 주제의 질문이 아직 없습니다.' : '통신 회선이 아직 연결되지 않았습니다.'; box.appendChild(e); return; }
+    items.forEach((it, i) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'cmd-q';
+      const s = document.createElement('span'); s.textContent = it.q;
+      const p = document.createElement('span'); p.className = 'pips'; p.setAttribute('aria-hidden', 'true');
+      const got = seen[it.key] || 0; for (let k = 0; k < it.a.length; k++) { const d = document.createElement('i'); if (got & (1 << k)) d.className = 'on'; p.appendChild(d); }
+      b.append(s, p); b.addEventListener('click', () => ask(i)); b.addEventListener('mouseenter', () => SND.hover()); box.appendChild(b);
+    });
+    box.scrollTop = keepScroll ? top : 0;
+  }
+  function randomAsk() {
+    const items = list(st.cid, st.topic); if (!items.length) return;
+    const fresh = items.map((it, i) => i).filter(i => bits(seen[items[i].key] || 0) < items[i].a.length);
+    ask(pick(fresh.length ? fresh : items.map((it, i) => i)));
+  }
+  function connect(cid) {
+    const c = cm(cid), L = logOf(cid);
+    if (greeted[cid]) return; greeted[cid] = true;
+    addSys(cid, 'LINK ESTABLISHED // ' + c.dept.toUpperCase());
+    const d = data(cid);
+    if (!d) { addSys(cid, 'NO RESPONSE'); return; }
+    const hi = d.hello && d.hello.length ? d.hello[draw(`${cid}.hello`, d.hello.length)] : null;
+    if (hi) { const typing = addTyping(cid, c); st.pend = { cid, text: hi, typing, instant: false, timer: setTimeout(deliver, RM ? 0 : 600 * Math.min(TS, 2)) }; }
+  }
+  function select(cid, silent) {
+    if (cid === st.cid && st.built) return;
+    flush(); if (!silent) SND.click();
+    st.cid = cid; store.set('cmd.cid', cid);
+    $$('#cmdLog .cmd-lg').forEach(l => l.classList.remove('on')); logOf(cid).classList.add('on');
+    paintRoster(); paintHead(); paintQs(); connect(cid); toBottom();
+    if (!silent && !RM) { const ch = $('#cmdLog').closest('.cmd-chat'); ch.classList.remove('sw'); void ch.offsetWidth; ch.classList.add('sw'); setTimeout(() => ch.classList.remove('sw'), 800 * Math.min(TS, 2)); }
+  }
+  return {
+    show() {
+      if (!st.built) { renderRoster(); renderTabs(); st.topic = store.get('cmd.topic', 'talk'); if (!TOPICS.some(t => t[0] === st.topic)) st.topic = 'talk'; }
+      const want = store.get('cmd.cid', CMDS[0].id); const cid = CMDS.some(c => c.id === want) ? want : CMDS[0].id;
+      paintTabs(); select(cid, true); st.built = true;
+    },
+    enter() { toBottom(); },
+    onLeave() { flush(); },
+    select, ask,
+  };
+})();
+SHOW.cmd = () => Cmd.show();
+ENTER.cmd = () => Cmd.enter();
+window.RSC.Cmd = Cmd;
+
+
+/* ==========================================================================
    boot
    ========================================================================== */
 function boot() {
@@ -4897,7 +5209,8 @@ function boot() {
     if (e.target && e.target.matches && e.target.matches('input, textarea, select, [contenteditable="true"]')) return;
     if (e.key === 'Backspace') { if (cur && cur !== 'intro' && cur !== 'main') { e.preventDefault(); SND.click(); back(); } }
     else if (e.key === 'Escape') { if (drawerOpen) closeDrawer(); else if (world.sel !== null && cur === 'world') closeReadout(); else if (cur === 'observ' && Obs.panelOpen()) Obs.closePanel(); else if (cur && cur !== 'intro' && cur !== 'main') back(); }
-    else if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft') && cur === 'main' && !busy && !drawerOpen) { e.preventDefault(); SND.click(); go('observ'); }
+    else if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft') && cur === 'main' && !busy && !drawerOpen) { e.preventDefault(); SND.click(); go(e.key === 'ArrowLeft' ? 'cmd' : 'observ'); }
+    else if (e.key === 'ArrowRight' && cur === 'cmd' && !busy && !drawerOpen && !(e.target && e.target.closest && e.target.closest('#cmdQs, #cmdTabs, #cmdList'))) { e.preventDefault(); SND.click(); back(); }
     else if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft') && cur === 'observ' && !busy && !drawerOpen) {
       e.preventDefault();
       if (Obs.focusStep(e.key === 'ArrowRight' ? 1 : -1)) SND.hover();
