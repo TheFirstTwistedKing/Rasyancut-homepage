@@ -1,0 +1,14 @@
+# 관측소 신호기 연출 (scenes/)
+
+관측소의 신호 I~IV 를 눌렀을 때 나오는 연출입니다. 코드는 이 폴더에서 고치고, `node tools/inline-scenes.js` 로 `index.html` 안에 넣습니다(`index.html` 한 파일만으로 동작).
+
+| 파일 | 내용 |
+|---|---|
+| scenes.html / scenes.css | 연출 화면 4개와 공용 효과의 마크업·스타일 |
+| core.js | 소리(일렁임·부팅음·지직·유리·바람) · 화면 일렁임 · 검은 화면 · 지지직 · 유리 깨짐 · 신호기 연결(`Scenes.start`) |
+| game.js | 신호 I — 설립자의 회장실(쯔꾸르풍, WASD 이동 · Space/Enter/E 조사 · 터치 스틱) |
+| rss.js | 신호 II — R.S.S. 메인 화면(디자인만) |
+| desk.js | 신호 III — 바탕화면(파일을 두 번 누르면 사령관 인사 기록 창, 문서는 아직 없음) |
+| eye.js | 신호 IV — 유리가 깨지고 눈과 마주함(복구 코드 `Re-code` 로 복귀) |
+
+회장실 오브젝트 · 대사는 game.js 의 `buildObjects()` 에서 추가·수정합니다.

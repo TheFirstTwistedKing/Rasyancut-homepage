@@ -1,0 +1,354 @@
+/* ==========================================================================
+   신호 I — 설립자의 회장실 (쯔꾸르풍 탑다운). WASD 이동 · Shift 달리기 · Space/Enter/E 조사
+   ========================================================================== */
+const Game = (() => {
+  const T = 32, COLS = 48, ROWS = 34, WW = COLS * T, WH = ROWS * T;
+  const cv = $('#gCv'), ctx = cv.getContext('2d'), msgEl = $('#gMsg'), nameEl = $('#gName'), txtEl = $('#gTxt'), nextEl = $('#gNext'), choiceEl = $('#gChoice'), padEl = $('#gPad'), stickEl = $('#gStick'), actBtn = $('#gAct');
+  const C = { wd: '#3b2414', wm: '#5b3a1f', wl: '#7a5230', wh: '#946a3f', gold: '#c9a94c', gl: '#f1dc8c', gd: '#8f7530', blk: '#0a0908', ink: '#17130e', paper: '#e9e2cf', steel: '#8a949e', stl: '#c6cfd6' };
+  let on = false, raf = 0, last = 0, Z = 2, vw = 0, vh = 0, dpr = 1, camX = 0, camY = 0, clock = 0;
+  const keys = new Set(), joy = { x: 0, y: 0 };
+  let busyMsg = false, choice = null, lines = [], li = 0, msgDone = null;
+  const P = { x: 21.5 * T, y: 13.7 * T, dir: 'up', t: 0, moving: false, step: 0 };
+  const rnd = rng(77);
+  const mk = (w, h, fn) => { const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; fn(g, w, h); return c; };
+  const R = (g, x, y, w, h, c) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); };
+  const shade = (hex, k) => { const n = parseInt(hex.slice(1), 16), f = v => Math.max(0, Math.min(255, Math.round(v * k))); return `rgb(${f(n >> 16)},${f((n >> 8) & 255)},${f(n & 255)})`; };
+
+  /* ---------- 월드 그리기: 바닥 · 벽 · 카펫 (한 번만 그려 둔다) ---------- */
+  let floorC = null; const objs = [], solids = [];
+  function buildFloor() {
+    return mk(WW, WH, (g) => {
+      for (let ty = 3; ty < ROWS - 1; ty++) for (let tx = 1; tx < COLS - 1; tx++) {
+        const x = tx * T, y = ty * T, k = .92 + rnd() * .16, h = (tx + ty) % 2;
+        R(g, x, y, T, T, shade('#5b3a22', k));
+        for (let p = 0; p < 2; p++) {
+          const px = h ? x + p * 16 : x, py = h ? y : y + p * 16, pw = h ? 16 : T, ph = h ? T : 16, kk = .9 + rnd() * .2;
+          R(g, px, py, pw, ph, shade(p ? '#68432a' : '#5a3a22', kk)); R(g, px, py, pw, 1, 'rgba(255,220,160,.07)'); R(g, px + pw - 1, py, 1, ph, 'rgba(0,0,0,.28)'); R(g, px, py + ph - 1, pw, 1, 'rgba(0,0,0,.28)');
+        }
+      }
+      // 카펫
+      const rx = 15 * T, ry = 15 * T, rw = 18 * T, rh = 14 * T;
+      R(g, rx - 6, ry - 6, rw + 12, rh + 12, '#0b0907'); R(g, rx - 3, ry - 3, rw + 6, rh + 6, C.gold); R(g, rx, ry, rw, rh, '#10281f');
+      g.strokeStyle = C.gd; g.lineWidth = 2; g.strokeRect(rx + 12, ry + 12, rw - 24, rh - 24); g.strokeStyle = 'rgba(241,220,140,.55)'; g.lineWidth = 1; g.strokeRect(rx + 20, ry + 20, rw - 40, rh - 40);
+      for (let i = 0; i < 36; i++) { const a = rx + 30 + i * (rw - 60) / 35; R(g, a, ry + 14, 3, 3, C.gl); R(g, a, ry + rh - 17, 3, 3, C.gl); }
+      for (let i = 0; i < 28; i++) { const b = ry + 30 + i * (rh - 60) / 27; R(g, rx + 14, b, 3, 3, C.gl); R(g, rx + rw - 17, b, 3, 3, C.gl); }
+      const cx = rx + rw / 2, cy = ry + rh / 2;
+      g.strokeStyle = C.gold; g.lineWidth = 4; g.beginPath(); g.arc(cx, cy, 104, 0, 7); g.stroke(); g.lineWidth = 1.5; g.beginPath(); g.arc(cx, cy, 90, 0, 7); g.stroke(); g.setLineDash([3, 5]); g.beginPath(); g.arc(cx, cy, 74, 0, 7); g.stroke(); g.setLineDash([]);
+      for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2; g.strokeStyle = i % 6 ? C.gd : C.gl; g.lineWidth = i % 6 ? 1 : 2; g.beginPath(); g.moveTo(cx + Math.cos(a) * 104, cy + Math.sin(a) * 104); g.lineTo(cx + Math.cos(a) * (i % 6 ? 112 : 120), cy + Math.sin(a) * (i % 6 ? 112 : 120)); g.stroke(); }
+      g.fillStyle = C.gold; g.beginPath(); g.moveTo(cx, cy - 56); g.lineTo(cx + 40, cy); g.lineTo(cx, cy + 56); g.lineTo(cx - 40, cy); g.closePath(); g.fill(); g.fillStyle = '#10281f'; g.beginPath(); g.moveTo(cx, cy - 44); g.lineTo(cx + 30, cy); g.lineTo(cx, cy + 44); g.lineTo(cx - 30, cy); g.closePath(); g.fill();
+      g.strokeStyle = C.gl; g.lineWidth = 3; g.beginPath(); g.arc(cx, cy, 16, 0, 7); g.stroke(); g.fillStyle = C.gl; g.fillRect(cx - 3, cy - 3, 6, 6);
+      g.strokeStyle = C.gold; g.lineWidth = 2; g.beginPath(); g.moveTo(cx - 90, cy); g.bezierCurveTo(cx - 60, cy - 30, cx - 40, cy + 30, cx - 20, cy); g.moveTo(cx + 90, cy); g.bezierCurveTo(cx + 60, cy + 30, cx + 40, cy - 30, cx + 20, cy); g.stroke();
+      // 연습용 매트(남서쪽)
+      R(g, 3 * T, 25 * T, 6 * T, 5 * T, '#2a1d12'); R(g, 3 * T + 4, 25 * T + 4, 6 * T - 8, 5 * T - 8, '#6b2a22'); g.strokeStyle = C.gd; g.lineWidth = 2; g.strokeRect(3 * T + 10, 25 * T + 10, 6 * T - 20, 5 * T - 20);
+      // 벽: 위
+      for (let x = 0; x < WW; x += 16) R(g, x, 0, 16, 64, (x / 16) % 2 ? '#211c16' : '#27211a');
+      for (let x = 0; x < WW; x += 32) { R(g, x + 6, 10, 4, 44, 'rgba(201,169,76,.05)'); }
+      R(g, 0, 0, WW, 5, C.gd); R(g, 0, 5, WW, 2, C.gl); R(g, 0, 7, WW, 2, '#3a2c10');
+      R(g, 0, 64, WW, 32, '#2c1d12'); for (let x = 0; x < WW; x += 32) { R(g, x + 3, 70, 26, 20, '#35241a'); R(g, x + 3, 70, 26, 1, 'rgba(255,220,160,.1)'); R(g, x + 3, 89, 26, 1, 'rgba(0,0,0,.4)'); }
+      R(g, 0, 62, WW, 3, C.gold); R(g, 0, 65, WW, 1, '#000'); R(g, 0, 93, WW, 3, '#1a110a'); R(g, 0, 96, WW, 3, 'rgba(0,0,0,.45)');
+      // 벽: 좌우·아래
+      const side = (x0) => { R(g, x0, 0, T, WH, '#1b1712'); R(g, x0 + (x0 ? 0 : T - 3), 0, 3, WH, C.gd); };
+      side(0); side(WW - T); R(g, 0, WH - T, WW, T, '#1b1712'); R(g, 0, WH - T, WW, 3, C.gd); R(g, 0, WH - T + 3, WW, 1, C.gl); R(g, T, WH - T - 6, WW - 2 * T, 6, 'rgba(0,0,0,.35)');
+      for (let y = 0; y < WH; y += 4) { R(g, 0, y, 3, 1, 'rgba(0,0,0,.35)'); }
+      // 창문(밤 풍경) 2개 + 달빛
+      [[17, 3], [28, 3]].forEach(([tx, w]) => {
+        const x = tx * T, y = 10, ww = w * T, wh = 52;
+        R(g, x - 4, y - 4, ww + 8, wh + 8, C.gd); R(g, x - 2, y - 2, ww + 4, wh + 4, '#0b0907');
+        const gr = g.createLinearGradient(0, y, 0, y + wh); gr.addColorStop(0, '#050a1c'); gr.addColorStop(1, '#1d3263'); g.fillStyle = gr; g.fillRect(x, y, ww, wh);
+        for (let i = 0; i < 24; i++) R(g, x + rnd() * ww, y + rnd() * 20, 1, 1, 'rgba(255,255,255,.75)');
+        g.fillStyle = '#e8eefc'; g.beginPath(); g.arc(x + ww * .82, y + 14, 6, 0, 7); g.fill(); g.fillStyle = '#050a1c'; g.beginPath(); g.arc(x + ww * .82 + 3, y + 12, 5, 0, 7); g.fill();
+        for (let b = 0, bx = x; bx < x + ww; b++) { const bw = 8 + rnd() * 12 | 0, bh = 12 + rnd() * 30 | 0; R(g, bx, y + wh - bh, bw, bh, '#0a1330'); for (let k = 0; k < bh / 6; k++) if (rnd() < .55) R(g, bx + 2 + rnd() * (bw - 4), y + wh - bh + 2 + k * 5, 2, 2, rnd() < .5 ? '#ffd93d' : '#ff9d4a'); bx += bw + 1; }
+        R(g, x + ww / 2 - 1, y, 2, wh, '#0b0907'); R(g, x, y + wh / 2, ww, 2, '#0b0907'); R(g, x - 6, y + wh + 4, ww + 12, 4, C.gd);
+        // 바닥에 비치는 달빛
+        g.save(); g.globalCompositeOperation = 'lighter'; const lg = g.createLinearGradient(0, 96, 0, 96 + 300); lg.addColorStop(0, 'rgba(120,160,255,.13)'); lg.addColorStop(1, 'rgba(120,160,255,0)'); g.fillStyle = lg; g.beginPath(); g.moveTo(x + 6, 99); g.lineTo(x + ww - 6, 99); g.lineTo(x + ww + 90, 99 + 300); g.lineTo(x - 50, 99 + 300); g.closePath(); g.fill(); g.restore();
+      });
+      // 벽 지도(33~38) · 현수막(21~26)
+      { const x = 33.6 * T, y = 12, w = 5.2 * T, h = 46; R(g, x - 4, y - 4, w + 8, h + 8, C.gd); R(g, x - 2, y - 2, w + 4, h + 4, '#000'); R(g, x, y, w, h, '#06100f');
+        g.strokeStyle = 'rgba(46,230,200,.18)'; g.lineWidth = 1; for (let i = 1; i < 9; i++) { g.beginPath(); g.moveTo(x + i * w / 9, y); g.lineTo(x + i * w / 9, y + h); g.stroke(); } for (let i = 1; i < 4; i++) { g.beginPath(); g.moveTo(x, y + i * h / 4); g.lineTo(x + w, y + i * h / 4); g.stroke(); }
+        for (let b = 0; b < 12; b++) { const bx = x + 8 + rnd() * (w - 30), by = y + 6 + rnd() * (h - 20), bw = 8 + rnd() * 22, bh = 6 + rnd() * 12; R(g, bx, by, bw, bh, 'rgba(255,217,61,.20)'); R(g, bx, by, bw, 1, 'rgba(255,243,166,.5)'); }
+        for (let d = 0; d < 15; d++) R(g, x + 6 + rnd() * (w - 12), y + 4 + rnd() * (h - 8), 3, 3, d % 3 ? '#fff3a6' : '#ff9d4a'); }
+      { const x = 21.4 * T, y = 10, w = 5.2 * T, h = 84; R(g, x - 3, y - 4, w + 6, 6, C.gold); R(g, x, y, w, h, '#0b0b12'); R(g, x + 6, y + 6, w - 12, h - 12, '#12122a'); g.strokeStyle = C.gold; g.lineWidth = 2; g.strokeRect(x + 6, y + 6, w - 12, h - 12);
+        const bx = x + w / 2, by = y + 44; g.lineWidth = 3; g.beginPath(); g.arc(bx, by, 22, 0, 7); g.stroke(); g.lineWidth = 1.5; g.beginPath(); g.arc(bx, by, 14, 0, 7); g.stroke(); g.fillStyle = C.gl; g.beginPath(); g.moveTo(bx, by - 8); g.lineTo(bx + 6, by); g.lineTo(bx, by + 8); g.lineTo(bx - 6, by); g.closePath(); g.fill();
+        for (let k = 0; k < 6; k++) { R(g, x + 10 + k * 22, y + h - 6, 4, 12, C.gold); } }
+    });
+  }
+
+  /* ---------- 오브젝트: 스프라이트 + 충돌 + 조사 ---------- */
+  function add(o) {   // o: {x,y,w,h(타일: 충돌/조사 영역), sx,sy,sw,sh(스프라이트 영역, 타일), draw, solid, ia(문장 배열 | 함수), name, glow}
+    o.px = o.x * T; o.py = o.y * T; o.pw = o.w * T; o.ph = o.h * T; o.base = o.sortY !== undefined ? o.sortY * T : o.py + o.ph;
+    if (o.draw) { o.spr = mk(o.sw * T, o.sh * T, (g, w, h) => o.draw(g, w, h)); o.ox = o.sx * T; o.oy = o.sy * T; }
+    if (o.solid !== false) solids.push({ x: o.px, y: o.py, w: o.pw, h: o.ph });
+    objs.push(o); return o;
+  }
+  const woodTop = (g, x, y, w, h, base = C.wm) => { R(g, x, y, w, h, base); R(g, x, y, w, 2, 'rgba(255,230,180,.28)'); R(g, x, y + h - 2, w, 2, 'rgba(0,0,0,.3)'); for (let i = 0; i < w; i += 14) R(g, x + i + 5, y + 4, 8, 1, 'rgba(0,0,0,.12)'); };
+  const frontPanel = (g, x, y, w, h) => { R(g, x, y, w, h, C.wd); R(g, x, y, w, 2, C.gd); for (let i = 8; i < w - 8; i += 44) { R(g, x + i, y + 6, 36, h - 12, '#2e1c0f'); R(g, x + i, y + 6, 36, 1, 'rgba(255,220,160,.15)'); R(g, x + i + 15, y + h / 2 - 2, 6, 3, C.gold); } R(g, x, y + h - 2, w, 2, 'rgba(0,0,0,.45)'); };
+  function monitor(g, x, y, w, h, screen = '#ffd93d') {
+    R(g, x - 2, y - 2, w + 4, h + 4, '#0a0a0c'); R(g, x, y, w, h, '#06100f'); const gr = g.createLinearGradient(0, y, 0, y + h); gr.addColorStop(0, 'rgba(255,217,61,.28)'); gr.addColorStop(1, 'rgba(255,150,30,.1)'); g.fillStyle = gr; g.fillRect(x, y, w, h);
+    for (let i = 0; i < h - 6; i += 4) { R(g, x + 4, y + 4 + i, 6 + (i * 7 % (w - 20)), 1, screen); } R(g, x + w - 14, y + 4, 10, h - 12, 'rgba(255,243,166,.15)');
+    R(g, x + w / 2 - 7, y + h + 2, 14, 3, '#1a1a1e'); R(g, x + w / 2 - 14, y + h + 5, 28, 3, '#26262c');
+  }
+  const bookRow = (g, x, y, w, h) => { for (let bx = x; bx < x + w - 4;) { const bw = 4 + rnd() * 5 | 0, bh = h - 2 - (rnd() * 6 | 0), hue = ['#6b2a22', '#23455e', '#2f5a3a', '#6b5a22', '#3c2a55', '#7a4a22', '#1f3f3a'][rnd() * 7 | 0]; R(g, bx, y + h - bh, bw, bh, hue); R(g, bx, y + h - bh, 1, bh, 'rgba(255,255,255,.12)'); R(g, bx + 1, y + h - bh + 3, bw - 2, 1, C.gold); bx += bw + (rnd() < .2 ? 2 : 0); } };
+
+  function buildObjects() {
+    objs.length = 0; solids.length = 0;
+    // 바깥 경계
+    solids.push({ x: 0, y: 0, w: WW, h: 3 * T + 4 }, { x: 0, y: 0, w: T, h: WH }, { x: WW - T, y: 0, w: T, h: WH }, { x: 0, y: WH - T - 4, w: WW, h: T + 4 });
+    // 책장 (벽에 붙음: 충돌은 맨 아래 한 줄)
+    const shelf = (x, w, text) => add({ x, y: 3, w, h: 1, sx: x, sy: 0, sw: w, sh: 4, name: '책장', ia: text, draw: (g, W, H) => {
+      R(g, 0, 8, W, H - 8, '#2a1a0e'); R(g, 0, 8, W, 3, C.gold); R(g, 2, 12, W - 4, H - 14, '#1a0f07');
+      for (let r = 0; r < 3; r++) { const yy = 14 + r * 36; bookRow(g, 5, yy, W - 10, 30); R(g, 2, yy + 30, W - 4, 4, C.wl); R(g, 2, yy + 30, W - 4, 1, 'rgba(255,230,180,.3)'); }
+      R(g, 0, 8, 3, H - 8, C.wd); R(g, W - 3, 8, 3, H - 8, C.wd); R(g, 0, H - 6, W, 6, C.wd); R(g, 0, H - 6, W, 1, C.gold); } });
+    shelf(2, 5, ['서가에는 리바이어던의 보고서철이 연도별로 꽂혀 있다.', '손이 닿는 높이의 칸만 유독 자주 꺼낸 흔적이 있다.']);
+    shelf(7, 5, ['지도와 법전, 그리고 낡은 기록물이 가지런히 정리되어 있다.']);
+    shelf(40, 5, ['등록 관리국과 정보 관리국에서 올라온 문서가 분류별로 꽂혀 있다.']);
+    // 의장용 언월도 거치대
+    add({ x: 13, y: 3, w: 3, h: 1, sx: 13, sy: 0.5, sw: 3, sh: 3.5, name: '언월도 거치대', ia: ['의장용 언월도가 거치대에 걸려 있다.', '손에 든 것과 모양이 같다. 날이 잘 선 채로, 먼지 한 톨 없이 관리되고 있다.'], draw: (g, W, H) => {
+      R(g, 4, 20, 6, H - 20, C.wd); R(g, W - 10, 20, 6, H - 20, C.wd); R(g, 0, H - 10, W, 10, C.wm); R(g, 0, H - 10, W, 2, C.gold); R(g, 0, 30, W, 5, C.wm); R(g, 0, 30, W, 1, C.gl);
+      R(g, 6, 24, W - 12, 4, '#6e4a28'); R(g, 6, 24, W - 12, 1, '#946a3f'); g.fillStyle = C.stl; g.beginPath(); g.moveTo(W - 14, 26); g.bezierCurveTo(W - 20, 4, W - 4, 4, W - 6, 28); g.bezierCurveTo(W - 14, 22, W - 14, 26, W - 14, 26); g.fill(); R(g, W - 12, 20, 2, 8, C.steel); R(g, 14, 22, 6, 8, '#36a86e'); R(g, 16, 28, 2, 10, '#36a86e'); } });
+    // 금고
+    add({ x: 31, y: 3, w: 2, h: 1, sx: 31, sy: 1.2, sw: 2, sh: 2.8, name: '금고', ia: ['육중한 금고다. 다이얼은 굳게 잠겨 있다.'], draw: (g, W, H) => {
+      R(g, 0, 10, W, H - 10, '#2a2f36'); R(g, 0, 10, W, 3, '#566069'); R(g, 4, 16, W - 8, H - 24, '#1d2127'); R(g, W / 2 - 12, 30, 24, 24, '#566069'); g.strokeStyle = C.gl; g.lineWidth = 2; g.beginPath(); g.arc(W / 2, 42, 8, 0, 7); g.stroke(); R(g, W / 2 - 1, 36, 2, 6, C.gl); R(g, W - 12, 28, 4, 12, C.gold); R(g, 0, H - 6, W, 6, '#0f1114'); } });
+    // 책상(컴퓨터) — 충돌은 책상 면 전체
+    add({ x: 19, y: 10, w: 10, h: 3, sx: 19, sy: 9, sw: 10, sh: 4, name: '책상', ia: ['결재 서류가 가지런히 쌓여 있다. 급한 것은 이미 처리되어 있다.', '책상 위의 명패에는 ‘설립자’라고 적혀 있다.'], draw: (g, W, H) => {
+      woodTop(g, 0, 32, W, 64, C.wh); frontPanel(g, 0, 96, W, 32); R(g, 4, 96, W - 8, 3, 'rgba(0,0,0,.35)');
+      R(g, 40, 54, 150, 36, '#15110d'); R(g, 40, 54, 150, 1, C.gd); R(g, 40, 89, 150, 1, C.gd);
+      monitor(g, 56, 4, 84, 44); monitor(g, 150, 14, 44, 30, '#9af3ff'); R(g, 62, 66, 64, 11, '#1c1c20'); for (let i = 0; i < 14; i++) R(g, 64 + i * 4.4, 68, 3, 3, '#3a3a42'); for (let i = 0; i < 12; i++) R(g, 65 + i * 4.8, 72, 3, 3, '#3a3a42'); R(g, 140, 68, 10, 8, '#222');
+      R(g, 232, 38, 36, 24, C.paper); R(g, 236, 42, 28, 1, '#9a947f'); R(g, 236, 47, 24, 1, '#9a947f'); R(g, 232, 38, 36, 1, '#fff'); R(g, 238, 28, 30, 12, '#d8d0b8'); R(g, 244, 70, 40, 14, '#2a1d12'); R(g, 244, 70, 40, 2, C.gold);
+      R(g, 280, 40, 26, 40, '#16130e'); R(g, 280, 40, 26, 1, C.gold); R(g, 294, 20, 3, 22, '#2a2a2e'); R(g, 284, 14, 24, 8, '#c9a94c'); R(g, 288, 8, 16, 8, '#f1dc8c'); } });
+    // 컴퓨터(조사 영역): 책상 왼쪽 절반
+    add({ x: 19, y: 10, w: 5.5, h: 3, solid: false, name: '컴퓨터', ia: ['화면에는 리바이어던 전역의 보고서가 쉴 새 없이 올라온다.', '등급 갱신, 등록 신청, 기억 에너지 보급 현황… 전부 한눈에 들어온다.', '지금은 건드릴 것이 없다. 설립자가 보지 않는 동안에도 조직은 돌아가고 있다.'] });
+    // 의자(책상 뒤): 상호작용하면 '앉겠습니까?'
+    add({ x: 21, y: 8, w: 2, h: 2, sx: 20.5, sy: 6.5, sw: 3, sh: 3.5, name: '의자', ia: 'sit', sortY: 9.1, draw: (g, W, H) => {
+      R(g, 16, 60, 64, 36, 'rgba(0,0,0,.25)'); R(g, 14, 6, 68, 62, '#17130f'); R(g, 14, 6, 68, 3, C.gold); R(g, 20, 12, 56, 50, '#221a13'); for (let i = 0; i < 4; i++) R(g, 26 + i * 14, 18, 3, 3, C.gold);
+      R(g, 8, 52, 16, 30, '#17130f'); R(g, 72, 52, 16, 30, '#17130f'); R(g, 8, 52, 16, 3, '#2c2418'); R(g, 72, 52, 16, 3, '#2c2418'); R(g, 20, 62, 56, 40, '#2a2017'); R(g, 20, 62, 56, 3, 'rgba(255,255,255,.12)'); R(g, 28, 102, 40, 6, '#0b0a08'); } });
+    // 지구본
+    add({ x: 30, y: 6, w: 1.4, h: 1.4, sx: 29.6, sy: 4.8, sw: 2.4, sh: 3, name: '지구본', ia: ['세계 지도가 새겨진 지구본이다.', '소버린 아일랜드에 작은 불빛이 켜져 있다.'], draw: (g, W, H) => {
+      R(g, W / 2 - 16, H - 10, 32, 8, C.wd); R(g, W / 2 - 3, 52, 6, 36, C.gd); g.fillStyle = '#16365e'; g.beginPath(); g.arc(W / 2, 34, 28, 0, 7); g.fill();
+      g.fillStyle = '#c9a94c'; [[-12, 22, 12, 10], [4, 26, 18, 8], [-8, 40, 12, 8], [10, 38, 8, 12], [-18, 32, 6, 6]].forEach(([a, b, c, d]) => { g.beginPath(); g.ellipse(W / 2 + a, b + 8, c / 2, d / 2, 0, 0, 7); g.fill(); });
+      g.strokeStyle = C.gl; g.lineWidth = 2; g.beginPath(); g.ellipse(W / 2, 34, 33, 12, -.5, 0, 7); g.stroke(); g.fillStyle = '#fff3a6'; g.beginPath(); g.arc(W / 2 + 8, 30, 2, 0, 7); g.fill(); g.fillStyle = 'rgba(255,255,255,.3)'; g.beginPath(); g.arc(W / 2 - 10, 24, 8, 0, 7); g.fill(); } });
+    // 소파 구역(서쪽)
+    add({ x: 4, y: 17, w: 6, h: 2, sx: 4, sy: 15.8, sw: 6, sh: 3.4, name: '소파', ia: ['손님을 맞이하는 자리다. 쿠션이 한 치 흐트러짐 없이 놓여 있다.'], draw: (g, W, H) => {
+      R(g, 4, 6, W - 8, 44, '#1e1a22'); R(g, 4, 6, W - 8, 3, '#3a3345'); R(g, 0, 28, 20, 56, '#26202c'); R(g, W - 20, 28, 20, 56, '#26202c'); R(g, 20, 40, W - 40, 44, '#31283a'); R(g, 20, 40, W - 40, 3, 'rgba(255,255,255,.12)');
+      for (let i = 1; i < 3; i++) R(g, 20 + i * (W - 40) / 3, 44, 2, 38, 'rgba(0,0,0,.35)'); R(g, 0, 84, W, 6, 'rgba(0,0,0,.35)'); R(g, 28, 50, 20, 14, '#c9a94c'); R(g, W - 48, 50, 20, 14, '#8f7530'); } });
+    add({ x: 5, y: 21, w: 4, h: 2, sx: 5, sy: 20.5, sw: 4, sh: 2.8, name: '탁자', ia: ['찻잔 두 개가 놓여 있다. 차는 아직 따뜻하다.'], draw: (g, W, H) => {
+      R(g, 4, 20, W - 8, 44, '#0f0b08'); R(g, 6, 16, W - 12, 40, '#2a1d12'); R(g, 6, 16, W - 12, 3, C.gold); R(g, 14, 22, W - 28, 26, '#15100a'); R(g, 30, 26, 10, 8, '#e9e2cf'); R(g, 31, 24, 8, 3, '#9a947f'); R(g, W - 42, 30, 10, 8, '#e9e2cf'); R(g, W - 41, 28, 8, 3, '#9a947f'); R(g, W / 2 - 4, 30, 8, 12, C.gold); } });
+    add({ x: 2.4, y: 21, w: 1.6, h: 1.6, sx: 2.3, sy: 20, sw: 1.8, sh: 2.4, name: '안락의자', ia: ['푹신한 안락의자다. 앉을 틈은 없다.'], draw: (g, W, H) => { R(g, 0, 8, W, 44, '#26202c'); R(g, 0, 8, W, 3, '#3a3345'); R(g, 6, 34, W - 12, 34, '#31283a'); R(g, 0, 28, 8, 44, '#1e1a22'); R(g, W - 8, 28, 8, 44, '#1e1a22'); } });
+    add({ x: 10, y: 21, w: 1.6, h: 1.6, sx: 9.9, sy: 20, sw: 1.8, sh: 2.4, name: '안락의자', ia: ['푹신한 안락의자다. 앉을 틈은 없다.'], draw: (g, W, H) => { R(g, 0, 8, W, 44, '#26202c'); R(g, 0, 8, W, 3, '#3a3345'); R(g, 6, 34, W - 12, 34, '#31283a'); R(g, 0, 28, 8, 44, '#1e1a22'); R(g, W - 8, 28, 8, 44, '#1e1a22'); } });
+    // 회의 탁자(동쪽)
+    add({ x: 36, y: 17, w: 8, h: 4, sx: 36, sy: 16.4, sw: 8, sh: 5, name: '회의 탁자', ia: ['긴 회의 탁자다. 사령관들의 자리가 정해져 있다.', '탁자 가운데의 투영 장치는 꺼져 있다. 호출하면 켜질 것이다.'], draw: (g, W, H) => {
+      R(g, 10, 24, W - 20, 128, '#0c0806'); R(g, 6, 18, W - 12, 120, '#2a1b10'); R(g, 6, 18, W - 12, 4, C.gold); R(g, 14, 28, W - 28, 100, '#33210f'); R(g, 14, 28, W - 28, 2, 'rgba(255,230,180,.25)');
+      g.strokeStyle = C.gd; g.lineWidth = 1; g.strokeRect(24, 38, W - 48, 80); R(g, W / 2 - 22, 62, 44, 32, '#07110f'); g.strokeStyle = '#2ee6c8'; g.lineWidth = 1; g.beginPath(); g.ellipse(W / 2, 78, 16, 8, 0, 0, 7); g.stroke(); g.beginPath(); g.ellipse(W / 2, 74, 10, 5, 0, 0, 7); g.stroke(); R(g, W / 2 - 1, 62, 2, 14, 'rgba(46,230,200,.4)'); } });
+    for (let i = 0; i < 4; i++) { [16.2, 21].forEach(cy => add({ x: 37 + i * 1.8, y: cy, w: 1, h: 1, sx: 37 + i * 1.8, sy: cy - .3, sw: 1, sh: 1.4, name: '의자', ia: ['회의용 의자다.'], draw: (g, W, H) => { R(g, 2, 10, W - 4, 24, '#16110d'); R(g, 2, 10, W - 4, 2, C.gold); R(g, 4, 28, W - 8, 14, '#201812'); } })); }
+    add({ x: 35, y: 18, w: 1, h: 2, sx: 35, sy: 17.6, sw: 1, sh: 2.4, name: '상석', ia: ['상석이다. 가장 안쪽, 문이 잘 보이는 자리.'], draw: (g, W, H) => { R(g, 4, 8, W - 6, 56, '#16110d'); R(g, 4, 8, 3, 56, C.gold); R(g, 8, 14, W - 14, 44, '#221a13'); } });
+    // 수족관(동쪽 벽)
+    add({ x: 45, y: 7, w: 2, h: 3, sx: 44.5, sy: 5.8, sw: 2.5, sh: 4.4, name: '수족관', ia: ['푸른 물속에서 물고기들이 느리게 헤엄친다.'], draw: (g, W, H) => {
+      R(g, 0, 20, W, H - 26, '#0b0907'); R(g, 4, 24, W - 8, H - 44, '#0e3360'); const gr = g.createLinearGradient(0, 24, 0, H - 20); gr.addColorStop(0, '#1a5a99'); gr.addColorStop(1, '#0a2447'); g.fillStyle = gr; g.fillRect(4, 24, W - 8, H - 44);
+      R(g, 4, H - 28, W - 8, 8, '#3a2c10'); for (let i = 0; i < 6; i++) R(g, 8 + i * 12, H - 38 - (i % 3) * 6, 3, 14 + (i % 3) * 6, '#2f8a5b');
+      [[18, 50, '#ffb04a'], [44, 70, '#ff6a4a'], [30, 90, '#ffd93d'], [56, 56, '#9af3ff']].forEach(([x, y, c]) => { g.fillStyle = c; g.beginPath(); g.ellipse(x, y, 7, 4, 0, 0, 7); g.fill(); g.beginPath(); g.moveTo(x - 6, y); g.lineTo(x - 12, y - 4); g.lineTo(x - 12, y + 4); g.fill(); R(g, x + 3, y - 1, 1, 1, '#000'); });
+      R(g, 0, 8, W, 14, C.wd); R(g, 0, 8, W, 2, C.gold); R(g, 4, 24, 4, H - 44, 'rgba(255,255,255,.12)'); } });
+    // 차 준비대(동쪽)
+    add({ x: 44, y: 13, w: 3, h: 2, sx: 44, sy: 12.2, sw: 3, sh: 2.8, name: '차 준비대', ia: ['따뜻한 차가 준비되어 있다. 마실 시간은 없다.'], draw: (g, W, H) => {
+      R(g, 0, 24, W, H - 24, C.wd); R(g, 0, 24, W, 4, C.wh); R(g, 0, 24, W, 1, 'rgba(255,230,180,.4)'); R(g, 6, 34, W - 12, H - 40, '#2a1b10'); R(g, W / 2 - 2, 52, 4, 8, C.gold);
+      R(g, 14, 6, 18, 18, '#e9e2cf'); R(g, 12, 6, 22, 3, '#fff'); R(g, 32, 12, 6, 8, '#e9e2cf'); R(g, 20, 2, 6, 5, '#8a949e'); R(g, 54, 10, 14, 14, '#c9a94c'); R(g, 54, 10, 14, 2, '#f1dc8c'); R(g, 76, 14, 12, 10, '#e9e2cf'); } });
+    // 화분·조명
+    const plant = (x, y) => add({ x, y, w: 1, h: 1, sx: x - .2, sy: y - 1.4, sw: 1.4, sh: 2.4, name: '화분', ia: ['잎이 윤기 있게 반짝인다. 누군가 매일 돌보고 있다.'], draw: (g, W, H) => {
+      R(g, 8, H - 26, 30, 24, '#3a2414'); R(g, 6, H - 28, 34, 5, C.gold); [[0, 40], [10, 22], [22, 10], [34, 24], [42, 44]].forEach(([a, b], i) => { g.fillStyle = i % 2 ? '#2f8a5b' : '#236b45'; g.beginPath(); g.ellipse(a + 4, b + 2, 8, 16, (i - 2) * .35, 0, 7); g.fill(); }); } });
+    [[1.2, 4], [45.8, 4], [1.2, 31], [45.8, 31], [11.5, 17], [32, 14]].forEach(([x, y]) => plant(x, y));
+    const lamp = (x, y) => add({ x, y, w: .8, h: .8, sx: x - .4, sy: y - 2.4, sw: 1.6, sh: 3.2, name: '스탠드', ia: ['은은한 불빛이 켜져 있는 스탠드다.'], glow: [x * T + 13, (y - 1.9) * T, 150], draw: (g, W, H) => {
+      R(g, W / 2 - 2, 28, 4, H - 36, '#2a2a2e'); R(g, W / 2 - 10, H - 10, 20, 6, '#16161a'); g.fillStyle = '#f1dc8c'; g.beginPath(); g.moveTo(W / 2 - 14, 30); g.lineTo(W / 2 + 14, 30); g.lineTo(W / 2 + 9, 8); g.lineTo(W / 2 - 9, 8); g.fill(); R(g, W / 2 - 9, 8, 18, 2, '#fff3a6'); } });
+    lamp(12, 14.2); lamp(35, 12.2);
+    // 연습용 목인형 (남서쪽 매트 위)
+    add({ x: 5.8, y: 27, w: 1, h: 1, sx: 5.5, sy: 25.4, sw: 1.6, sh: 2.8, name: '목인형', ia: ['언월도 연습용 목인형이다.', '베인 자국이 깊다. 한 곳에 겹쳐서, 같은 각도로 수없이.'], draw: (g, W, H) => {
+      R(g, 8, H - 14, 36, 12, '#2a1d12'); R(g, 22, 30, 8, H - 40, '#6e4a28'); R(g, 10, 32, 32, 8, '#6e4a28'); R(g, 4, 36, 10, 6, '#6e4a28'); R(g, 38, 36, 10, 6, '#6e4a28'); R(g, 14, 12, 24, 22, '#946a3f'); R(g, 14, 12, 24, 2, '#b88a55'); R(g, 20, 20, 3, 8, '#3a2414'); R(g, 28, 24, 6, 2, '#3a2414'); R(g, 16, 34, 20, 18, '#8a5f36'); R(g, 18, 40, 16, 2, '#3a2414'); } });
+    // 출입문(남쪽 벽)
+    add({ x: 22, y: 32, w: 4, h: 2, solid: false, sx: 22, sy: 32, sw: 4, sh: 2, name: '문', ia: ['커다란 이중문이다. 잠겨 있지는 않다.', '지금은 나갈 일이 없다. 해야 할 일은 이 방에 있다.'], draw: (g, W, H) => {
+      R(g, 0, 0, W, H, '#0b0907'); R(g, 0, 0, W, 5, C.gold); R(g, 6, 8, W / 2 - 8, H - 8, '#3b2414'); R(g, W / 2 + 2, 8, W / 2 - 8, H - 8, '#3b2414'); [6, W / 2 + 2].forEach(x => { R(g, x + 4, 14, W / 2 - 16, 36, '#2e1c0f'); R(g, x + 4, 14, W / 2 - 16, 1, 'rgba(255,220,160,.2)'); R(g, x + 4, 56, W / 2 - 16, 6, '#2e1c0f'); });
+      R(g, W / 2 - 8, 34, 4, 8, C.gl); R(g, W / 2 + 4, 34, 4, 8, C.gl); R(g, 0, H - 4, W, 4, 'rgba(0,0,0,.5)'); } });
+    // 신문 거치대·장식 (바닥 조명 없는 곳에 작은 오브젝트)
+    add({ x: 17, y: 3, w: 3, h: .6, solid: false, name: '창문', ia: ['창밖으로 리바이어던의 야경이 펼쳐진다.', '불빛 하나하나가 지켜야 할 것들이다.'] });
+    add({ x: 28, y: 3, w: 3, h: .6, solid: false, name: '창문', ia: ['창밖은 고요하다. 이 고요를 유지하는 것이 이곳의 일이다.'] });
+    add({ x: 21.4, y: 3, w: 5.2, h: .6, solid: false, name: '현수막', ia: ['리바이어던의 문장이 수놓인 현수막이다.', '의자에 앉으면 정확히 이 아래가 된다.'] });
+    add({ x: 33.6, y: 3, w: 5.2, h: .6, solid: false, name: '벽 지도', ia: ['벽면 지도에 등록된 국가들의 위치가 표시되어 있다.', '붉은 표식은 멸망한 국가를 뜻한다.'] });
+    // 장식용 대형 두루마리 서가(서쪽 벽 중간)
+    add({ x: 1, y: 11, w: 1.1, h: 5, solid: true, sx: 1, sy: 10.4, sw: 1.1, sh: 5.8, name: '서고', ia: ['벽을 따라 문서 보관함이 늘어서 있다.'], draw: (g, W, H) => { R(g, 0, 8, W, H - 8, '#1a110a'); for (let i = 0; i < 9; i++) { R(g, 2, 12 + i * 20, W - 4, 16, '#2a1b10'); R(g, 2, 12 + i * 20, W - 4, 1, 'rgba(255,220,160,.25)'); R(g, W / 2 - 4, 18 + i * 20, 8, 3, C.gold); } R(g, 0, 8, W, 2, C.gold); } });
+    objs.sort((a, b) => a.base - b.base);
+  }
+
+  /* ---------- 플레이어: 초록·하양 중국 전통 의복을 입고 언월도를 든 남성(픽셀 스프라이트) ---------- */
+  const SK = '#f2c9a1', SKD = '#d9a577', HR = '#17120f', GR = '#2f8a5b', GRD = '#1f6642', WT = '#f4f3ee', WTD = '#cfcdc5', GD = '#e0b84a', BT = '#1a1a1a', PL = '#6e4a28', PLD = '#4a3018', BL = '#dfe6ec', BLD = '#8f9ba5', TASS = '#36a86e';
+  const SPR = {};
+  function drawChar(g, dir, f) {
+    const px = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
+    const bob = f === 1 || f === 3 ? -1 : 0, lf = f === 1 ? 1 : 0, rf = f === 3 ? 1 : 0;
+    const blade = (x, out) => {   // 언월도 날: 폭이 넓은 초승달 모양(바깥쪽으로 휘어짐) + 창끝 + 금 마디 + 녹색 술
+      const R2 = (dy, d0, w, c) => { const x0 = out > 0 ? x + 1 + d0 : x - d0 - w + 1 + 1; px(x0, dy, w, 1, c); };
+      R2(0, -0, 2, BL); R2(1, 0, 2, BL);
+      R2(2, 0, 5, BL); R2(3, 0, 7, BL); R2(4, 1, 7, BL); R2(5, 2, 6, BL); R2(6, 3, 5, BL); R2(7, 3, 4, BL); R2(8, 4, 2, BL);
+      px(x, 2, 2, 8, BLD); R2(3, 7, 1, '#fff'); R2(4, 7, 1, '#fff'); R2(5, 7, 1, '#fff'); R2(2, 4, 1, '#fff');
+      px(x, 10, 2, 1, GD); px(x, 11, 2, 4, TASS); px(x + 1, 15, 1, 2, TASS);
+    };
+    const pole = (x, y0, y1) => { px(x, y0, 2, y1 - y0, PL); px(x, y0, 1, y1 - y0, PLD); };
+    if (dir === 'down') {
+      pole(3, 10, 36 + bob); blade(3, -1);
+      px(7, 6 + bob, 10, 3, HR); px(6, 7 + bob, 12, 3, HR); px(9, 3 + bob, 6, 3, HR); px(10, 1 + bob, 4, 3, HR); px(10, 4 + bob, 4, 1, TASS);     // 상투와 머리
+      px(7, 9 + bob, 10, 7, SK); px(7, 9 + bob, 1, 3, HR); px(16, 9 + bob, 1, 3, HR); px(9, 11 + bob, 2, 2, '#16110d'); px(13, 11 + bob, 2, 2, '#16110d'); px(9, 10 + bob, 2, 1, HR); px(13, 10 + bob, 2, 1, HR); px(11, 14 + bob, 2, 1, SKD); px(10, 13 + bob, 1, 1, '#d98a7a'); px(14, 13 + bob, 1, 1, '#d98a7a');
+      px(10, 16 + bob, 4, 2, SKD);
+      px(6, 18 + bob, 12, 12, GR); px(6, 18 + bob, 1, 12, GRD); px(17, 18 + bob, 1, 12, GRD);
+      px(8, 18 + bob, 2, 3, WT); px(9, 20 + bob, 2, 3, WT); px(10, 22 + bob, 2, 2, WT); px(14, 18 + bob, 2, 3, WT); px(13, 20 + bob, 2, 3, WT); px(12, 22 + bob, 1, 2, WT);   // 교령(깃)
+      px(6, 25 + bob, 12, 2, WT); px(6, 27 + bob, 12, 1, WTD); px(11, 25 + bob, 2, 2, GD);                                                      // 허리띠
+      px(4, 19 + bob, 3, 8, GR); px(17, 19 + bob, 3, 8, GR); px(3, 26 + bob, 4, 2, WT); px(17, 26 + bob, 4, 2, WT); px(3, 28 + bob, 3, 2, SK); px(18, 28 + bob, 3, 2, SK);   // 소매 · 손
+      px(7, 30, 4, 2, GR); px(13, 30, 4, 2, GR); px(7, 32, 10, 1, WT);
+      px(7 + lf, 32 + (lf ? -1 : 0), 4, 3, BT); px(13 - rf, 32 + (rf ? -1 : 0), 4, 3, BT); px(7 + lf, 34 + (lf ? -1 : 0), 5, 1, '#000'); px(12 - rf, 34 + (rf ? -1 : 0), 5, 1, '#000');
+      px(3, 28 + bob, 2, 2, SK);
+    } else if (dir === 'up') {
+      pole(20, 10, 36 + bob); blade(20, 1);
+      px(7, 4 + bob, 10, 12, HR); px(6, 6 + bob, 12, 8, HR); px(9, 2 + bob, 6, 3, HR); px(10, 0 + bob, 4, 3, HR); px(10, 4 + bob, 4, 1, TASS); px(8, 12 + bob, 8, 2, '#0d0a08');
+      px(10, 16 + bob, 4, 2, SKD);
+      px(6, 18 + bob, 12, 12, GR); px(6, 18 + bob, 1, 12, GRD); px(17, 18 + bob, 1, 12, GRD); px(10, 19 + bob, 4, 6, GRD); px(11, 19 + bob, 2, 6, '#2a7a50');
+      px(6, 25 + bob, 12, 2, WT); px(6, 27 + bob, 12, 1, WTD); px(10, 25 + bob, 4, 2, WTD);
+      px(4, 19 + bob, 3, 8, GR); px(17, 19 + bob, 3, 8, GR); px(3, 26 + bob, 4, 2, WT); px(17, 26 + bob, 4, 2, WT); px(3, 28 + bob, 3, 2, SK); px(18, 28 + bob, 3, 2, SK);
+      px(7, 30, 4, 2, GR); px(13, 30, 4, 2, GR); px(7, 32, 10, 1, WT);
+      px(7 + lf, 32 + (lf ? -1 : 0), 4, 3, BT); px(13 - rf, 32 + (rf ? -1 : 0), 4, 3, BT);
+      px(18, 28 + bob, 3, 2, SK);
+    } else {   // left (오른쪽은 좌우 반전)
+      pole(4, 10, 36 + bob); blade(4, -1);
+      px(8, 6 + bob, 9, 3, HR); px(8, 7 + bob, 10, 7, HR); px(10, 3 + bob, 6, 3, HR); px(11, 1 + bob, 4, 3, HR); px(11, 4 + bob, 4, 1, TASS);
+      px(8, 9 + bob, 7, 7, SK); px(8, 11 + bob, 2, 2, '#16110d'); px(8, 10 + bob, 2, 1, HR); px(8, 14 + bob, 2, 1, SKD); px(14, 9 + bob, 2, 5, HR);
+      px(10, 16 + bob, 4, 2, SKD);
+      px(8, 18 + bob, 9, 12, GR); px(16, 18 + bob, 1, 12, GRD); px(8, 18 + bob, 2, 12, WT); px(10, 18 + bob, 1, 12, WTD);
+      px(8, 25 + bob, 9, 2, WT); px(8, 27 + bob, 9, 1, WTD); px(9, 25 + bob, 2, 2, GD);
+      px(6, 19 + bob, 5, 8, GR); px(6, 26 + bob, 5, 2, WT); px(5, 28 + bob, 3, 2, SK);
+      px(9, 30, 7, 2, GR); px(9, 32, 7, 1, WT);
+      px(8 + lf, 32 + (lf ? -1 : 0), 4, 3, BT); px(12 - rf, 32 + (rf ? -1 : 0), 5, 3, BT); px(8 + lf, 34 + (lf ? -1 : 0), 5, 1, '#000');
+    }
+  }
+  function buildSprites() {
+    ['down', 'up', 'left'].forEach(d => { SPR[d] = [0, 1, 2, 3].map(f => mk(38, 36, g => { g.translate(8, 0); drawChar(g, d, f); })); });
+    SPR.right = SPR.left.map(c => mk(38, 36, g => { g.translate(38, 0); g.scale(-1, 1); g.drawImage(c, 0, 0); }));
+  }
+
+  /* ---------- 메시지 창 · 선택지 ---------- */
+  const typing = () => !Typer.done;
+  function showLine() {
+    nextEl.classList.remove('on'); Typer.say(txtEl, lines[li], () => nextEl.classList.add('on'));
+  }
+  function say(arr, name, done) {
+    lines = Array.isArray(arr) ? arr : [arr]; li = 0; msgDone = done || null; busyMsg = true; nameEl.textContent = name || ''; msgEl.hidden = false; showLine();
+  }
+  function advance() {
+    if (choice) return;
+    if (typing()) { Typer.finish(); return; }
+    if (li < lines.length - 1) { li++; showLine(); return; }
+    Typer.stop(); msgEl.hidden = true; busyMsg = false; const d = msgDone; msgDone = null; if (d) d();
+  }
+  function ask(prompt, name, onPick) {   // '네/아니요'
+    say(prompt, name, null);
+    const open = () => {
+      choice = { i: 0, onPick }; choiceEl.hidden = false; paintChoice();
+    };
+    msgDone = null; lines = [prompt]; li = 0;
+    const origAdv = advance;
+    // 문장이 다 적히면 선택지를 띄운다
+    const wait = setInterval(() => { if (!msgEl.hidden && Typer.done) { clearInterval(wait); open(); } else if (msgEl.hidden) clearInterval(wait); }, 60);
+  }
+  function paintChoice() { $$('button', choiceEl).forEach((b, i) => b.classList.toggle('on', i === choice.i)); }
+  function pickChoice(i) {
+    if (!choice) return; const c = choice; choice = null; choiceEl.hidden = true; msgEl.hidden = true; Typer.stop(); busyMsg = false; SND.click(); c.onPick(i === 0);
+  }
+  $$('button', choiceEl).forEach((b, i) => { b.addEventListener('click', e => { e.stopPropagation(); pickChoice(i); }); b.addEventListener('mouseenter', () => { if (choice) { choice.i = i; paintChoice(); } }); });
+  msgEl.addEventListener('click', () => { SND.tick(); advance(); });
+
+  /* ---------- 입력 ---------- */
+  const DIRV = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+  function interact() {
+    if (busyMsg) return;
+    const v = DIRV[P.dir]; let hit = null, best = 1e9;
+    [14, 26].forEach(d => {
+      if (hit) return; const ix = P.x + v[0] * d, iy = P.y - 4 + v[1] * d;
+      objs.forEach(o => { if (!o.ia) return; if (ix >= o.px - 4 && ix <= o.px + o.pw + 4 && iy >= o.py - 4 && iy <= o.py + o.ph + 4) { const a = o.pw * o.ph; if (a < best) { best = a; hit = o; } } });
+    });
+    if (!hit) return; SND.click();
+    if (hit.ia === 'sit') { ask('설립자의 의자다.\n앉겠습니까?', '', yes => { if (yes) { Scenes.leaveGame(); } else { say('…나중에 앉기로 했다.', ''); } }); return; }
+    say(hit.ia, hit.name || '');
+  }
+  function key(e, down) {
+    const c = e.code;
+    const map = { KeyW: 'u', ArrowUp: 'u', KeyS: 'd', ArrowDown: 'd', KeyA: 'l', ArrowLeft: 'l', KeyD: 'r', ArrowRight: 'r', ShiftLeft: 'run', ShiftRight: 'run' };
+    if (map[c]) {
+      if (down && choice && (map[c] === 'u' || map[c] === 'd')) { choice.i = (choice.i + 1) % 2; paintChoice(); SND.tick(); return true; }
+      if (down) keys.add(map[c]); else keys.delete(map[c]); return true;
+    }
+    if (down && (c === 'Space' || c === 'Enter' || c === 'KeyE' || c === 'KeyZ')) {
+      if (e.repeat) return true;
+      if (choice) pickChoice(choice.i); else if (busyMsg) advance(); else interact(); return true;
+    }
+    if (down && c === 'Escape' && choice) { pickChoice(1); return true; }
+    return false;
+  }
+  // 터치 조작: 가상 스틱 + 조사 버튼
+  let stickId = null;
+  stickEl.addEventListener('pointerdown', e => { stickId = e.pointerId; stickEl.setPointerCapture(e.pointerId); moveStick(e); });
+  stickEl.addEventListener('pointermove', e => { if (e.pointerId === stickId) moveStick(e); });
+  const endStick = e => { if (e.pointerId !== stickId) return; stickId = null; joy.x = joy.y = 0; $('i', stickEl).style.transform = ''; };
+  stickEl.addEventListener('pointerup', endStick); stickEl.addEventListener('pointercancel', endStick);
+  function moveStick(e) { const r = stickEl.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2; let dx = (e.clientX - cx) / (r.width / 2), dy = (e.clientY - cy) / (r.height / 2); const l = Math.hypot(dx, dy); if (l > 1) { dx /= l; dy /= l; } joy.x = Math.abs(dx) < .18 ? 0 : dx; joy.y = Math.abs(dy) < .18 ? 0 : dy; $('i', stickEl).style.transform = `translate(${dx * 38}px,${dy * 38}px)`; }
+  actBtn.addEventListener('pointerdown', e => { e.preventDefault(); if (choice) pickChoice(choice.i); else if (busyMsg) advance(); else interact(); });
+  cv.addEventListener('pointerdown', () => { if (busyMsg && !choice) advance(); });
+
+  /* ---------- 이동 · 충돌 ---------- */
+  const hitAt = (x, y) => { const fx = x - 8, fy = y - 8, fw = 16, fh = 8; return solids.some(s => fx < s.x + s.w && fx + fw > s.x && fy < s.y + s.h && fy + fh > s.y); };
+  function update(dt) {
+    clock += dt; if (busyMsg) { P.moving = false; return; }
+    let dx = (keys.has('r') ? 1 : 0) - (keys.has('l') ? 1 : 0) + joy.x, dy = (keys.has('d') ? 1 : 0) - (keys.has('u') ? 1 : 0) + joy.y;
+    const l = Math.hypot(dx, dy); P.moving = l > .05;
+    if (P.moving) {
+      if (l > 1) { dx /= l; dy /= l; }
+      if (Math.abs(dx) > Math.abs(dy)) P.dir = dx > 0 ? 'right' : 'left'; else P.dir = dy > 0 ? 'down' : 'up';
+      const sp = (keys.has('run') ? 150 : 92) * dt;
+      let nx = P.x + dx * sp, ny = P.y + dy * sp;
+      if (!hitAt(nx, P.y)) P.x = nx; if (!hitAt(P.x, ny)) P.y = ny;
+      P.t += dt * (keys.has('run') ? 1.5 : 1); P.step += dt; if (P.step > (keys.has('run') ? .2 : .3)) { P.step = 0; SND.step(); }
+    } else P.t = 0;
+  }
+  /* ---------- 그리기 ---------- */
+  function resize() {
+    dpr = Math.min(2, window.devicePixelRatio || 1); const r = cv.getBoundingClientRect(); vw = r.width; vh = r.height;
+    cv.width = Math.round(vw * dpr); cv.height = Math.round(vh * dpr);
+    Z = Math.max(1, Math.min(3, Math.round(Math.max(vw, 1) / 640)));
+    if (vw < 520) Z = 1.25;
+  }
+  function render() {
+    const W = cv.width, H = cv.height, s = Z * dpr; ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.imageSmoothingEnabled = false; ctx.fillStyle = '#050403'; ctx.fillRect(0, 0, W, H);
+    const viewW = W / s, viewH = H / s;
+    camX = viewW >= WW ? (WW - viewW) / 2 : Math.max(0, Math.min(WW - viewW, P.x - viewW / 2)); camY = viewH >= WH ? (WH - viewH) / 2 : Math.max(0, Math.min(WH - viewH, P.y - 20 - viewH / 2));
+    ctx.setTransform(s, 0, 0, s, -Math.round(camX * s), -Math.round(camY * s));
+    ctx.drawImage(floorC, 0, 0);
+    const list = objs.filter(o => o.spr).map(o => ({ b: o.base, f: () => ctx.drawImage(o.spr, o.px - (o.x - o.sx) * T * 0 + (o.ox - o.px), o.py + (o.oy - o.py)) }));
+    const fi = P.moving ? [0, 1, 0, 3][Math.floor(P.t / .14) % 4] : 0;
+    list.push({ b: P.y, f: () => { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(P.x, P.y - 2, 13, 5, 0, 0, 7); ctx.fill(); ctx.drawImage(SPR[P.dir][fi], Math.round(P.x - (P.dir === 'right' ? 28 : 40)), Math.round(P.y - 70), 76, 72); } });
+    list.sort((a, b) => a.b - b.b).forEach(o => o.f());
+    // 불빛 · 비네트
+    ctx.globalCompositeOperation = 'lighter';
+    const glow = (x, y, r, a) => { const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, `rgba(255,200,110,${a})`); g.addColorStop(1, 'rgba(255,200,110,0)'); ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2); };
+    glow(21.5 * T + 20, 10.4 * T, 200, .16 + Math.sin(clock * 2) * .01); objs.forEach(o => { if (o.glow) glow(o.glow[0], o.glow[1], o.glow[2], .22); });
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.setTransform(1, 0, 0, 1, 0, 0); const vg = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .35, W / 2, H / 2, Math.max(W, H) * .75); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.55)'); ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+  }
+  function loop(ts) {
+    raf = requestAnimationFrame(loop); const dt = Math.min(.05, (ts - (last || ts)) / 1000); last = ts; update(dt); render();
+  }
+  addEventListener('resize', () => { if (on) resize(); });
+  return {
+    key, sprites: () => SPR, player: P,
+    enter() {
+      on = true; keys.clear(); joy.x = joy.y = 0; busyMsg = false; choice = null; msgEl.hidden = true; choiceEl.hidden = true; Typer.stop();
+      if (!floorC) { floorC = buildFloor(); buildSprites(); buildObjects(); }
+      P.x = 21.5 * T; P.y = 13.7 * T; P.dir = 'up'; P.t = 0; P.moving = false;
+      const touch = matchMedia('(pointer:coarse)').matches || innerWidth < 760; padEl.hidden = !touch; $('#scGame').classList.toggle('touch', touch); $('.g-keys').style.display = touch ? 'none' : '';
+      resize(); last = 0; cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
+      setTimeout(() => { if (on && !busyMsg) say(['여기는 설립자의 회장실이다.', touch ? '스틱으로 이동하고 조사 버튼으로 주변을 살펴보자.' : 'WASD로 이동하고 Space 또는 Enter로 주변을 살펴보자.'], ''); }, RM ? 0 : 900);
+    },
+    leave() { on = false; cancelAnimationFrame(raf); raf = 0; keys.clear(); Typer.stop(); msgEl.hidden = true; choiceEl.hidden = true; choice = null; busyMsg = false; },
+  };
+})();
+window.RSC.Game = Game;
