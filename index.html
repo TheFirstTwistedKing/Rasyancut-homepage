@@ -7658,7 +7658,7 @@ const Obs = (() => {
       return;
     }
     SND.click();
-    if (!t.core && typeof Scenes !== 'undefined') { Scenes.start(slots.slice(0, t.i + 1).filter(s => !s.core).length, t.el); return; }   // 신호기 1~4: 연출(scenes/)
+    if (t.kind === 'orb' && !t.core && typeof Scenes !== 'undefined') { Scenes.start(slots.slice(0, t.i + 1).filter(s => !s.core).length, t.el); return; }   // 신호기 1~4: 연출(scenes/)
     if (sel === t) { closePanel(); return; }
     openPanel(t);
   }
