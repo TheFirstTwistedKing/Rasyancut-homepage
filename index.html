@@ -1487,6 +1487,23 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
 .cmd-q .pips i{width:6px;height:6px;rotate:45deg;border:1px solid rgba(233,216,166,.45)}
 .cmd-q .pips i.on{background:var(--yellow);border-color:var(--yellow);box-shadow:0 0 6px rgba(255,217,61,.7)}
 .cmd-hint{flex:none;font-size:11px;color:rgba(233,216,166,.5)}
+.cmd-hint.o{display:none}
+.cmd-chat.oracle .cmd-hint.s{display:none}
+.cmd-chat.oracle .cmd-hint.o{display:block}
+.cmd-in{flex:none;display:flex;align-items:center;gap:8px;border:1px solid var(--gold);background:rgba(10,10,10,.6);padding:4px 4px 4px 12px;transition:border-color .2s,box-shadow .2s}
+.cmd-in[hidden]{display:none}
+.cmd-in .mono{flex:none;font-size:10px;letter-spacing:.2em;color:var(--gold)}
+.cmd-in input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--lemon);font:inherit;font-size:16px;padding:8px 4px}
+.cmd-in input::placeholder{color:rgba(233,216,166,.45)}
+.cmd-in:focus-within{border-color:var(--yellow);box-shadow:0 0 18px rgba(255,217,61,.25)}
+.cmd-in button{flex:none;display:flex;align-items:center;gap:7px;padding:8px 14px;border:1px solid var(--yellow);color:var(--lemon);background:rgba(255,217,61,.12);transition:background .2s}
+.cmd-in button:hover{background:rgba(255,217,61,.26)}
+.cmd-in button .ic{width:15px;height:15px}
+.cmd-msg .rd{font-family:var(--f-mono);font-size:10px;letter-spacing:.2em;color:rgba(233,216,166,.45);animation:rise min(.5s,calc(.3s*var(--ts,1))) var(--ease-soft) both}
+.cmd-it[data-mode="oracle"]{border-style:dashed;border-left-style:solid}
+.cmd-it[data-mode="oracle"] .ci,.cmd-chat.oracle .cmd-hic{animation:cmdveil 6s steps(1) infinite}
+@keyframes cmdveil{0%,92%,100%{opacity:1}93%{opacity:.25}95%{opacity:.9}97%{opacity:.3}}
+:root[data-fx="off"] .cmd-it[data-mode="oracle"] .ci,:root[data-fx="off"] .cmd-chat.oracle .cmd-hic{animation:none}
 
 @media (max-width:900px){
   #s-cmd .cmd-wrap{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:12px;padding:70px 12px 12px}
@@ -1502,7 +1519,8 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
   .cmd-hic{width:34px;height:34px}
   .cmd-msg{max-width:92%}
   .cmd-dock{height:min(42%,300px)}
-  .cmd-hint{display:none}
+  .cmd-chat.oracle .cmd-dock{height:min(50%,360px)}
+  .cmd-hint,.cmd-chat.oracle .cmd-hint.o{display:none}
 }
 </style>
 <div id="app">
@@ -1602,9 +1620,15 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
         </header>
         <div class="cmd-log" id="cmdLog" aria-live="polite"></div>
         <div class="cmd-dock">
+          <form class="cmd-in" id="cmdIn" hidden autocomplete="off">
+            <span class="mono">INPUT</span>
+            <input id="cmdText" type="text" maxlength="80" placeholder="용건만 입력하십시오 — 정보 또는 운세" aria-label="발신자에게 보낼 말" enterkeyhint="send">
+            <button type="submit"><span data-ic="plane" style="display:contents"></span><span>전송</span></button>
+          </form>
           <div class="cmd-tabs" id="cmdTabs" role="tablist" aria-label="대화 주제"></div>
           <div class="cmd-qs" id="cmdQs"></div>
-          <div class="cmd-hint ko">질문마다 답변이 5가지씩 있고, 같은 질문을 반복하면 아직 못 들은 답변부터 나옵니다. 마름모가 채워진 만큼 들은 답변입니다.</div>
+          <div class="cmd-hint ko s">질문마다 답변이 5가지씩 있고, 같은 질문을 반복하면 아직 못 들은 답변부터 나옵니다. 마름모가 채워진 만큼 들은 답변입니다.</div>
+          <div class="cmd-hint ko o">이 상대는 세계의 정보와 운세에 관한 말에만 응답합니다. 직접 입력하거나 아래 질문을 고르세요. 그 밖의 말에는 아무 반응도 없습니다(‘읽음’만 남습니다).</div>
         </div>
       </section>
     </div>
@@ -1939,6 +1963,7 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
 <script src="data/cmd/caeluna.js"></script>
 <script src="data/cmd/solaria.js"></script>
 <script src="data/cmd/overseer.js"></script>
+<script src="data/cmd/sender.js"></script>
 <script>
 (() => {
 'use strict';
@@ -1969,6 +1994,8 @@ const CONFIG = {
     { id: 'caeluna', ko: '카엘루나 게미니스', sn: '카엘루나', en: 'Caeluna Geminis', dept: 'Unbreakable Shield', deptKo: '보안 관리국 · 쌍둥이 자매(달 쪽)', tone: '수줍은 방패', icon: 'shieldmoon' },
     { id: 'solaria', ko: '솔라리아 루브리나타', sn: '솔라리아', en: 'Solaria Rubrinata', dept: 'Unbreakable Shield', deptKo: '보안 관리국 · 쌍둥이 자매(태양 쪽)', tone: '장난꾸러기 말괄량이', icon: 'shieldsun' },
     { id: 'overseer', ko: 'AI - Class IV : Overseer', sn: 'Overseer', en: 'Judgement Operation', dept: 'Judgement Operation', deptKo: '국제 전령 전달국', tone: '호기심 많은 AI', icon: 'plane' },
+    // mode: 'oracle' = 정보 전달·운세만 이야기하는 사령관(직접 입력 가능, 그 밖의 말에는 반응하지 않음)
+    { id: 'sender', ko: '발신자 표시 제한', sn: '발신자 표시 제한', en: 'Caller ID Restricted', dept: 'UNKNOWN', deptKo: '소속 불명 · 신원 비공개', tone: '정보와 운세만 전하는 신비한 인물', icon: 'veil', mode: 'oracle' },
   ],
   // 관측소(메인에서 오른쪽으로 넘기면 나오는 화면)의 원형 아이콘 5개. 왼쪽 → 오른쪽 순서이고, core: true 인 가운데 아이콘은 출력 상승 모드를 클리어해야 열립니다.
   // 아직 기능이 정해지지 않아 자리만 잡아 둔 상태입니다. name(이름) · info(내용, 문단은 \n) · icon(아이콘 모양) 을 채우면 그대로 반영됩니다.
@@ -2064,6 +2091,7 @@ const IC = {
   shieldmoon: '<path d="M12 2.6l7.6 2.8v6.2c0 4.6-3.2 8.2-7.6 9.8-4.4-1.6-7.6-5.2-7.6-9.8V5.4z"/><path d="M14.6 8.8a3.8 3.8 0 1 0 0 6 4.6 4.6 0 0 1 0-6z"/>',
   shieldsun: '<path d="M12 2.6l7.6 2.8v6.2c0 4.6-3.2 8.2-7.6 9.8-4.4-1.6-7.6-5.2-7.6-9.8V5.4z"/><circle cx="12" cy="11.8" r="2.3"/><path d="M12 6.8v1.4"/><path d="M12 15.4v1.4"/><path d="M7.2 11.8h1.4"/><path d="M15.4 11.8h1.4"/><path d="M8.6 8.4l1 1"/><path d="M14.4 14.2l1 1"/><path d="M15.4 8.4l-1 1"/><path d="M9.6 14.2l-1 1"/>',
   plane: '<path d="M3 11.6L21 3.4l-6.4 17.2-3.4-7.6z"/><path d="M11.2 13L21 3.4"/>',
+  veil: '<path d="M2.6 12S6.4 5.8 12 5.8 21.4 12 21.4 12 17.6 18.2 12 18.2 2.6 12 2.6 12z"/><circle cx="12" cy="12" r="2.7"/><path d="M4.2 3.8l15.6 16.4"/><path d="M12 2.4v2"/><path d="M12 19.6v2"/>',
   spk: '<path d="M3.5 9.5v5h3.6l4.9 3.8V5.7L7.1 9.5z"/><path class="w1" d="M15.2 9.2a4 4 0 0 1 0 5.6"/><path class="w2" d="M17.9 6.6a7.6 7.6 0 0 1 0 10.8"/><path class="x" d="M16 9.5l5 5"/><path class="x" d="M21 9.5l-5 5"/>',
 };
 const ic = name => '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">' +
@@ -5016,15 +5044,19 @@ ENTER.observ = () => Obs.enter();
 
 /* ==========================================================================
    사령관 통신: 메인에서 왼쪽으로 넘기면 나오는 통신 채팅 화면.
-   · 사령관 8명 × 주제 7개(간단한 대화 · 질문 · 일거리 · 연애 · 음식 · 솔직 토크 · 취미) × 질문 50개, 질문 하나당 답변 5개
+   · 사령관 8명 × 주제 6개(간단한 대화 · 질문 · 일거리 · 음식 · 솔직 토크 · 취미) × 질문 50개, 질문 하나당 답변 5개
+   · 9번째 '발신자 표시 제한'은 정보 전달 · 운세 주제만 있고, 직접 입력한 말도 알아듣습니다(그 밖의 말에는 반응하지 않음)
    · 같은 질문을 다시 고르면 답변 5개를 한 바퀴 다 볼 때까지 중복 없이 무작위로 나옴(브라우저에 저장)
    · '관계' 탭: 다른 사령관을 골라 그 사람에 대한 생각을 들음
    대화 데이터는 data/cmd/<사령관 id>.js 에서 window.CMD_DATA[id] 로 등록됩니다.
    ========================================================================== */
 const Cmd = (() => {
   const CMDS = CONFIG.commanders;
-  const TOPICS = [['talk', '간단한 대화'], ['ask', '질문'], ['work', '일거리'], ['love', '연애'], ['food', '음식'], ['honest', '솔직 토크'], ['hobby', '취미'], ['rel', '관계']];
-  const st = { cid: null, topic: 'talk', pend: null, scrollT: 0, built: false };
+  const TOPICS = [['talk', '간단한 대화'], ['ask', '질문'], ['work', '일거리'], ['food', '음식'], ['honest', '솔직 토크'], ['hobby', '취미'], ['rel', '관계']];
+  const ORACLE = [['info', '정보 전달'], ['fortune', '운세']];
+  const st = { cid: null, topic: 'talk', mode: '', pend: null, scrollT: 0, built: false };
+  const topicsOf = c => (c.mode === 'oracle' ? ORACLE : TOPICS);
+  const topicKey = mode => (mode === 'oracle' ? 'cmd.topic.o' : 'cmd.topic');
   const logs = {}, greeted = {};
   let bags = store.get('cmd.bags', {}), seen = store.get('cmd.seen', {}), lastA = store.get('cmd.last', {});
   const cm = id => CMDS.find(c => c.id === id) || CMDS[0];
@@ -5084,19 +5116,49 @@ const Cmd = (() => {
     if (!Typer.done) Typer.finish();
     clearInterval(st.scrollT);
   }
+  /* 답변 예약: 입력 중 표시를 띄우고 잠시 뒤 글자를 적어 내려감(발신자 표시 제한은 조금 더 뜸을 들임) */
+  function reply(c, text) {
+    const typing = addTyping(c.id, c), lag = c.mode === 'oracle' ? 1.7 : 1;
+    st.pend = { cid: c.id, text, typing, timer: setTimeout(deliver, RM ? 0 : Math.min(2300, (420 + Math.random() * 380) * lag * Math.min(TS, 2.4))), instant: false };
+  }
   function ask(i) {
     const c = cm(st.cid), items = list(c.id, st.topic), it = items[i]; if (!it) return;
     flush(); SND.click();
     addMsg(c.id, 'me', '설립자', it.q, false);
-    const text = it.a[draw(it.key, it.a.length)];
-    const typing = addTyping(c.id, c);
-    st.pend = { cid: c.id, text, typing, timer: setTimeout(deliver, RM ? 0 : Math.min(1500, (420 + Math.random() * 380) * Math.min(TS, 2.4))), instant: false };
+    reply(c, it.a[draw(it.key, it.a.length)]);
+    paintQs(true);
+  }
+  /* 직접 입력한 말이 정보 · 운세 질문 중 어디에 해당하는지 찾음(키워드가 겹친 만큼 점수) */
+  const norm = t => t.toLowerCase().replace(/[\s.,!?~…·'"“”‘’()\-_\/]/g, '');
+  function match(cid, text) {
+    const d = data(cid), t = norm(text); if (!d || !t) return null;
+    let best = null, bs = 0;
+    ORACLE.forEach(([topic]) => (d[topic] || []).forEach((it, i) => {
+      let sc = 0; (it[2] || []).forEach(k => { const kk = norm(k); if (kk && t.includes(kk)) sc += kk.length + 1; });
+      if (sc > bs) { bs = sc; best = { topic, i }; }
+    }));
+    if (best) return best;
+    if (d.vague && d.vague.length && /정보|알려|말해|설명|궁금|가르쳐|무엇|뭐야|뭔가|뭘/.test(t)) return { vague: true };
+    return null;
+  }
+  /* 직접 입력: 알아듣는 말(정보 · 운세)에만 답하고, 그 밖의 말에는 '읽음'만 남음 */
+  function send(raw) {
+    const c = cm(st.cid); if (c.mode !== 'oracle') return;
+    const text = String(raw || '').trim().slice(0, 80); if (!text) return;
+    flush(); SND.click();
+    const m = addMsg(c.id, 'me', '설립자', text, false), hit = match(c.id, text);
+    if (!hit) { setTimeout(() => { const r = document.createElement('span'); r.className = 'rd'; r.textContent = '읽음'; m.appendChild(r); toBottom(); }, RM ? 0 : 520 * Math.min(TS, 2)); return; }
+    const d = data(c.id);
+    if (hit.vague) { reply(c, d.vague[draw(`${c.id}.vague`, d.vague.length)]); return; }
+    const it = d[hit.topic][hit.i];
+    if (hit.topic !== st.topic) { st.topic = hit.topic; store.set(topicKey(st.mode), hit.topic); paintTabs(); paintQs(); } else paintQs(true);
+    reply(c, it[1][draw(`${c.id}.${hit.topic}.${hit.i}`, it[1].length)]);
     paintQs(true);
   }
   function renderRoster() {
     const box = $('#cmdList'); box.innerHTML = '';
     CMDS.forEach(c => {
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'cmd-it'; b.setAttribute('role', 'tab'); b.dataset.cid = c.id;
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'cmd-it'; b.setAttribute('role', 'tab'); b.dataset.cid = c.id; if (c.mode) b.dataset.mode = c.mode;
       b.innerHTML = '<span class="ci">' + ic(c.icon) + '</span><span><b></b><small></small></span>';
       $('b', b).textContent = c.ko; $('small', b).textContent = c.dept;
       b.addEventListener('mouseenter', () => SND.hover());
@@ -5106,10 +5168,10 @@ const Cmd = (() => {
   }
   function renderTabs() {
     const box = $('#cmdTabs'); box.innerHTML = '';
-    TOPICS.forEach(([k, ko]) => {
+    topicsOf(cm(st.cid)).forEach(([k, ko]) => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'cmd-tab'; b.setAttribute('role', 'tab'); b.dataset.t = k; b.textContent = ko;
       b.addEventListener('mouseenter', () => SND.hover());
-      b.addEventListener('click', () => { if (st.topic === k) return; SND.click(); st.topic = k; store.set('cmd.topic', k); paintTabs(); paintQs(); });
+      b.addEventListener('click', () => { if (st.topic === k) return; SND.click(); st.topic = k; store.set(topicKey(st.mode), k); paintTabs(); paintQs(); });
       box.appendChild(b);
     });
     const r = document.createElement('button'); r.type = 'button'; r.className = 'cmd-tab rnd'; r.innerHTML = ic('spiral') + '<span>무작위 질문</span>';
@@ -5118,7 +5180,10 @@ const Cmd = (() => {
     box.appendChild(r);
   }
   function paintTabs() { $$('#cmdTabs .cmd-tab[data-t]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.t === st.topic))); }
-  function paintRoster() { $$('#cmdList .cmd-it').forEach(b => b.setAttribute('aria-selected', String(b.dataset.cid === st.cid))); }
+  function paintRoster() {
+    $$('#cmdList .cmd-it').forEach(b => b.setAttribute('aria-selected', String(b.dataset.cid === st.cid)));
+    const on = $('#cmdList .cmd-it[aria-selected="true"]'); if (on && on.scrollIntoView) { try { on.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) { /* 무시 */ } }
+  }
   function paintHead() {
     const c = cm(st.cid);
     $('#cmdHic').innerHTML = ic(c.icon); $('#cmdName').textContent = c.ko; $('#cmdEn').textContent = c.dept + ' // ' + c.en;
@@ -5155,19 +5220,31 @@ const Cmd = (() => {
     if (cid === st.cid && st.built) return;
     flush(); if (!silent) SND.click();
     st.cid = cid; store.set('cmd.cid', cid);
+    const mode = cm(cid).mode || 'std', chat = $('#cmdLog').closest('.cmd-chat');
+    if (mode !== st.mode) {
+      st.mode = mode; const tp = topicsOf(cm(cid)), want = store.get(topicKey(mode), tp[0][0]);
+      st.topic = tp.some(t => t[0] === want) ? want : tp[0][0]; renderTabs(); paintTabs();
+      chat.classList.toggle('oracle', mode === 'oracle');
+      $('#cmdIn').hidden = mode !== 'oracle';
+    }
     $$('#cmdLog .cmd-lg').forEach(l => l.classList.remove('on')); logOf(cid).classList.add('on');
     paintRoster(); paintHead(); paintQs(); connect(cid); toBottom();
     if (!silent && !RM) { const ch = $('#cmdLog').closest('.cmd-chat'); ch.classList.remove('sw'); void ch.offsetWidth; ch.classList.add('sw'); setTimeout(() => ch.classList.remove('sw'), 800 * Math.min(TS, 2)); }
   }
+  function bindInput() {
+    const f = $('#cmdIn'), inp = $('#cmdText');
+    f.addEventListener('submit', e => { e.preventDefault(); const v = inp.value; inp.value = ''; send(v); inp.focus(); });
+    f.querySelector('button').addEventListener('mouseenter', () => SND.hover());
+  }
   return {
     show() {
-      if (!st.built) { renderRoster(); renderTabs(); st.topic = store.get('cmd.topic', 'talk'); if (!TOPICS.some(t => t[0] === st.topic)) st.topic = 'talk'; }
+      if (!st.built) { renderRoster(); bindInput(); }
       const want = store.get('cmd.cid', CMDS[0].id); const cid = CMDS.some(c => c.id === want) ? want : CMDS[0].id;
-      paintTabs(); select(cid, true); st.built = true;
+      select(cid, true); st.built = true;
     },
     enter() { toBottom(); },
     onLeave() { flush(); },
-    select, ask,
+    select, ask, send, match,
   };
 })();
 SHOW.cmd = () => Cmd.show();
