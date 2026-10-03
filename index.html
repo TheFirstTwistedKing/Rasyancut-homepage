@@ -1681,6 +1681,21 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
 #scEye.rage .e-code,#scEye.rage .e-say{opacity:.25}
 #scEye.rage{animation:eFlash 1.1s steps(1) infinite}
 @keyframes eFlash{0%,100%{background:#000}50%{background:#1a0000}}
+
+/* ---------- 4-c. 'No-code' 이후: 글리치 상태 + 입력창 하나 + 비밀 기록 보관소 ---------- */
+#scEye.locked .e-eye,#scEye.locked .e-fig,#scEye.locked .e-say,#scEye.locked .e-code,#scEye.locked #eCode{display:none!important}
+#scEye.locked{background:#0a0000}
+.e-only{position:absolute;left:50%;bottom:max(34px,env(safe-area-inset-bottom,0px));translate:-50% 0;z-index:5;width:min(420px,calc(100% - 32px))}
+.e-only[hidden],.e-vault[hidden]{display:none}
+.e-only input{width:100%;background:rgba(0,0,0,.93);border:2px solid #ff3a2a;color:#fff;font:700 clamp(18px,2.4vw,24px) "Share Tech Mono",monospace;letter-spacing:.12em;text-align:center;padding:12px 14px;outline:0;box-shadow:0 0 22px rgba(255,40,30,.55),inset 0 0 14px rgba(255,40,30,.25);text-shadow:2px 0 #00e5ff,-2px 0 #ff3a2a}
+.e-only input:focus{box-shadow:0 0 34px rgba(255,40,30,.85),inset 0 0 18px rgba(255,40,30,.35)}
+.e-only.bad{animation:eShake .4s}
+.e-vault{position:absolute;left:50%;top:calc(50% - 40px);translate:-50% -50%;z-index:8;width:min(560px,calc(100% - 32px));height:min(320px,calc(100% - 230px));display:flex;flex-direction:column;background:rgba(8,6,3,.96);border:1px solid var(--gold);box-shadow:0 0 0 1px #000,0 24px 80px rgba(0,0,0,.85),0 0 46px rgba(255,217,61,.14);animation:rise .5s var(--ease-soft) both}
+.e-vault .evt{display:flex;align-items:center;gap:10px;padding:8px 8px 8px 16px;background:linear-gradient(180deg,rgba(201,169,76,.3),rgba(60,50,20,.4));border-bottom:1px solid var(--gold)}
+.e-vault .evt span{flex:1;font-size:15px;color:var(--lemon)}
+.e-vault .evt button{width:30px;height:26px;color:var(--pale);border:1px solid var(--line);font-size:13px}
+.e-vault .evt button:hover{background:rgba(255,80,60,.4);color:#fff}
+.e-vault .evb{flex:1;min-height:0}
 /* SCENES-CSS:END */
 
 /* ================= 공지 (메인 우측 상단 종 아이콘 + 공지 화면) ================= */
@@ -2229,6 +2244,8 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
     <canvas id="eRage" hidden></canvas>
     <div class="e-rage-tx" id="eRageTx" hidden aria-live="assertive"></div>
     <canvas id="eCrt" hidden></canvas>
+    <form class="e-only" id="eEnter" hidden autocomplete="off"><input id="eEnterIn" type="text" maxlength="24" spellcheck="false" autocapitalize="off" aria-label="입력"></form>
+    <div class="e-vault" id="eVault" hidden role="dialog" aria-label="비밀 기록 보관소"><div class="evt"><span>비밀 기록 보관소</span><button type="button" id="eVaultX" aria-label="닫기">✕</button></div><div class="evb"></div></div>
     <form class="e-code" id="eCode" autocomplete="off">
       <label for="eIn" class="mono">RECOVERY CODE</label>
       <div class="e-hint">복구 코드 : <b>Re-code</b></div>
@@ -9659,7 +9676,7 @@ const Desk = (() => {
 const Eye = (() => {
   const view = $('#scEye'), cv = $('#eCv'), g = cv.getContext('2d'), eye = $('#eEye'), fig = $('#eFig'), say = $('#eSay'), txt = $('#eTxt'), form = $('#eCode'), inp = $('#eIn'), err = $('#eErr');
   const LINES = ['…드디어 이곳까지 오셨군요, 설립자.', '발신자는 밝히지 않습니다. 이름도 얼굴도, 이곳에서는 필요하지 않으니까요.', '여기는 설립자께서 물으신 적 없는 것들이 모이는 곳입니다. 오래 머무를 곳은 못 됩니다.', '돌아가시려면 오른쪽 아래에 복구 코드를 적으십시오.\n코드는 ‘Re-code’입니다.'];
-  let raging = false, rageRaf = 0, crtRaf = 0, rageStop = null;
+  let raging = false, locked = false, rageText = 'CALLER ID RESTRICTED  ', ambTimer = 0, rageRaf = 0, crtRaf = 0, rageStop = null;
   let raf = 0, on = false, t0 = 0, li = 0, open = 0, target = 1, blinkT = 0, mx = .5, my = .3, W = 0, H = 0, dpr = 1, tm = [];
   const parts = Array.from({ length: 90 }, (_, i) => ({ x: Math.random(), y: Math.random(), v: .04 + Math.random() * .16, l: 30 + Math.random() * 120, a: .05 + Math.random() * .22, m: i % 4 === 0 }));
   function resize() { dpr = Math.min(2, devicePixelRatio || 1); const r = cv.getBoundingClientRect(); W = r.width; H = r.height; cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
@@ -9694,7 +9711,7 @@ const Eye = (() => {
   function drawRage(ts) {
     rageRaf = requestAnimationFrame(drawRage); const W = rageC.width, H = rageC.height, g = rageC.getContext('2d'), t = (ts - rageT0) / 1000;
     g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = `rgb(${18 + (Math.sin(t * 9) > 0 ? 14 : 0)},0,0)`; g.fillRect(0, 0, W, H);
-    const sz = Math.max(46, Math.round(H / 6.5)), txt = 'CALLER ID RESTRICTED  ', lines = Math.ceil(H / (sz * .92)) + 1;
+    const sz = Math.max(46, Math.round(H / 6.5)), txt = rageText, lines = Math.ceil(H / (sz * .92)) + 1;
     g.font = `800 ${sz}px "Share Tech Mono", "Courier New", monospace`; g.textBaseline = 'top'; const tw = g.measureText(txt).width || 1;
     const amp = 1 + Math.min(1, t / 8);       // 시간이 갈수록 떨림이 커진다
     for (let i = 0; i < lines; i++) {
@@ -9705,7 +9722,7 @@ const Eye = (() => {
     }
     for (let k = 0, n = 3 + Math.floor(Math.random() * 5 * amp); k < n; k++) { const y = Math.random() * H, h = 4 + Math.random() * 46, dx = (Math.random() - .5) * 140 * amp; g.drawImage(rageC, 0, y, W, h, dx, y, W, h); }   // 가로로 찢어지는 글리치
     g.fillStyle = 'rgba(0,0,0,.2)'; for (let y = 0; y < H; y += 3) g.fillRect(0, y, W, 1);
-    if (Math.random() < .06 * (RM ? 0 : 1)) { g.fillStyle = 'rgba(255,255,255,.10)'; g.fillRect(0, 0, W, H); }        // 번쩍임은 약하고 드물게
+    if (!locked && Math.random() < .06 * (RM ? 0 : 1)) { g.fillStyle = 'rgba(255,255,255,.10)'; g.fillRect(0, 0, W, H); }        // 번쩍임은 약하고 드물게
     const vg = g.createRadialGradient(W / 2, H / 2, H * .2, W / 2, H / 2, H); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.7)'); g.fillStyle = vg; g.fillRect(0, 0, W, H);
   }
   let rageT0 = 0;
@@ -9732,8 +9749,26 @@ const Eye = (() => {
     SND.crtOff(); cancelAnimationFrame(crtRaf);
     if (crtC.animate) { const a = crtC.animate([{ transform: 'scale(1,1)', filter: 'brightness(1)' }, { transform: 'scale(1,.012)', filter: 'brightness(3)', offset: .55 }, { transform: 'scale(.003,.012)', filter: 'brightness(4)', opacity: 1, offset: .85 }, { transform: 'scale(0,0)', opacity: 0 }], { duration: RM ? 50 : 620, easing: 'ease-in', fill: 'forwards' }); await a.finished.catch(() => {}); } 
     crtC.hidden = true; view.classList.remove('crt-on'); crtC.getAnimations && crtC.getAnimations().forEach(a => a.cancel());
-    raging = false; inp.disabled = false; li = LINES.length - 1; say.hidden = false; Typer.say(txt, '…이번 한 번만 못 본 것으로 하겠습니다.\n코드는 ‘Re-code’입니다.', () => { try { inp.focus({ preventScroll: true }); } catch (e) { /* 무시 */ } }); inp.value = '';
+    raging = false; enterLocked();
   }
+
+  /* 분노 이후: 글리치가 계속 뜨는 화면에 'Enter-code' 가 가득하고, 입력창은 하나뿐 */
+  const enterF = $('#eEnter'), enterIn = $('#eEnterIn'), vault = $('#eVault');
+  function enterLocked() {
+    locked = true; rageText = 'Enter-code  '; view.classList.add('locked'); say.hidden = true; vault.hidden = true; rageTx.hidden = true;
+    const r = view.getBoundingClientRect(); rageC.width = Math.round(r.width); rageC.height = Math.round(r.height); rageC.hidden = false; rageT0 = performance.now(); cancelAnimationFrame(rageRaf); rageRaf = requestAnimationFrame(drawRage);
+    enterF.hidden = false; enterIn.value = ''; enterIn.disabled = false; try { enterIn.focus({ preventScroll: true }); } catch (e) { /* 무시 */ }
+    clearInterval(ambTimer); ambTimer = setInterval(() => { SND._n(0, .02 + Math.random() * .04, 2600 + Math.random() * 4000, 1600, .022 + Math.random() * .02, .9, 'highpass', Math.random() * 2 - 1); if (Math.random() < .25) SND._t(1200 + Math.random() * 2400, .03, 'square', .01, 0, null, 0, Math.random() * 2 - 1); }, 340);
+  }
+  function leaveLocked() { locked = false; rageText = 'CALLER ID RESTRICTED  '; clearInterval(ambTimer); enterF.hidden = true; vault.hidden = true; view.classList.remove('locked'); }
+  enterIn.addEventListener('input', () => SND.type());
+  enterF.addEventListener('submit', e => {
+    e.preventDefault(); const v = enterIn.value.trim().toLowerCase().replace(/[\s_]/g, '');
+    if (v === 'enter-code' || v === 'entercode') { enterIn.value = ''; SND.tone(1318, .12, 'sine', .06); SND.tone(1760, .2, 'sine', .05, .08); SND._n(0, .25, 4000, 300, .14, .8); vault.hidden = false; return; }
+    if (v === 're-code' || v === 'recode') { enterIn.blur(); leaveLocked(); Scenes.leaveEye(); return; }
+    enterIn.value = ''; enterF.classList.remove('bad'); void enterF.offsetWidth; enterF.classList.add('bad'); SND.tone(160, .16, 'square', .05); SND.tone(110, .22, 'square', .05, .13);
+  });
+  $('#eVaultX').addEventListener('click', () => { SND.click(); vault.hidden = true; try { enterIn.focus({ preventScroll: true }); } catch (e) { /* 무시 */ } });
   form.addEventListener('submit', e => {
     e.preventDefault(); if (raging) return; const v = inp.value.trim().toLowerCase().replace(/[\s_]/g, '');
     if (v === 'no-code' || v === 'nocode') { rage(); return; }
@@ -9748,7 +9783,7 @@ const Eye = (() => {
       t0 = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(frame);
       tm.push(setTimeout(() => eye.classList.add('show'), 500 * (RM ? .1 : 1)), setTimeout(() => fig.classList.add('show'), 2200 * (RM ? .1 : 1)), setTimeout(nextLine, 4200 * (RM ? .1 : 1)));
     },
-    leave() { raging = false; rageT.forEach(id => { clearTimeout(id); clearInterval(id); }); rageT.length = 0; if (rageStop) { rageStop(); rageStop = null; } cancelAnimationFrame(rageRaf); cancelAnimationFrame(crtRaf); rageC.hidden = true; crtC.hidden = true; rageTx.hidden = true; view.classList.remove('rage', 'crt-on'); inp.disabled = false; on = false; cancelAnimationFrame(raf); raf = 0; tm.forEach(clearTimeout); tm = []; Typer.stop(); SND.windStop(); SND.musicTo(.95, 2.5); },
+    leave() { leaveLocked(); raging = false; rageT.forEach(id => { clearTimeout(id); clearInterval(id); }); rageT.length = 0; if (rageStop) { rageStop(); rageStop = null; } cancelAnimationFrame(rageRaf); cancelAnimationFrame(crtRaf); rageC.hidden = true; crtC.hidden = true; rageTx.hidden = true; view.classList.remove('rage', 'crt-on'); inp.disabled = false; on = false; cancelAnimationFrame(raf); raf = 0; tm.forEach(clearTimeout); tm = []; Typer.stop(); SND.windStop(); SND.musicTo(.95, 2.5); },
   };
 })();
 /* SCENES-JS:END */

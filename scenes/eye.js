@@ -4,7 +4,7 @@
 const Eye = (() => {
   const view = $('#scEye'), cv = $('#eCv'), g = cv.getContext('2d'), eye = $('#eEye'), fig = $('#eFig'), say = $('#eSay'), txt = $('#eTxt'), form = $('#eCode'), inp = $('#eIn'), err = $('#eErr');
   const LINES = ['…드디어 이곳까지 오셨군요, 설립자.', '발신자는 밝히지 않습니다. 이름도 얼굴도, 이곳에서는 필요하지 않으니까요.', '여기는 설립자께서 물으신 적 없는 것들이 모이는 곳입니다. 오래 머무를 곳은 못 됩니다.', '돌아가시려면 오른쪽 아래에 복구 코드를 적으십시오.\n코드는 ‘Re-code’입니다.'];
-  let raging = false, rageRaf = 0, crtRaf = 0, rageStop = null;
+  let raging = false, locked = false, rageText = 'CALLER ID RESTRICTED  ', ambTimer = 0, rageRaf = 0, crtRaf = 0, rageStop = null;
   let raf = 0, on = false, t0 = 0, li = 0, open = 0, target = 1, blinkT = 0, mx = .5, my = .3, W = 0, H = 0, dpr = 1, tm = [];
   const parts = Array.from({ length: 90 }, (_, i) => ({ x: Math.random(), y: Math.random(), v: .04 + Math.random() * .16, l: 30 + Math.random() * 120, a: .05 + Math.random() * .22, m: i % 4 === 0 }));
   function resize() { dpr = Math.min(2, devicePixelRatio || 1); const r = cv.getBoundingClientRect(); W = r.width; H = r.height; cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
@@ -39,7 +39,7 @@ const Eye = (() => {
   function drawRage(ts) {
     rageRaf = requestAnimationFrame(drawRage); const W = rageC.width, H = rageC.height, g = rageC.getContext('2d'), t = (ts - rageT0) / 1000;
     g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = `rgb(${18 + (Math.sin(t * 9) > 0 ? 14 : 0)},0,0)`; g.fillRect(0, 0, W, H);
-    const sz = Math.max(46, Math.round(H / 6.5)), txt = 'CALLER ID RESTRICTED  ', lines = Math.ceil(H / (sz * .92)) + 1;
+    const sz = Math.max(46, Math.round(H / 6.5)), txt = rageText, lines = Math.ceil(H / (sz * .92)) + 1;
     g.font = `800 ${sz}px "Share Tech Mono", "Courier New", monospace`; g.textBaseline = 'top'; const tw = g.measureText(txt).width || 1;
     const amp = 1 + Math.min(1, t / 8);       // 시간이 갈수록 떨림이 커진다
     for (let i = 0; i < lines; i++) {
@@ -50,7 +50,7 @@ const Eye = (() => {
     }
     for (let k = 0, n = 3 + Math.floor(Math.random() * 5 * amp); k < n; k++) { const y = Math.random() * H, h = 4 + Math.random() * 46, dx = (Math.random() - .5) * 140 * amp; g.drawImage(rageC, 0, y, W, h, dx, y, W, h); }   // 가로로 찢어지는 글리치
     g.fillStyle = 'rgba(0,0,0,.2)'; for (let y = 0; y < H; y += 3) g.fillRect(0, y, W, 1);
-    if (Math.random() < .06 * (RM ? 0 : 1)) { g.fillStyle = 'rgba(255,255,255,.10)'; g.fillRect(0, 0, W, H); }        // 번쩍임은 약하고 드물게
+    if (!locked && Math.random() < .06 * (RM ? 0 : 1)) { g.fillStyle = 'rgba(255,255,255,.10)'; g.fillRect(0, 0, W, H); }        // 번쩍임은 약하고 드물게
     const vg = g.createRadialGradient(W / 2, H / 2, H * .2, W / 2, H / 2, H); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.7)'); g.fillStyle = vg; g.fillRect(0, 0, W, H);
   }
   let rageT0 = 0;
@@ -77,8 +77,26 @@ const Eye = (() => {
     SND.crtOff(); cancelAnimationFrame(crtRaf);
     if (crtC.animate) { const a = crtC.animate([{ transform: 'scale(1,1)', filter: 'brightness(1)' }, { transform: 'scale(1,.012)', filter: 'brightness(3)', offset: .55 }, { transform: 'scale(.003,.012)', filter: 'brightness(4)', opacity: 1, offset: .85 }, { transform: 'scale(0,0)', opacity: 0 }], { duration: RM ? 50 : 620, easing: 'ease-in', fill: 'forwards' }); await a.finished.catch(() => {}); } 
     crtC.hidden = true; view.classList.remove('crt-on'); crtC.getAnimations && crtC.getAnimations().forEach(a => a.cancel());
-    raging = false; inp.disabled = false; li = LINES.length - 1; say.hidden = false; Typer.say(txt, '…이번 한 번만 못 본 것으로 하겠습니다.\n코드는 ‘Re-code’입니다.', () => { try { inp.focus({ preventScroll: true }); } catch (e) { /* 무시 */ } }); inp.value = '';
+    raging = false; enterLocked();
   }
+
+  /* 분노 이후: 글리치가 계속 뜨는 화면에 'Enter-code' 가 가득하고, 입력창은 하나뿐 */
+  const enterF = $('#eEnter'), enterIn = $('#eEnterIn'), vault = $('#eVault');
+  function enterLocked() {
+    locked = true; rageText = 'Enter-code  '; view.classList.add('locked'); say.hidden = true; vault.hidden = true; rageTx.hidden = true;
+    const r = view.getBoundingClientRect(); rageC.width = Math.round(r.width); rageC.height = Math.round(r.height); rageC.hidden = false; rageT0 = performance.now(); cancelAnimationFrame(rageRaf); rageRaf = requestAnimationFrame(drawRage);
+    enterF.hidden = false; enterIn.value = ''; enterIn.disabled = false; try { enterIn.focus({ preventScroll: true }); } catch (e) { /* 무시 */ }
+    clearInterval(ambTimer); ambTimer = setInterval(() => { SND._n(0, .02 + Math.random() * .04, 2600 + Math.random() * 4000, 1600, .022 + Math.random() * .02, .9, 'highpass', Math.random() * 2 - 1); if (Math.random() < .25) SND._t(1200 + Math.random() * 2400, .03, 'square', .01, 0, null, 0, Math.random() * 2 - 1); }, 340);
+  }
+  function leaveLocked() { locked = false; rageText = 'CALLER ID RESTRICTED  '; clearInterval(ambTimer); enterF.hidden = true; vault.hidden = true; view.classList.remove('locked'); }
+  enterIn.addEventListener('input', () => SND.type());
+  enterF.addEventListener('submit', e => {
+    e.preventDefault(); const v = enterIn.value.trim().toLowerCase().replace(/[\s_]/g, '');
+    if (v === 'enter-code' || v === 'entercode') { enterIn.value = ''; SND.tone(1318, .12, 'sine', .06); SND.tone(1760, .2, 'sine', .05, .08); SND._n(0, .25, 4000, 300, .14, .8); vault.hidden = false; return; }
+    if (v === 're-code' || v === 'recode') { enterIn.blur(); leaveLocked(); Scenes.leaveEye(); return; }
+    enterIn.value = ''; enterF.classList.remove('bad'); void enterF.offsetWidth; enterF.classList.add('bad'); SND.tone(160, .16, 'square', .05); SND.tone(110, .22, 'square', .05, .13);
+  });
+  $('#eVaultX').addEventListener('click', () => { SND.click(); vault.hidden = true; try { enterIn.focus({ preventScroll: true }); } catch (e) { /* 무시 */ } });
   form.addEventListener('submit', e => {
     e.preventDefault(); if (raging) return; const v = inp.value.trim().toLowerCase().replace(/[\s_]/g, '');
     if (v === 'no-code' || v === 'nocode') { rage(); return; }
@@ -93,6 +111,6 @@ const Eye = (() => {
       t0 = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(frame);
       tm.push(setTimeout(() => eye.classList.add('show'), 500 * (RM ? .1 : 1)), setTimeout(() => fig.classList.add('show'), 2200 * (RM ? .1 : 1)), setTimeout(nextLine, 4200 * (RM ? .1 : 1)));
     },
-    leave() { raging = false; rageT.forEach(id => { clearTimeout(id); clearInterval(id); }); rageT.length = 0; if (rageStop) { rageStop(); rageStop = null; } cancelAnimationFrame(rageRaf); cancelAnimationFrame(crtRaf); rageC.hidden = true; crtC.hidden = true; rageTx.hidden = true; view.classList.remove('rage', 'crt-on'); inp.disabled = false; on = false; cancelAnimationFrame(raf); raf = 0; tm.forEach(clearTimeout); tm = []; Typer.stop(); SND.windStop(); SND.musicTo(.95, 2.5); },
+    leave() { leaveLocked(); raging = false; rageT.forEach(id => { clearTimeout(id); clearInterval(id); }); rageT.length = 0; if (rageStop) { rageStop(); rageStop = null; } cancelAnimationFrame(rageRaf); cancelAnimationFrame(crtRaf); rageC.hidden = true; crtC.hidden = true; rageTx.hidden = true; view.classList.remove('rage', 'crt-on'); inp.disabled = false; on = false; cancelAnimationFrame(raf); raf = 0; tm.forEach(clearTimeout); tm = []; Typer.stop(); SND.windStop(); SND.musicTo(.95, 2.5); },
   };
 })();
