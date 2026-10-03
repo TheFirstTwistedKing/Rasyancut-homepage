@@ -1,8 +1,8 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}/* ================= 수도 상세 지도 (관측소) ================= */
-.cap-iris{position:absolute;inset:0;z-index:90;background:#000;pointer-events:none;visibility:hidden;clip-path:circle(0 at var(--ix,50%) var(--iy,50%));opacity:1}
+.cap-iris{position:absolute;inset:0;z-index:90;background:#000;pointer-events:none;visibility:hidden;opacity:0}
 .cap-iris.on0{visibility:visible}
-.cap-iris.in{clip-path:circle(150vmax at var(--ix,50%) var(--iy,50%));transition:clip-path var(--d,800ms) cubic-bezier(.55,0,.8,.3)}
-.cap-iris.out{opacity:0;transition:opacity var(--d,800ms) ease}
+.cap-iris.in{opacity:1;transition:opacity var(--d,800ms) ease-in}
+.cap-iris.out{opacity:0;transition:opacity var(--d,800ms) ease-out}
 .ob-item.cap-go .ob-art,.cap-bld.go .cb-art{transform:scale(2.6);transition:transform var(--d,800ms) cubic-bezier(.55,0,.8,.3)}
 .capmap{position:absolute;inset:0;z-index:60;display:none;flex-direction:column;background:radial-gradient(90% 80% at 50% 45%,#14100a 0%,#080604 62%,#030302 100%);color:var(--pale)}
 .capmap.on{display:flex}
@@ -7246,6 +7246,7 @@ function buildCodex() {
    body: 문자열 = 문단, 배열 = 점 목록
    ========================================================================== */
 const NOTICES = [
+  { id: "p4-6-1", tag: "FIX", date: "2026.10.03", title: "Patch v-4.6.1 · 수도 지도 전환 안정화", body: ["수도 아이콘을 눌렀을 때 화면이 멈춘 듯 보일 수 있던 부분을 고쳤어요.",["전환 연출을 더 가볍게 바꿨어요.","전환 중 오류가 나도 검정 화면에 갇히지 않아요."]] },
   { id: "p4-6-0", tag: "UPDATE", date: "2026.10.03", title: "Patch v-4.6.0 · 수도 상세 지도", body: ["관측소에서 수도 아이콘을 누르면 그 안의 상세 지도가 열려요.",["아이콘 속으로 들어가듯 화면이 검정으로 덮였다가 다시 밝아져요.","아스트랄리스의 수도 메그레즈 중앙에 별의 관측관이 있고, 주변에 주요 건물 아이콘이 있어요.","건물 아이콘을 누르면 같은 연출로 상세 설정이 나와요.","다른 수도는 아직 상세 지도가 비어 있어요."]] },
   { id: "p4-5-0", tag: "UPDATE", date: "2026.10.03", title: "Patch v-4.5.0 · 아스트랄리스 북두칠성 도시", body: ["관측소의 아스트랄리스에 북두칠성 모양으로 대도시가 이어졌어요.",["수도의 이름이 메그레즈로 바뀌었어요.","두베, 메락, 페크다, 알리오트, 미자르, 알카이드가 새로 생겼어요. 메그레즈와 함께 북두칠성 모양을 이뤄요.","새 도시와 겹치던 작은 마을 몇 곳은 조금 옮겨졌어요."]] },
   { id: "p4-4-0", tag: "UPDATE", date: "2026.10.03", title: "Patch v-4.4.0 · 아스트랄리스 설정 추가", body: ["설정집에 아스트랄리스 장이 생겼어요.",["별의 관측관, 온실관, 아르크스 렉테아, 군주실, 루미나리아, 루미, 인물 항목을 읽을 수 있어요.","국가 목록에서 아스트랄리스 설정으로 바로 넘어가는 버튼이 생겼어요.","발신자 표시 제한에게 아스트랄리스에 대해 물어볼 수 있어요."]] },
@@ -8236,12 +8237,12 @@ const Obs = (() => {
   let capIsOpen = false, capBusy = false, capDetOpen = false, capFrom = null;
   function irisGo(fromEl, mid) {
     return new Promise(res => {
-      const sr = scr.getBoundingClientRect(), r = fromEl ? fromEl.getBoundingClientRect() : sr;
-      const x = r.left + r.width / 2 - sr.left, y = r.top + r.height / 2 - sr.top, d = RM ? 30 : Math.round(520 * TS * .5);
-      irisEl.style.setProperty('--ix', x + 'px'); irisEl.style.setProperty('--iy', y + 'px'); irisEl.style.setProperty('--d', d + 'ms'); capEl.style.setProperty('--d', d + 'ms'); scr.style.setProperty('--d', d + 'ms');
+      const d = RM ? 30 : Math.round(520 * TS * .5);
+      irisEl.style.setProperty('--d', d + 'ms'); capEl.style.setProperty('--d', d + 'ms'); scr.style.setProperty('--d', d + 'ms');
       irisEl.className = 'cap-iris on0'; void irisEl.offsetWidth; irisEl.classList.add('in');
       setTimeout(() => {
-        mid && mid(); irisEl.classList.add('hold');
+        try { mid && mid(); } catch (err) { console.error(err); }       // 오류가 나도 검정 화면에 갇히지 않게 끝까지 걷는다
+        irisEl.classList.add('hold');
         setTimeout(() => { irisEl.classList.add('out'); setTimeout(() => { irisEl.className = 'cap-iris'; res(); }, d + 40); }, Math.round(d * .35));
       }, d + 40);
     });
@@ -8284,12 +8285,12 @@ const Obs = (() => {
   }
   function openCapital(t) {
     if (capBusy || capIsOpen) return;
-    capBusy = true; capFrom = t; SND.tone(110, .9, 'sine', .06, 0, 440); closePanel();
+    capBusy = true; capFrom = t; SND.tone(110, .9, 'sine', .06, 0, 440); closePanel(); stop(); clearKeys();      // 덮이는 동안 관측소 그림을 멈춰 부담을 줄인다
     if (t.el) t.el.classList.add('cap-go');
     irisGo(t.el, () => {
       if (t.el) t.el.classList.remove('cap-go');
       buildCap(t); capEl.classList.add('on'); capEl.setAttribute('aria-hidden', 'false'); capIsOpen = true; stop(); clearKeys();
-    }).then(() => { capBusy = false; const f = capEl.querySelector('.cap-bld'); if (f && kbFocus) f.focus(); });
+    }).then(() => { capBusy = false; if (!capIsOpen && cur === 'observ') start(); const f = capEl.querySelector('.cap-bld'); if (f && kbFocus) f.focus(); });
   }
   function closeCapital(instant) {
     if (!capIsOpen) return;
