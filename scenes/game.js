@@ -331,9 +331,15 @@ const Game = (() => {
 
   /* ---------- 사람 그리기: 직원(여러 팔레트) · 아비시온 크리토스 ---------- */
   const WSPR = new Map(); let KR_SPR = null;
-  const KRITOS = { skin: '#f3dccb', skinD: '#d9bfae', hair: '#2f5bff', hairL: '#8fb0ff', style: 'slick', glasses: '#0b1030', eye: '#0b1030', jacket: '#1d3fd6', shirt: '#6f90ff', tie: '#15226e', gold: '#e6c04a', fur: '#d9b44a', furL: '#f6e19a', furD: '#9a7a24', bottom: '#0a0a10', shoe: '#0a0a10', hand: '#f3dccb', mouth: '#b98a7a', hairD: '#1c3ab0' };
-  const mkNpc = (hair, style, skin, top, topD, shirt, tie, extra = {}) => Object.assign({ skin, skinD: skin, hair, hairL: hair, hairD: hair, style, top, topD, topL: top, shirt, tie, bottom: '#0d1020', shoe: '#06070c', hand: skin, belt: '#06070c' }, extra);
-  const NPC_SPECS = [mkNpc('#1a1410', 'short', '#e8c9ae', '#10204e', '#0a1536', '#dbe6ff', '#38d6ff'), mkNpc('#3a2a1a', 'long', '#d8b494', '#1a2d70', '#101c4a', '#ffffff', '#5d7bff', { glasses: '#222a4a' }), mkNpc('#0d0d12', 'short', '#f0d2b8', '#171b26', '#0e111a', '#cfe0ff', '#ffd93d'), mkNpc('#6a4a2a', 'long', '#e0bfa0', '#0f1a3a', '#080f26', '#dbe6ff', '#ff6a8a'), mkNpc('#2a2a32', 'slick', '#c9a284', '#222a3c', '#141a28', '#eef3ff', '#38d6ff', { glasses: '#10101a' }), mkNpc('#1c1008', 'messy', '#e8c9ae', '#142654', '#0a1636', '#dbe6ff', '#c9a94c')];
+  const KRITOS = { skin: '#f3dccb', skinD: '#d9bfae', hair: '#2f5bff', hairL: '#9ab8ff', style: 'slick', glasses: '#0b1030', iris: '#3a66d8', irisD: '#14246a', jacket: '#1d3fd6', shirt: '#6f90ff', tie: '#15226e', gold: '#e6c04a', fur: '#d9b44a', furL: '#f6e19a', furD: '#9a7a24', bottom: '#0a0a10', bottomL: '#22222c', shoe: '#0a0a10', shoeL: '#30303c', blush: '#eab0a4', hand: '#f3dccb', mouth: '#b98a7a', hairD: '#1c3ab0' };
+  const mkNpc = (hair, hairL, style, skin, top, topD, shirt, tie, extra = {}) => Object.assign({ skin, skinD: '#00000000', hair, hairL, hairD: hair, style, top, topD, topL: top, shirt, tie, bottom: '#0d1020', bottomL: '#1e2848', shoe: '#06070c', shoeL: '#2a2e3a', hand: skin, belt: '#06070c', blush: '#e8a898' }, extra);
+  const NPC_SPECS = [
+    mkNpc('#2a1f18', '#5a463a', 'short', '#f0d2b8', '#1c2f6e', '#0f1c48', '#e8f0ff', '#38d6ff', { topL: '#2f4a9a', skinD: '#d8b59c', iris: '#3a4a6a' }),
+    mkNpc('#7a5232', '#b88a58', 'long', '#f4d9c4', '#27408c', '#16265a', '#ffffff', '#ff7a9a', { topL: '#3f60b8', skinD: '#dcb8a2', glasses: '#2a2f55', iris: '#6a4a8a', irisD: '#2a1a40' }),
+    mkNpc('#14141c', '#3a3a52', 'short', '#e8c9ae', '#20242f', '#12151c', '#d8e4ff', '#ffd93d', { topL: '#363c4e', skinD: '#c6a58a', iris: '#2a3a2a' }),
+    mkNpc('#a87a4a', '#e0b078', 'long', '#f0d2b8', '#142a5e', '#0a1838', '#dbe6ff', '#ff6a8a', { topL: '#2a4a98', skinD: '#d6b49c', iris: '#4a8a6a', irisD: '#1a3a2a' }),
+    mkNpc('#3a3c48', '#6a6e82', 'slick', '#d4ae90', '#262e44', '#151b2c', '#eef3ff', '#38d6ff', { topL: '#3a4666', skinD: '#b48c70', glasses: '#14141e', iris: '#3a3a4a' }),
+    mkNpc('#2a1408', '#6a3a1a', 'messy', '#e8c9ae', '#1c3470', '#0e1c44', '#dbe6ff', '#c9a94c', { topL: '#2c4e9e', skinD: '#c6a58a', iris: '#5a3a1a', irisD: '#2a1a08' })];
   function npcSprite(spec, dir, f, sit, carry) {
     const key = spec.top + spec.hair + dir + f + (sit ? 's' : '') + (carry ? 'c' : ''); if (WSPR.has(key)) return WSPR.get(key);
     const base = dir === 'right' ? 'left' : dir; let c = outline(mk(CW, CH, g => drawChibi(g, base, f, spec, { sit, carry })));
@@ -399,7 +405,7 @@ const Game = (() => {
   const SPR = {};
   const CW = 44, CH = 54;
   function drawChar(g, dir, f) { drawChibi(g, dir, f, PLAYER); drawGuandao(g, dir, f); }
-  const PLAYER = { skin: SK, skinD: SKD, hair: HR, hairL: HRL, hairD: '#0d0e12', style: 'messy', hideEyes: true, top: CG, topD: CGD, topL: CGL, coat: true, inner: IN, innerL: INL, shirt: IN, bottom: PT, shoe: BT, hand: GLV, eye: '#15161a' };
+  const PLAYER = { skin: SK, skinD: SKD, hair: HR, hairL: HRL, hairD: '#0d0e12', style: 'messy', iris: '#6a8f8a', irisD: '#2e4642',  top: CG, topD: CGD, topL: CGL, coat: true, inner: IN, innerL: INL, shirt: IN, bottom: PT, shoe: BT, hand: GLV, eye: '#15161a' };
   function drawGuandao(g, dir, f) {
     const px = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); }, bob = f === 1 || f === 3 ? -1 : 0;
     const guandao = (x, out, gx, by) => {   // 언월도: 긴 자루 + 폭 넓은 초승달 날 + 금 마디 + 녹색 술, 손(장갑)이 자루를 쥠
@@ -415,68 +421,92 @@ const Game = (() => {
     };
     if (dir === 'down') guandao(12, -1, 10, bob); else if (dir === 'up') guandao(31, 1, 28, bob); else guandao(12, -1, 10, bob);
   }
-  /* ---------- 델타룬(크리스)식 캐릭터: 몸집에 비해 크고 둥근 머리카락 · 가는 팔다리 · 단순한 색면. 플레이어와 모든 NPC가 같은 크기(44×54, 발끝 y=51)를 쓴다 ---------- */
+  /* ---------- 캐릭터: 2.5등신 도트 일러스트풍(참고 이미지) — 큰 머리 · 가는 몸 · 눈동자 하이라이트 · 머리 결 · 옷의 밝은/어두운 면. 플레이어와 모든 NPC가 같은 크기(44×54, 발끝 y=51) ---------- */
   function drawChibi(g, dir, f, S, o = {}) {
     const px = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
-    const bob = f === 1 || f === 3 ? -1 : 0, lf = f === 1 ? 1 : 0, rf = f === 3 ? 1 : 0, sw = f === 1 ? 1 : f === 3 ? -1 : 0, sit = !!o.sit, eye = S.eye || '#15161a', hD = S.hairD || S.hair;
+    const bob = f === 1 || f === 3 ? -1 : 0, lf = f === 1 ? 1 : 0, rf = f === 3 ? 1 : 0, sw = f === 1 ? 1 : f === 3 ? -1 : 0, sit = !!o.sit;
+    const hD = S.hairD || S.hair, hL = S.hairL || S.hair, skD = S.skinD || S.skin, bL = S.bottomL || S.bottom, shL = S.shoeL || S.shoe, iris = S.iris || '#5a4636', irisD = S.irisD || '#2a2018';
     const fr = (x, y, w, h, c) => { px(x, y, w, 2, c); px(x, y + h - 2, w, 2, c); px(x, y, 2, h, c); px(x + w - 2, y, 2, h, c); };   // 뿔테 (알 없음)
-    const fur = (x, y, w, h, hem) => { px(x, y, w, h, S.fur); for (let j = 0; j < h; j += 4) for (let i = (j / 4) % 2 ? 2 : 0; i < w; i += 5) px(x + i, y + j + 1, 2, 2, S.furL); px(x, y, 1, h, S.furD); px(x + w - 1, y, 1, h, S.furD); if (hem) for (let i = 0; i < w; i += 3) px(x + i, y + h, 2, 2, S.fur); };
-    const bobHair = (front) => {        // 크리스처럼 얼굴 둘레를 감싸는 둥근 단발(앞머리가 눈 위를 덮음)
-      px(14, 4 + bob, 16, 3, S.hair); px(11, 6 + bob, 22, 4, S.hair); px(9, 9 + bob, 26, 15, S.hair); px(11, 23 + bob, 22, 3, S.hair);
-      if (S.style === 'messy') { px(13, 2 + bob, 4, 3, S.hair); px(20, 1 + bob, 5, 4, S.hair); px(28, 3 + bob, 4, 3, S.hair); px(9, 20 + bob, 3, 7, S.hair); px(32, 20 + bob, 3, 7, S.hair); }
-      px(14, 7 + bob, 8, 1, S.hairL); px(26, 9 + bob, 5, 1, S.hairL);
-      if (front) { px(14, 15 + bob, 16, 1, hD); px(14, 16 + bob, 16, 9, S.skin); px(30, 17 + bob, 1, 8, S.skinD); px(14, 24 + bob, 16, 1, S.skinD); }
+    const fur = (x, y, w, h, hem) => { px(x, y, w, h, S.fur); for (let j = 0; j < h; j += 4) for (let i = (j / 4) % 2 ? 2 : 0; i < w; i += 5) px(x + i, y + j + 1, 2, 2, S.furL); px(x, y, 1, h, S.furD); px(x + w - 1, y, 1, h, S.furD); px(x, y + h - 1, w, 1, S.furD); if (hem) for (let i = 0; i < w; i += 3) px(x + i, y + h, 2, 2, S.fur); };
+    const eye = (x, y) => { px(x, y, 4, 1, S.lid || '#1a1418'); px(x, y + 1, 4, 4, '#f4eee8'); px(x + 1, y + 1, 3, 4, iris); px(x + 1, y + 3, 3, 2, irisD); px(x + 2, y + 2, 1, 2, '#0a0810'); px(x + 1, y + 1, 1, 1, '#ffffff'); px(x + 3, y + 4, 1, 1, '#ffffff'); };
+    const hairTop = () => {            // 머리 윗면: 둥근 덮개 + 결 + 하이라이트
+      px(14, 4 + bob, 16, 2, S.hair); px(12, 5 + bob, 20, 3, S.hair); px(11, 7 + bob, 22, 5, S.hair);
+      px(15, 4 + bob, 9, 1, hL); px(13, 6 + bob, 7, 1, hL); px(23, 6 + bob, 5, 1, hL); px(12, 11 + bob, 20, 1, hD);
+      if (S.style === 'messy') { px(13, 2 + bob, 4, 3, S.hair); px(20, 1 + bob, 5, 4, S.hair); px(28, 3 + bob, 4, 3, S.hair); px(21, 1 + bob, 2, 1, hL); }
     };
-    const hairBack = () => { if (S.style === 'slick') { px(12, 4 + bob, 20, 18, S.hair); px(13, 22 + bob, 18, 2, S.hair); px(14, 7 + bob, 16, 1, S.hairL); px(14, 11 + bob, 16, 1, S.hairL); } else bobHair(false); };
-    const hairFront = () => {
-      if (S.style === 'slick') { px(14, 3 + bob, 16, 3, S.hair); px(12, 5 + bob, 20, 6, S.hair); px(11, 9 + bob, 3, 8, S.hair); px(30, 9 + bob, 3, 8, S.hair); px(15, 6 + bob, 14, 1, S.hairL); px(14, 8 + bob, 16, 1, S.hairL); px(14, 11 + bob, 16, 14, S.skin); px(30, 12 + bob, 1, 12, S.skinD); px(14, 24 + bob, 16, 1, S.skinD); }
-      else if (S.style === 'short') { px(14, 4 + bob, 16, 3, S.hair); px(11, 6 + bob, 22, 5, S.hair); px(10, 9 + bob, 24, 7, S.hair); px(14, 11 + bob, 16, 14, S.skin); px(10, 13 + bob, 4, 5, S.hair); px(30, 13 + bob, 4, 5, S.hair); px(14, 11 + bob, 16, 2, S.hair); px(30, 14 + bob, 1, 10, S.skinD); px(14, 24 + bob, 16, 1, S.skinD); }
-      else bobHair(true);
+    const frontHair = () => {
+      hairTop();
+      if (S.style === 'slick') { px(11, 8 + bob, 3, 8, S.hair); px(30, 8 + bob, 3, 8, S.hair); px(14, 8 + bob, 16, 2, S.hair); px(14, 9 + bob, 16, 1, hL); px(12, 7 + bob, 20, 1, hL); }
+      else if (S.style === 'short') { px(11, 10 + bob, 4, 7, S.hair); px(29, 10 + bob, 4, 7, S.hair); px(14, 10 + bob, 16, 3, S.hair); px(18, 12 + bob, 5, 2, S.hair); px(14, 12 + bob, 3, 1, hD); }
+      else if (S.style === 'long') { px(10, 10 + bob, 5, 24, S.hair); px(29, 10 + bob, 5, 24, S.hair); px(11, 12 + bob, 1, 20, hL); px(32, 12 + bob, 1, 20, hD); px(14, 10 + bob, 8, 5, S.hair); px(23, 10 + bob, 7, 3, S.hair); px(16, 14 + bob, 4, 1, hD); }
+      else if (S.style === 'messy') { px(10, 10 + bob, 5, 12, S.hair); px(29, 10 + bob, 5, 12, S.hair); px(14, 10 + bob, 7, 5, S.hair); px(22, 10 + bob, 4, 4, S.hair); px(26, 10 + bob, 4, 3, S.hair); px(14, 14 + bob, 4, 1, hD); px(11, 12 + bob, 1, 8, hL); }
+      else { px(10, 10 + bob, 5, 14, S.hair); px(29, 10 + bob, 5, 14, S.hair); px(14, 10 + bob, 16, 3, S.hair); px(11, 12 + bob, 1, 10, hL); px(15, 12 + bob, 5, 1, hD); }
     };
-    const faceDots = () => { if (S.glasses) { fr(15, 15 + bob, 7, 6, S.glasses); fr(23, 15 + bob, 7, 6, S.glasses); px(21, 16 + bob, 2, 2, S.glasses); px(12, 16 + bob, 3, 2, S.glasses); px(30, 16 + bob, 3, 2, S.glasses); px(17, 17 + bob, 2, 2, eye); px(26, 17 + bob, 2, 2, eye); } else if (!S.hideEyes && S.style !== 'messy' && S.style !== 'long') { px(17, 17 + bob, 2, 3, eye); px(26, 17 + bob, 2, 3, eye); } px(20, 21 + bob, 5, 1, S.mouth || '#7a3a2a'); };
+    const hairBack = () => {
+      if (S.style === 'long') { px(9, 5 + bob, 26, 29, S.hair); px(9, 33 + bob, 26, 1, hD); for (let i = 0; i < 24; i += 4) px(11 + i, 14 + bob, 1, 18, hD); px(13, 8 + bob, 6, 1, hL); px(25, 9 + bob, 5, 1, hL); }
+      else if (S.style === 'slick') { px(11, 4 + bob, 22, 19, S.hair); px(13, 22 + bob, 18, 2, hD); px(14, 7 + bob, 16, 1, hL); px(14, 12 + bob, 16, 1, hL); px(14, 17 + bob, 16, 1, hD); }
+      else { px(10, 4 + bob, 24, 21, S.hair); px(12, 24 + bob, 20, 2, hD); px(13, 7 + bob, 8, 1, hL); px(24, 10 + bob, 6, 1, hL); px(14, 16 + bob, 16, 1, hD); if (S.style === 'messy') { px(13, 2 + bob, 4, 3, S.hair); px(20, 1 + bob, 5, 4, S.hair); px(28, 3 + bob, 4, 3, S.hair); } }
+    };
+    const face = () => {
+      px(13, 11 + bob, 18, 13, S.skin); px(14, 24 + bob, 16, 1, S.skin); px(13, 22 + bob, 18, 2, S.skin); px(29, 12 + bob, 2, 12, skD); px(14, 24 + bob, 16, 1, skD);
+      if (S.blush) { px(14, 21 + bob, 3, 1, S.blush); px(27, 21 + bob, 3, 1, S.blush); }
+    };
+    const eyes = () => {
+      if (S.glasses) { eye(16, 15 + bob); eye(25, 15 + bob); fr(13, 13 + bob, 9, 9, S.glasses); fr(23, 13 + bob, 9, 9, S.glasses); px(22, 15 + bob, 1, 2, S.glasses); px(11, 15 + bob, 2, 2, S.glasses); px(32, 15 + bob, 2, 2, S.glasses); }
+      else { eye(16, 15 + bob); eye(24, 15 + bob); }
+      px(21, 22 + bob, 2, 1, S.mouth || '#b2685a'); px(22, 20 + bob, 1, 1, skD);
+    };
     const legs = (side) => {
       if (sit) return;
-      if (side) { px(19 + sw * 2, 39, 4, 10 - (sw ? 1 : 0), S.bottom); px(23 - sw * 2, 39, 4, 10, S.bottom); px(17 + sw * 2, 48 - (sw > 0 ? 1 : 0), 7, 3, S.shoe); px(22 - sw * 2, 48 - (sw < 0 ? 1 : 0), 7, 3, S.shoe); }
-      else { px(17, 39, 4, 10 - lf * 2, S.bottom); px(23, 39, 4, 10 - rf * 2, S.bottom); px(16, 48 - lf * 2, 6, 3, S.shoe); px(22, 48 - rf * 2, 6, 3, S.shoe); }
+      if (side) { px(19 + sw * 2, 39, 4, 9 - (sw ? 1 : 0), S.bottom); px(23 - sw * 2, 39, 4, 9, S.bottom); px(19 + sw * 2, 39, 1, 8, bL); px(23 - sw * 2, 39, 1, 8, bL); px(17 + sw * 2, 47 - (sw > 0 ? 1 : 0), 8, 4, S.shoe); px(22 - sw * 2, 47 - (sw < 0 ? 1 : 0), 8, 4, S.shoe); px(17 + sw * 2, 47 - (sw > 0 ? 1 : 0), 8, 1, shL); }
+      else { px(17, 39, 4, 9 - lf * 2, S.bottom); px(23, 39, 4, 9 - rf * 2, S.bottom); px(17, 39, 1, 8 - lf * 2, bL); px(23, 39, 1, 8 - rf * 2, bL); px(16, 47 - lf * 2, 6, 4, S.shoe); px(22, 47 - rf * 2, 6, 4, S.shoe); px(16, 47 - lf * 2, 6, 1, shL); px(22, 47 - rf * 2, 6, 1, shL); px(17, 49 - lf * 2, 1, 1, shL); px(23, 49 - rf * 2, 1, 1, shL); }
     };
-    const stripes = (x, y, w, h) => { px(x, y, w, h, S.top); if (S.top2) for (let j = 0; j < h; j += 6) px(x, y + j + 3, w, 3, S.top2); };
+    const suit = (x, w) => {            // 재킷: 밝은 어깨선 · 어두운 옆면 · 단추 · 허리띠
+      px(x, 26 + bob, w, 13, S.top); px(x, 26 + bob, w, 1, S.topL || S.top); px(x, 26 + bob, 1, 13, S.topL || S.top); px(x + w - 1, 26 + bob, 1, 13, S.topD); px(x, 38 + bob, w, 1, S.topD);
+      px(x, 36 + bob, w, 2, S.belt || S.topD); px(x + w / 2 - 1, 36 + bob, 2, 2, S.buckle || '#c9a94c');
+    };
+    const sleeve = (x, h, c, hand) => { px(x, 27 + bob, 3, h, c); px(x, 27 + bob, 1, h, S.topL || c); px(x + 2, 27 + bob, 1, h, S.topD || c); px(x - 1, 27 + bob + h - 1, 5, 1, S.topD || c); px(x - 0, 27 + bob + h, 4, 3, hand); px(x, 27 + bob + h, 4, 1, S.handL || hand); };
     if (dir === 'down') {
+      if (S.style === 'long' || S.style === 'bob') hairBack();
       legs(false);
-      if (S.coat) { for (let y = 26; y <= 45; y++) { const e = y > 38 ? Math.floor((y - 38) / 3) : 0; px(15 - e, y + bob, 14 + e * 2, 1, S.top); px(15 - e, y + bob, 1, 1, S.topD); px(28 + e, y + bob, 1, 1, S.topD); } px(13, 45 + bob, 18, 1, S.topD); px(20, 26 + bob, 4, 19, S.inner); px(16, 26 + bob, 4, 7, S.topL); px(24, 26 + bob, 4, 7, S.topL); px(19, 24 + bob, 6, 3, S.shirt); }
-      else if (S.fur) { px(16, 26 + bob, 12, 13, S.jacket); px(20, 26 + bob, 4, 8, S.shirt); fur(13, 25 + bob, 6, 16, true); fur(25, 25 + bob, 6, 16, true); px(21, 27 + bob, 2, 10, S.tie); px(20, 26 + bob, 4, 2, S.tie); [29, 32, 35].forEach(y => px(21, y + bob, 2, 1, S.gold)); }
-      else { stripes(16, 26 + bob, 12, 13); px(16, 37 + bob, 12, 2, S.belt || S.topD); if (S.shirt && S.tie) { px(20, 26 + bob, 4, 8, S.shirt); px(21, 27 + bob, 2, 9, S.tie); } else px(19, 26 + bob, 6, 2, S.topD); }
+      if (S.coat) { for (let y = 26; y <= 45; y++) { const e = y > 38 ? Math.floor((y - 38) / 3) : 0; px(15 - e, y + bob, 14 + e * 2, 1, S.top); px(15 - e, y + bob, 1, 1, S.topL); px(28 + e, y + bob, 1, 1, S.topD); } px(13, 45 + bob, 18, 1, S.topD); px(20, 26 + bob, 4, 19, S.inner); px(21, 26 + bob, 1, 19, S.innerL); px(16, 26 + bob, 4, 8, S.topL); px(24, 26 + bob, 4, 8, S.topL); px(15, 26 + bob, 1, 18, S.topL); px(19, 26 + bob, 1, 8, S.topD); px(24, 26 + bob, 1, 8, S.topD); px(15, 36 + bob, 14, 2, '#0e0f12'); px(21, 36 + bob, 2, 2, '#c9a94c'); px(19, 24 + bob, 6, 3, S.shirt); }
+      else if (S.fur) { px(16, 26 + bob, 12, 13, S.jacket); px(16, 26 + bob, 12, 1, '#4466ee'); px(20, 26 + bob, 4, 8, S.shirt); fur(13, 25 + bob, 6, 16, true); fur(25, 25 + bob, 6, 16, true); px(21, 27 + bob, 2, 10, S.tie); px(20, 26 + bob, 4, 2, S.tie); [29, 32, 35].forEach(y => { px(21, y + bob, 2, 1, S.gold); px(20, y + 1 + bob, 1, 1, S.gold); px(23, y + 1 + bob, 1, 1, S.gold); }); }
+      else { suit(16, 12); px(20, 26 + bob, 4, 9, S.shirt); px(19, 26 + bob, 1, 6, S.topL); px(24, 26 + bob, 1, 6, S.topL); if (S.tie) { px(21, 27 + bob, 2, 8, S.tie); px(20, 26 + bob, 4, 2, S.tie); px(21, 31 + bob, 2, 1, S.tieP || S.tie); } }
       const armC = S.coat ? S.top : S.fur ? S.fur : (S.sleeve || S.top);
       if (S.fur) { fur(10, 26 + bob, 5, 11 + sw, false); fur(29, 26 + bob, 5, 11 - sw, false); px(10, 36 + bob + sw, 4, 3, S.hand); px(30, 36 + bob - sw, 4, 3, S.hand); }
-      else { px(13, 27 + bob, 3, 10 + sw, armC); px(28, 27 + bob, 3, 10 - sw, armC); px(12, 36 + bob + sw, 4, 3, S.hand); px(28, 36 + bob - sw, 4, 3, S.hand); }
-      px(19, 24 + bob, 6, 3, S.skin);
+      else { sleeve(13, 9 + sw, armC, S.hand); sleeve(28, 9 - sw, armC, S.hand); }
+      px(20, 24 + bob, 4, 3, skD);
       if (S.fur) { px(13, 24 + bob, 18, 3, S.fur); for (let i = 0; i < 18; i += 3) px(13 + i, 26 + bob, 2, 1, S.furL); }
-      hairFront(); faceDots();
-      if (o.carry) px(6, 35 + bob, 7, 5, '#e8efff');
+      face(); frontHair(); eyes();
+      if (o.carry) { px(6, 34 + bob, 7, 6, '#e8efff'); px(6, 34 + bob, 7, 1, '#fff'); px(7, 36 + bob, 5, 1, '#9fb4e8'); px(7, 38 + bob, 4, 1, '#9fb4e8'); }
     } else if (dir === 'up') {
       legs(false);
-      if (S.coat) { for (let y = 26; y <= 45; y++) { const e = y > 38 ? Math.floor((y - 38) / 3) : 0; px(15 - e, y + bob, 14 + e * 2, 1, S.top); px(15 - e, y + bob, 1, 1, S.topD); px(28 + e, y + bob, 1, 1, S.topD); } px(13, 45 + bob, 18, 1, S.topD); px(22, 28 + bob, 1, 17, S.topD); px(15, 25 + bob, 14, 3, S.topL); }
+      if (S.coat) { for (let y = 26; y <= 45; y++) { const e = y > 38 ? Math.floor((y - 38) / 3) : 0; px(15 - e, y + bob, 14 + e * 2, 1, S.top); px(15 - e, y + bob, 1, 1, S.topL); px(28 + e, y + bob, 1, 1, S.topD); } px(13, 45 + bob, 18, 1, S.topD); px(22, 28 + bob, 1, 17, S.topD); px(15, 25 + bob, 14, 3, S.topL); px(15, 36 + bob, 14, 2, '#0e0f12'); }
       else if (S.fur) { fur(13, 25 + bob, 18, 16, true); px(22, 28 + bob, 1, 12, S.furD); }
-      else { stripes(16, 26 + bob, 12, 13); px(16, 37 + bob, 12, 2, S.belt || S.topD); }
+      else { suit(16, 12); px(21, 27 + bob, 2, 8, S.topD); }
       const armC = S.coat ? S.top : S.fur ? S.fur : (S.sleeve || S.top), up = sit ? -2 : 0;
       if (S.fur) { fur(10, 26 + bob, 5, 11 + up + sw, false); fur(29, 26 + bob, 5, 11 + up - sw, false); px(10, 36 + bob + up + sw, 4, 3, S.hand); px(30, 36 + bob + up - sw, 4, 3, S.hand); }
-      else { px(13, 27 + bob, 3, 10 + up + sw, armC); px(28, 27 + bob, 3, 10 + up - sw, armC); px(12, 36 + bob + up + sw, 4, 3, S.hand); px(28, 36 + bob + up - sw, 4, 3, S.hand); }
+      else { sleeve(13, 9 + up + sw, armC, S.hand); sleeve(28, 9 + up - sw, armC, S.hand); }
       hairBack();
-      if (S.fur) { px(13, 24 + bob, 18, 3, S.fur); }
+      if (S.fur) px(13, 24 + bob, 18, 3, S.fur);
     } else {      // 왼쪽 옆모습
       legs(true);
-      if (S.coat) { for (let y = 26; y <= 45; y++) { const e = y > 38 ? Math.floor((y - 38) / 4) : 0; px(16 - e, y + bob, 12 + e * 2, 1, S.top); px(16 - e, y + bob, 1, 1, S.topD); px(27 + e, y + bob, 1, 1, S.topD); } px(14, 45 + bob, 16, 1, S.topD); px(16, 26 + bob, 3, 19, S.inner); px(19, 25 + bob, 9, 3, S.topL); }
+      if (S.style === 'long') { px(17, 5 + bob, 17, 29, S.hair); px(17, 33 + bob, 17, 1, hD); }
+      if (S.coat) { for (let y = 26; y <= 45; y++) { const e = y > 38 ? Math.floor((y - 38) / 4) : 0; px(16 - e, y + bob, 12 + e * 2, 1, S.top); px(16 - e, y + bob, 1, 1, S.topL); px(27 + e, y + bob, 1, 1, S.topD); } px(14, 45 + bob, 16, 1, S.topD); px(16, 26 + bob, 3, 19, S.inner); px(19, 25 + bob, 9, 3, S.topL); px(16, 36 + bob, 12, 2, '#0e0f12'); }
       else if (S.fur) { px(16, 26 + bob, 12, 13, S.jacket); fur(14, 25 + bob, 14, 16, true); }
-      else { stripes(17, 26 + bob, 11, 13); px(17, 37 + bob, 11, 2, S.belt || S.topD); if (S.tie) px(17, 28 + bob, 2, 8, S.tie); }
+      else { px(17, 26 + bob, 11, 13, S.top); px(17, 26 + bob, 11, 1, S.topL || S.top); px(27, 26 + bob, 1, 13, S.topD); px(17, 36 + bob, 11, 2, S.belt || S.topD); if (S.tie) px(17, 28 + bob, 2, 8, S.tie); }
       if (S.fur) { fur(15, 26 + bob, 6, 11 + sw, false); px(15, 36 + bob + sw, 5, 3, S.hand); }
-      else { px(17, 27 + bob, 4, 10 + sw, S.coat ? S.top : (S.sleeve || S.top)); px(16, 36 + bob + sw, 5, 3, S.hand); }
-      px(19, 24 + bob, 6, 3, S.skin);
-      // 머리: 얼굴은 왼쪽, 뒷머리는 오른쪽
-      if (S.style === 'slick') { px(12, 4 + bob, 21, 9, S.hair); px(22, 8 + bob, 11, 14, S.hair); px(11, 12 + bob, 12, 13, S.skin); px(13, 10 + bob, 8, 3, S.hair); px(14, 7 + bob, 14, 1, S.hairL); }
-      else { px(14, 4 + bob, 16, 3, S.hair); px(11, 6 + bob, 22, 4, S.hair); px(11, 9 + bob, 24, 16, S.hair); px(11, 16 + bob, 11, 9, S.skin); px(11, 15 + bob, 11, 1, hD); px(11, 24 + bob, 11, 1, S.skinD); px(10, 19 + bob, 1, 2, S.skin); if (S.style === 'messy') { px(13, 2 + bob, 4, 3, S.hair); px(20, 1 + bob, 5, 4, S.hair); px(28, 3 + bob, 4, 3, S.hair); } }
+      else { px(17, 27 + bob, 4, 9 + sw, S.coat ? S.top : (S.sleeve || S.top)); px(17, 27 + bob, 1, 9 + sw, S.topL || S.top); px(16, 36 + bob + sw, 5, 3, S.hand); }
+      px(19, 24 + bob, 5, 3, skD);
+      if (S.style !== 'long') { px(12, 4 + bob, 21, 20, S.hair); px(13, 22 + bob, 17, 2, hD); }
+      px(11, 11 + bob, 13, 13, S.skin); px(10, 17 + bob, 1, 2, S.skin); px(12, 24 + bob, 11, 1, skD);
+      // 윗머리 · 앞머리
+      px(12, 4 + bob, 21, 3, S.hair); px(11, 6 + bob, 22, 5, S.hair); px(14, 4 + bob, 9, 1, hL); px(12, 6 + bob, 7, 1, hL); px(11, 9 + bob, 13, 3, S.hair); px(11, 11 + bob, 4, 3, S.hair); px(12, 11 + bob, 12, 1, hD);
+      if (S.style === 'messy') { px(13, 2 + bob, 4, 3, S.hair); px(20, 1 + bob, 5, 4, S.hair); px(28, 3 + bob, 4, 3, S.hair); }
       if (S.fur) px(13, 24 + bob, 15, 3, S.fur);
-      if (S.glasses) { fr(11, 14 + bob, 7, 6, S.glasses); px(18, 16 + bob, 14, 2, S.glasses); px(13, 16 + bob, 2, 2, eye); } else if (!S.hideEyes && S.style !== 'messy' && S.style !== 'long') px(13, 17 + bob, 2, 3, eye);
-      px(11, 21 + bob, 3, 1, S.mouth || '#7a3a2a');
-      if (o.carry) px(10, 35 + bob, 7, 5, '#e8efff');
+      if (S.glasses) { eye(13, 15 + bob); fr(11, 13 + bob, 9, 9, S.glasses); px(20, 15 + bob, 13, 2, S.glasses); } else eye(13, 15 + bob);
+      px(11, 22 + bob, 3, 1, S.mouth || '#b2685a');
+      if (o.carry) { px(10, 34 + bob, 7, 6, '#e8efff'); px(10, 34 + bob, 7, 1, '#fff'); }
     }
   }
   const outline = c => {        // 윤곽선: 테두리를 어두운 선으로 둘러 작은 그림에서도 형태가 또렷하게
