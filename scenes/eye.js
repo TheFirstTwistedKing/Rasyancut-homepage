@@ -5,6 +5,13 @@ const Eye = (() => {
   const view = $('#scEye'), cv = $('#eCv'), g = cv.getContext('2d'), eye = $('#eEye'), fig = $('#eFig'), say = $('#eSay'), txt = $('#eTxt'), form = $('#eCode'), inp = $('#eIn'), err = $('#eErr');
   const LINES = ['…드디어 이곳까지 오셨군요, 설립자.', '발신자는 밝히지 않습니다. 이름도 얼굴도, 이곳에서는 필요하지 않으니까요.', '여기는 설립자께서 물으신 적 없는 것들이 모이는 곳입니다. 오래 머무를 곳은 못 됩니다.', '돌아가시려면 오른쪽 아래에 복구 코드를 적으십시오.\n코드는 ‘Re-code’입니다.'];
   let raging = false, locked = false, rageText = 'CALLER ID RESTRICTED  ', ambTimer = 0, rageRaf = 0, crtRaf = 0, rageStop = null;
+  /* 하얀 신화풍의 눈 20개: 위쪽에 빼곡히, 서로 조금씩 떨어져서. 각자 따로 깜빡이고 시선이 포인터를 따라간다 */
+  const NEYE = 20, eyes = [];
+  for (let i = 0; i < NEYE; i++) {
+    const rays = [-50, -25, 0, 25, 50].map(a => { const r = a * Math.PI / 180, x1 = Math.sin(r) * 74, y1 = -Math.cos(r) * 74 + 4, x2 = Math.sin(r) * (a % 50 === 0 && a ? 84 : 98), y2 = -Math.cos(r) * (a % 50 === 0 && a ? 84 : 98) + 4; return `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`; }).join('');
+    eye.insertAdjacentHTML('beforeend', `<svg viewBox="-160 -104 320 176" style="--k:${i}"><defs><radialGradient id="eIw${i}"><stop offset="0" stop-color="#fff"/><stop offset=".6" stop-color="#f1f1ee"/><stop offset="1" stop-color="#b8b8b2"/></radialGradient><clipPath id="eCl${i}"><path class="cp" d=""/></clipPath></defs><g stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".8">${rays}</g><path class="al" d="" fill="#050505" stroke="#fff" stroke-width="7" stroke-linejoin="round"/><g clip-path="url(#eCl${i})"><g class="ir"><circle r="42" fill="url(#eIw${i})"/><circle r="42" fill="none" stroke="#fff" stroke-width="2.5" stroke-dasharray="4 7"/><circle r="27" fill="none" stroke="#777" stroke-width="1.6" opacity=".7"/><ellipse class="pu" rx="8" ry="32" fill="#000"/><circle cx="-13" cy="-15" r="5.5" fill="#fff"/></g></g></svg>`);
+    const s = eye.lastElementChild; eyes.push({ al: s.querySelector('.al'), cp: s.querySelector('.cp'), ir: s.querySelector('.ir'), pu: s.querySelector('.pu'), open: .02, target: 1, blink: 1.5 + Math.random() * 4 });
+  }
   let raf = 0, on = false, t0 = 0, li = 0, open = 0, target = 1, blinkT = 0, mx = .5, my = .3, W = 0, H = 0, dpr = 1, tm = [];
   const parts = Array.from({ length: 90 }, (_, i) => ({ x: Math.random(), y: Math.random(), v: .04 + Math.random() * .16, l: 30 + Math.random() * 120, a: .05 + Math.random() * .22, m: i % 4 === 0 }));
   function resize() { dpr = Math.min(2, devicePixelRatio || 1); const r = cv.getBoundingClientRect(); W = r.width; H = r.height; cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
@@ -17,12 +24,14 @@ const Eye = (() => {
       const x = p.x * W, y = p.y * H + Math.sin(t * .8 + p.x * 8) * 6;
       if (p.m) { g.fillStyle = `rgba(233,216,166,${p.a * 1.6})`; g.fillRect(x, y, 1.5, 1.5); } else { const gr = g.createLinearGradient(x - p.l, y, x, y); gr.addColorStop(0, 'rgba(233,216,166,0)'); gr.addColorStop(1, `rgba(233,216,166,${p.a})`); g.strokeStyle = gr; g.lineWidth = 1; g.beginPath(); g.moveTo(x - p.l, y); g.lineTo(x, y); g.stroke(); }
     });
-    // 눈: 천천히 뜨고, 가끔 깜빡이고, 시선이 포인터를 따라감
-    if (t > .6) { blinkT -= .016; if (blinkT < 0) { target = target > .5 ? .04 : 1; blinkT = target < .5 ? .12 : 2.6 + Math.random() * 3.4; } }
-    open += (target - open) * (target < .5 ? .5 : .08);
-    const d = eyePath(open); $('#eAlm').setAttribute('d', d); $('#eClipP').setAttribute('d', d);
-    const ix = (mx - .5) * 60, iy = (my - .25) * 40; $('#eIris').setAttribute('transform', `translate(${Math.max(-44, Math.min(44, ix)).toFixed(1)} ${Math.max(-12, Math.min(14, iy)).toFixed(1)})`);
-    $('#ePup').setAttribute('rx', (8 + Math.sin(t * 1.3) * 1.2).toFixed(1));
+    // 눈 20개: 천천히 뜨고, 제각각 깜빡이고, 시선이 포인터를 따라감
+    eyes.forEach((e, i) => {
+      if (t > .6) { e.blink -= .016; if (e.blink < 0) { e.target = e.target > .5 ? .04 : 1; e.blink = e.target < .5 ? .12 : 2.2 + Math.random() * 5; } }
+      e.open += (e.target - e.open) * (e.target < .5 ? .5 : .08);
+      const d = eyePath(e.open); e.al.setAttribute('d', d); e.cp.setAttribute('d', d);
+      const ix = (mx - (i % 10 + .5) / 10) * 70, iy = (my - .1) * 40; e.ir.setAttribute('transform', `translate(${Math.max(-40, Math.min(40, ix)).toFixed(1)} ${Math.max(-10, Math.min(12, iy)).toFixed(1)})`);
+      e.pu.setAttribute('rx', (8 + Math.sin(t * 1.3 + i) * 1.2).toFixed(1));
+    });
   }
   function nextLine() {
     if (li >= LINES.length) { say.hidden = true; inp.focus({ preventScroll: true }); return; }
@@ -171,7 +180,7 @@ void main(){
   addEventListener('orientationchange', () => { if (on) setTimeout(() => { resize(); crtResize(); }, 250); });
   return {
     enter() {
-      on = true; li = 0; open = .02; target = 1; blinkT = 1.5; inp.value = ''; err.textContent = ''; say.hidden = true; eye.classList.remove('show'); fig.classList.remove('show'); resize();
+      on = true; li = 0; open = .02; target = 1; blinkT = 1.5; eyes.forEach(e => { e.open = .02; e.target = 1; e.blink = 1.5 + Math.random() * 4; }); inp.value = ''; err.textContent = ''; say.hidden = true; eye.classList.remove('show'); fig.classList.remove('show'); resize();
       SND.musicTo(0, 1.2); SND.windStart();
       t0 = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(frame);
       tm.push(setTimeout(() => eye.classList.add('show'), 500 * (RM ? .1 : 1)), setTimeout(() => fig.classList.add('show'), 2200 * (RM ? .1 : 1)), setTimeout(nextLine, 4200 * (RM ? .1 : 1)));

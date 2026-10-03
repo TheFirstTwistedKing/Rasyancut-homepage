@@ -115,8 +115,9 @@
 /* ---------- 4. 마주함 ---------- */
 #scEye{background:#000;color:var(--pale)}
 #eCv{position:absolute;inset:0;width:100%;height:100%;display:block}
-.e-eye{position:absolute;left:50%;top:max(14px,env(safe-area-inset-top,0px));translate:-50% 0;width:min(560px,86vw);height:auto;filter:drop-shadow(0 0 22px rgba(255,217,61,.35));opacity:0;transition:opacity 1.6s}
-#scEye.on .e-eye.show{opacity:1}
+.e-eye{position:absolute;left:0;right:0;top:max(12px,env(safe-area-inset-top,0px));display:grid;grid-template-columns:repeat(20,1fr);gap:8px clamp(8px,1.3vw,20px);padding:0 clamp(12px,2.2vw,34px);pointer-events:none;filter:drop-shadow(0 0 10px rgba(255,255,255,.5))}
+.e-eye svg{width:100%;height:auto;display:block;opacity:0;transition:opacity 1.2s ease calc(var(--k)*70ms)}
+#scEye.on .e-eye.show svg{opacity:1}
 .e-fig{position:absolute;left:50%;bottom:calc(max(20px,env(safe-area-inset-bottom,0px)) + 178px);translate:-50% 0;height:clamp(180px,38vh,380px);display:flex;flex-direction:column;align-items:center;opacity:0;transition:opacity 2.4s}
 .e-fig svg{height:100%;width:auto;filter:drop-shadow(0 0 18px rgba(255,217,61,.18))}
 .e-fig.show{opacity:1}
@@ -135,7 +136,7 @@
 .e-err{min-height:1.2em;margin-top:6px;font-size:12px;color:#ff7a5c}
 .e-code.bad{animation:eShake .4s}
 @keyframes eShake{20%,60%{translate:-6px 0}40%,80%{translate:6px 0}}
-@media (max-width:900px){.e-say{left:50%;bottom:calc(max(16px,env(safe-area-inset-bottom,0px)) + 156px);width:calc(100% - 28px);min-height:0}.e-code{left:16px;right:16px;width:auto}.e-fig{bottom:calc(max(16px,env(safe-area-inset-bottom,0px)) + 330px);height:clamp(150px,28vh,280px)}.e-eye{width:min(420px,84vw)}}
+@media (max-width:900px){.e-say{left:50%;bottom:calc(max(16px,env(safe-area-inset-bottom,0px)) + 156px);width:calc(100% - 28px);min-height:0}.e-code{left:16px;right:16px;width:auto}.e-fig{bottom:calc(max(16px,env(safe-area-inset-bottom,0px)) + 330px);height:clamp(150px,28vh,280px)}.e-eye{grid-template-columns:repeat(10,1fr);gap:6px 8px}}
 
 #scGame.touch .g-msg{bottom:calc(max(18px,env(safe-area-inset-bottom,0px)) + 168px);min-height:110px;padding:14px 18px 18px}
 #scGame.touch .g-choice{bottom:calc(max(18px,env(safe-area-inset-bottom,0px)) + 292px);right:16px}
@@ -147,7 +148,7 @@
 #eCrt{z-index:6;background:#000}
 .e-rage-tx{position:absolute;left:50%;top:52%;translate:-50% -50%;z-index:5;width:min(900px,calc(100% - 32px));text-align:center;font-weight:800;font-size:clamp(26px,5.4vw,68px);line-height:1.3;color:#fff;word-break:keep-all;text-shadow:3px 0 #ff1a1a,-3px 0 #00e5ff,0 0 24px rgba(255,30,30,.9);animation:eShk .09s steps(2) infinite;pointer-events:none}
 @keyframes eShk{0%{transform:translate(0,0)}25%{transform:translate(-5px,3px) skewX(-2deg)}50%{transform:translate(4px,-3px)}75%{transform:translate(-3px,-4px) skewX(2deg)}100%{transform:translate(5px,2px)}}
-#scEye.rage .e-eye{filter:hue-rotate(-38deg) saturate(2.6) drop-shadow(0 0 28px rgba(255,30,30,.8));animation:eShk .12s steps(2) infinite}
+#scEye.rage .e-eye{filter:drop-shadow(0 0 14px rgba(255,40,30,.95));animation:eShk .12s steps(2) infinite}
 #scEye.rage .e-fig{animation:eShk .1s steps(2) infinite;opacity:1}
 #scEye.rage .e-code,#scEye.rage .e-say{opacity:.25}
 #scEye.rage{animation:eFlash 1.1s steps(1) infinite}

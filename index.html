@@ -1643,8 +1643,9 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
 /* ---------- 4. 마주함 ---------- */
 #scEye{background:#000;color:var(--pale)}
 #eCv{position:absolute;inset:0;width:100%;height:100%;display:block}
-.e-eye{position:absolute;left:50%;top:max(14px,env(safe-area-inset-top,0px));translate:-50% 0;width:min(560px,86vw);height:auto;filter:drop-shadow(0 0 22px rgba(255,217,61,.35));opacity:0;transition:opacity 1.6s}
-#scEye.on .e-eye.show{opacity:1}
+.e-eye{position:absolute;left:0;right:0;top:max(12px,env(safe-area-inset-top,0px));display:grid;grid-template-columns:repeat(20,1fr);gap:8px clamp(8px,1.3vw,20px);padding:0 clamp(12px,2.2vw,34px);pointer-events:none;filter:drop-shadow(0 0 10px rgba(255,255,255,.5))}
+.e-eye svg{width:100%;height:auto;display:block;opacity:0;transition:opacity 1.2s ease calc(var(--k)*70ms)}
+#scEye.on .e-eye.show svg{opacity:1}
 .e-fig{position:absolute;left:50%;bottom:calc(max(20px,env(safe-area-inset-bottom,0px)) + 178px);translate:-50% 0;height:clamp(180px,38vh,380px);display:flex;flex-direction:column;align-items:center;opacity:0;transition:opacity 2.4s}
 .e-fig svg{height:100%;width:auto;filter:drop-shadow(0 0 18px rgba(255,217,61,.18))}
 .e-fig.show{opacity:1}
@@ -1663,7 +1664,7 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
 .e-err{min-height:1.2em;margin-top:6px;font-size:12px;color:#ff7a5c}
 .e-code.bad{animation:eShake .4s}
 @keyframes eShake{20%,60%{translate:-6px 0}40%,80%{translate:6px 0}}
-@media (max-width:900px){.e-say{left:50%;bottom:calc(max(16px,env(safe-area-inset-bottom,0px)) + 156px);width:calc(100% - 28px);min-height:0}.e-code{left:16px;right:16px;width:auto}.e-fig{bottom:calc(max(16px,env(safe-area-inset-bottom,0px)) + 330px);height:clamp(150px,28vh,280px)}.e-eye{width:min(420px,84vw)}}
+@media (max-width:900px){.e-say{left:50%;bottom:calc(max(16px,env(safe-area-inset-bottom,0px)) + 156px);width:calc(100% - 28px);min-height:0}.e-code{left:16px;right:16px;width:auto}.e-fig{bottom:calc(max(16px,env(safe-area-inset-bottom,0px)) + 330px);height:clamp(150px,28vh,280px)}.e-eye{grid-template-columns:repeat(10,1fr);gap:6px 8px}}
 
 #scGame.touch .g-msg{bottom:calc(max(18px,env(safe-area-inset-bottom,0px)) + 168px);min-height:110px;padding:14px 18px 18px}
 #scGame.touch .g-choice{bottom:calc(max(18px,env(safe-area-inset-bottom,0px)) + 292px);right:16px}
@@ -1675,7 +1676,7 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
 #eCrt{z-index:6;background:#000}
 .e-rage-tx{position:absolute;left:50%;top:52%;translate:-50% -50%;z-index:5;width:min(900px,calc(100% - 32px));text-align:center;font-weight:800;font-size:clamp(26px,5.4vw,68px);line-height:1.3;color:#fff;word-break:keep-all;text-shadow:3px 0 #ff1a1a,-3px 0 #00e5ff,0 0 24px rgba(255,30,30,.9);animation:eShk .09s steps(2) infinite;pointer-events:none}
 @keyframes eShk{0%{transform:translate(0,0)}25%{transform:translate(-5px,3px) skewX(-2deg)}50%{transform:translate(4px,-3px)}75%{transform:translate(-3px,-4px) skewX(2deg)}100%{transform:translate(5px,2px)}}
-#scEye.rage .e-eye{filter:hue-rotate(-38deg) saturate(2.6) drop-shadow(0 0 28px rgba(255,30,30,.8));animation:eShk .12s steps(2) infinite}
+#scEye.rage .e-eye{filter:drop-shadow(0 0 14px rgba(255,40,30,.95));animation:eShk .12s steps(2) infinite}
 #scEye.rage .e-fig{animation:eShk .1s steps(2) infinite;opacity:1}
 #scEye.rage .e-code,#scEye.rage .e-say{opacity:.25}
 #scEye.rage{animation:eFlash 1.1s steps(1) infinite}
@@ -2236,11 +2237,7 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
   <!-- 4. 마주함 -->
   <section class="sc-view" id="scEye" aria-label="마주함">
     <canvas id="eCv"></canvas>
-    <svg class="e-eye" id="eEye" viewBox="-160 -70 320 140" aria-hidden="true">
-      <defs><radialGradient id="eIr"><stop offset="0" stop-color="#fff6b8"/><stop offset=".45" stop-color="#ffd93d"/><stop offset="1" stop-color="#8a5a00"/></radialGradient><clipPath id="eClip"><path id="eClipP" d=""/></clipPath></defs>
-      <path id="eAlm" d="" fill="#050403" stroke="#e9d8a6" stroke-width="2.4" stroke-linejoin="round"/>
-      <g clip-path="url(#eClip)"><g id="eIris"><circle r="40" fill="url(#eIr)"/><circle r="40" fill="none" stroke="#fff3a6" stroke-width="1.4" stroke-dasharray="3 5"/><circle r="26" fill="none" stroke="#8a5a00" stroke-width=".8" opacity=".7"/><ellipse id="ePup" rx="9" ry="30" fill="#000"/><circle cx="-12" cy="-14" r="5" fill="#fff" opacity=".7"/></g></g>
-    </svg>
+    <div class="e-eye" id="eEye" aria-hidden="true"></div>
     <div class="e-fig" id="eFig" aria-hidden="true">
       <svg viewBox="-80 -190 160 380"><path d="M0 -170C-34 -165 -52 -130 -56 -86C-62 -20 -70 70 -78 176H78C70 70 62 -20 56 -86C52 -130 34 -165 0 -170Z" fill="#06060a" stroke="#c9a94c" stroke-width="1.6"/><path d="M0 -150C-22 -146 -34 -122 -34 -96C-34 -70 -20 -52 0 -52C20 -52 34 -70 34 -96C34 -122 22 -146 0 -150Z" fill="#000"/><circle cx="0" cy="-98" r="3" fill="#ffd93d"><animate attributeName="opacity" values="1;.2;1" dur="3.4s" repeatCount="indefinite"/></circle><path d="M-36 -20H36M-30 30H30M-24 80H24" stroke="#c9a94c" stroke-width=".8" opacity=".5" fill="none"/></svg>
       <span class="e-tag mono">CALLER ID RESTRICTED</span>
@@ -9692,6 +9689,13 @@ const Eye = (() => {
   const view = $('#scEye'), cv = $('#eCv'), g = cv.getContext('2d'), eye = $('#eEye'), fig = $('#eFig'), say = $('#eSay'), txt = $('#eTxt'), form = $('#eCode'), inp = $('#eIn'), err = $('#eErr');
   const LINES = ['…드디어 이곳까지 오셨군요, 설립자.', '발신자는 밝히지 않습니다. 이름도 얼굴도, 이곳에서는 필요하지 않으니까요.', '여기는 설립자께서 물으신 적 없는 것들이 모이는 곳입니다. 오래 머무를 곳은 못 됩니다.', '돌아가시려면 오른쪽 아래에 복구 코드를 적으십시오.\n코드는 ‘Re-code’입니다.'];
   let raging = false, locked = false, rageText = 'CALLER ID RESTRICTED  ', ambTimer = 0, rageRaf = 0, crtRaf = 0, rageStop = null;
+  /* 하얀 신화풍의 눈 20개: 위쪽에 빼곡히, 서로 조금씩 떨어져서. 각자 따로 깜빡이고 시선이 포인터를 따라간다 */
+  const NEYE = 20, eyes = [];
+  for (let i = 0; i < NEYE; i++) {
+    const rays = [-50, -25, 0, 25, 50].map(a => { const r = a * Math.PI / 180, x1 = Math.sin(r) * 74, y1 = -Math.cos(r) * 74 + 4, x2 = Math.sin(r) * (a % 50 === 0 && a ? 84 : 98), y2 = -Math.cos(r) * (a % 50 === 0 && a ? 84 : 98) + 4; return `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`; }).join('');
+    eye.insertAdjacentHTML('beforeend', `<svg viewBox="-160 -104 320 176" style="--k:${i}"><defs><radialGradient id="eIw${i}"><stop offset="0" stop-color="#fff"/><stop offset=".6" stop-color="#f1f1ee"/><stop offset="1" stop-color="#b8b8b2"/></radialGradient><clipPath id="eCl${i}"><path class="cp" d=""/></clipPath></defs><g stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".8">${rays}</g><path class="al" d="" fill="#050505" stroke="#fff" stroke-width="7" stroke-linejoin="round"/><g clip-path="url(#eCl${i})"><g class="ir"><circle r="42" fill="url(#eIw${i})"/><circle r="42" fill="none" stroke="#fff" stroke-width="2.5" stroke-dasharray="4 7"/><circle r="27" fill="none" stroke="#777" stroke-width="1.6" opacity=".7"/><ellipse class="pu" rx="8" ry="32" fill="#000"/><circle cx="-13" cy="-15" r="5.5" fill="#fff"/></g></g></svg>`);
+    const s = eye.lastElementChild; eyes.push({ al: s.querySelector('.al'), cp: s.querySelector('.cp'), ir: s.querySelector('.ir'), pu: s.querySelector('.pu'), open: .02, target: 1, blink: 1.5 + Math.random() * 4 });
+  }
   let raf = 0, on = false, t0 = 0, li = 0, open = 0, target = 1, blinkT = 0, mx = .5, my = .3, W = 0, H = 0, dpr = 1, tm = [];
   const parts = Array.from({ length: 90 }, (_, i) => ({ x: Math.random(), y: Math.random(), v: .04 + Math.random() * .16, l: 30 + Math.random() * 120, a: .05 + Math.random() * .22, m: i % 4 === 0 }));
   function resize() { dpr = Math.min(2, devicePixelRatio || 1); const r = cv.getBoundingClientRect(); W = r.width; H = r.height; cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
@@ -9704,12 +9708,14 @@ const Eye = (() => {
       const x = p.x * W, y = p.y * H + Math.sin(t * .8 + p.x * 8) * 6;
       if (p.m) { g.fillStyle = `rgba(233,216,166,${p.a * 1.6})`; g.fillRect(x, y, 1.5, 1.5); } else { const gr = g.createLinearGradient(x - p.l, y, x, y); gr.addColorStop(0, 'rgba(233,216,166,0)'); gr.addColorStop(1, `rgba(233,216,166,${p.a})`); g.strokeStyle = gr; g.lineWidth = 1; g.beginPath(); g.moveTo(x - p.l, y); g.lineTo(x, y); g.stroke(); }
     });
-    // 눈: 천천히 뜨고, 가끔 깜빡이고, 시선이 포인터를 따라감
-    if (t > .6) { blinkT -= .016; if (blinkT < 0) { target = target > .5 ? .04 : 1; blinkT = target < .5 ? .12 : 2.6 + Math.random() * 3.4; } }
-    open += (target - open) * (target < .5 ? .5 : .08);
-    const d = eyePath(open); $('#eAlm').setAttribute('d', d); $('#eClipP').setAttribute('d', d);
-    const ix = (mx - .5) * 60, iy = (my - .25) * 40; $('#eIris').setAttribute('transform', `translate(${Math.max(-44, Math.min(44, ix)).toFixed(1)} ${Math.max(-12, Math.min(14, iy)).toFixed(1)})`);
-    $('#ePup').setAttribute('rx', (8 + Math.sin(t * 1.3) * 1.2).toFixed(1));
+    // 눈 20개: 천천히 뜨고, 제각각 깜빡이고, 시선이 포인터를 따라감
+    eyes.forEach((e, i) => {
+      if (t > .6) { e.blink -= .016; if (e.blink < 0) { e.target = e.target > .5 ? .04 : 1; e.blink = e.target < .5 ? .12 : 2.2 + Math.random() * 5; } }
+      e.open += (e.target - e.open) * (e.target < .5 ? .5 : .08);
+      const d = eyePath(e.open); e.al.setAttribute('d', d); e.cp.setAttribute('d', d);
+      const ix = (mx - (i % 10 + .5) / 10) * 70, iy = (my - .1) * 40; e.ir.setAttribute('transform', `translate(${Math.max(-40, Math.min(40, ix)).toFixed(1)} ${Math.max(-10, Math.min(12, iy)).toFixed(1)})`);
+      e.pu.setAttribute('rx', (8 + Math.sin(t * 1.3 + i) * 1.2).toFixed(1));
+    });
   }
   function nextLine() {
     if (li >= LINES.length) { say.hidden = true; inp.focus({ preventScroll: true }); return; }
@@ -9858,7 +9864,7 @@ void main(){
   addEventListener('orientationchange', () => { if (on) setTimeout(() => { resize(); crtResize(); }, 250); });
   return {
     enter() {
-      on = true; li = 0; open = .02; target = 1; blinkT = 1.5; inp.value = ''; err.textContent = ''; say.hidden = true; eye.classList.remove('show'); fig.classList.remove('show'); resize();
+      on = true; li = 0; open = .02; target = 1; blinkT = 1.5; eyes.forEach(e => { e.open = .02; e.target = 1; e.blink = 1.5 + Math.random() * 4; }); inp.value = ''; err.textContent = ''; say.hidden = true; eye.classList.remove('show'); fig.classList.remove('show'); resize();
       SND.musicTo(0, 1.2); SND.windStart();
       t0 = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(frame);
       tm.push(setTimeout(() => eye.classList.add('show'), 500 * (RM ? .1 : 1)), setTimeout(() => fig.classList.add('show'), 2200 * (RM ? .1 : 1)), setTimeout(nextLine, 4200 * (RM ? .1 : 1)));
