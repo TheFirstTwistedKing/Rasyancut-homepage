@@ -2171,12 +2171,12 @@ html[data-boost] #scGame,html[data-boost] #scRss,html[data-boost] #scEye{filter:
 
   <!-- ============ NOTICE ============ -->
   <section class="screen" id="s-notice" aria-label="공지">
-    <button class="backbtn tl" type="button" data-back data-a aria-label="뒤로 (Backspace)"><span data-ic="back" style="display:contents"></span><span data-write="45">Backspace</span></button>
+    <button class="backbtn tl" type="button" data-back data-a aria-label="뒤로 (Backspace)"><span data-ic="back" style="display:contents"></span><span>Backspace</span></button>
     <div class="panel brk" data-a>
-      <div class="nt-head"><span class="nt-ico" data-ic="bell"></span><h2 class="gild" data-write="90">공지</h2><span class="nt-sub mono">NOTICE BOARD</span></div>
+      <div class="nt-head"><span class="nt-ico" data-ic="bell"></span><h2 class="gild">공지</h2><span class="nt-sub mono">NOTICE BOARD</span></div>
       <div class="orn" style="margin:10px 0 8px"><i></i></div>
       <ul class="nt-list" id="noticeList"></ul>
-      <div class="ko nt-foot" data-write="20">새 공지는 이곳에 올라옵니다</div>
+      <div class="ko nt-foot">새 공지는 이곳에 올라옵니다</div>
     </div>
   </section>
 
@@ -7102,11 +7102,11 @@ function syncNoticeDot() { const b = $('#btnNotice'); if (!b) return; const u = 
 function buildNotice() {
   const ul = $('#noticeList'); ul.innerHTML = '';
   NOTICES.forEach((n, i) => {
-    const li = document.createElement('li'); li.className = 'nt-it' + (i === 0 ? ' open' : ''); li.setAttribute('data-a', '');
+    const li = document.createElement('li'); li.className = 'nt-it' + (i === 0 ? ' open' : '');   // 천천히 나타나는 연출 없이 바로 보이게
     const hd = document.createElement('button'); hd.type = 'button'; hd.className = 'nt-hd'; hd.setAttribute('aria-expanded', i === 0 ? 'true' : 'false');
     const tag = document.createElement('span'); tag.className = 'nt-tag mono t-' + n.tag.toLowerCase(); tag.textContent = n.tag;
     const dt = document.createElement('span'); dt.className = 'nt-date mono'; dt.textContent = n.date;
-    const tt = document.createElement('b'); tt.className = 'nt-ttl'; tt.setAttribute('data-write', '45'); tt.textContent = n.title;
+    const tt = document.createElement('b'); tt.className = 'nt-ttl'; tt.textContent = n.title;
     const ch = document.createElement('span'); ch.className = 'nt-chev'; ch.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg>';
     hd.append(tag, dt, tt, ch);
     const bd = document.createElement('div'); bd.className = 'nt-bd'; const inn = document.createElement('div'); inn.className = 'nt-in'; const tx = document.createElement('div'); tx.className = 'nt-tx';
