@@ -123,14 +123,14 @@ const Scenes = (() => {
   }
   async function fade(to, ms) { black.style.transition = `opacity ${Math.round(ms * K())}ms ease`; void black.offsetWidth; black.style.opacity = String(to); await sleep(ms * K()); }
   /* 지지직: 가로로 찢어진 잡음 + 색 번짐 + 화면 흔들림 */
-  function glitch(ms, mid) {
+  function glitch(ms, mid, pw = 1) {
     ms *= K();
     return new Promise(res => {
       const g = glC.getContext('2d'), W = glC.width = Math.ceil(app.clientWidth / 3), H = glC.height = Math.ceil(app.clientHeight / 3); glC.hidden = false;
       const t0 = performance.now(); let did = false;
       const step = now => {
         const p = clamp((now - t0) / ms, 0, 1); g.clearRect(0, 0, W, H);
-        const inten = p < .5 ? p * 2 : (1 - p) * 2;
+        const inten = (p < .5 ? p * 2 : (1 - p) * 2) * pw;
         for (let i = 0, n = 6 + inten * 30; i < n; i++) {
           const y = Math.random() * H, h = 1 + Math.random() * (4 + inten * 18), x = Math.random() * W * .4, w = W * (.2 + Math.random() * .8);
           g.fillStyle = `rgba(${Math.random() < .3 ? '255,60,60' : Math.random() < .5 ? '60,255,240' : '235,235,235'},${(.1 + Math.random() * .45 * inten).toFixed(2)})`; g.fillRect(x, y, w, h);
@@ -216,10 +216,11 @@ const Scenes = (() => {
     if (busy) return; busy = true; black.style.background = '#fff'; black.classList.add('on'); SND.tone(880, .5, 'sine', .05, 0, 1760); await fade(1, 600);
     Eye.leave(); Object.keys(V).forEach(k => V[k].classList.remove('on')); active = null; Obs.hold(false); black.style.background = ''; await fade(0, 1100); black.classList.remove('on'); root.hidden = true; busy = false;
   }
-  async function rebootEye() {          // 함정 끝: 인트로 화면으로 돌아간다
-    if (busy) return; busy = true; black.style.background = '#000'; black.classList.add('on'); await fade(1, 500);
-    Eye.leave(); Object.keys(V).forEach(k => V[k].classList.remove('on')); active = null; Obs.hold(false); black.style.background = ''; root.hidden = true; black.classList.remove('on'); busy = false;
-    if (window.RSC && window.RSC.go) window.RSC.go('intro', { force: true }, { glitch: true });
+  async function rebootEye() {          // 함정 끝: 레드스크린 그대로 심하게 지지직거리다가, 한가운데에서 곧바로 인트로로 바뀐다 (다른 화면은 보이지 않음)
+    if (busy) return; busy = true;
+    const pre = () => { Eye.leave(); Object.keys(V).forEach(k => V[k].classList.remove('on')); active = null; Obs.hold(false); black.style.background = ''; black.style.opacity = '0'; black.classList.remove('on'); root.hidden = true; };
+    try { if (window.RSC && window.RSC.go) await window.RSC.go('intro', { force: true }, { glitch: true, power: 2.2, ms: 1900, pre }); else pre(); } catch (e) { console.error(e); pre(); }
+    busy = false;
   }
   async function leaveGame() { if (busy) return; busy = true; SND.warp(1.9); await warp(1900, () => { Game.leave(); hide(); }); busy = false; }
   /* 신호기를 눌렀을 때 */

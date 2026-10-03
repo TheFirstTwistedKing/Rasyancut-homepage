@@ -181,19 +181,15 @@ void main(){
     const f = ts => { trapRaf = requestAnimationFrame(f); const t = (ts - t0) / 1000, o = Math.min(1, t / 1.3), k = Math.max(.02, 1 - Math.pow(1 - o, 3)) * (t > 3 && Math.sin(t * 1.7) > .985 ? .3 : 1), tp = -95 * k, bt = 95 * k, d = `M-180 0C-110 ${tp} 110 ${tp} 180 0C110 ${bt} -110 ${bt} -180 0Z`; al.setAttribute('d', d); al2.setAttribute('d', d); al2.setAttribute('transform', 'scale(.93 .9)'); cp.setAttribute('d', d); ir.setAttribute('transform', `translate(${(Math.sin(t * .9) * 4).toFixed(1)} ${(Math.sin(t * 1.3) * 2).toFixed(1)})`); pu.setAttribute('rx', (54 + Math.sin(t * 2.2) * 2.5).toFixed(1)); };
     trapRaf = requestAnimationFrame(f);
   }
-  function idiotLoop() {
-    const r = view.getBoundingClientRect(), W = tIdiot.width = Math.round(r.width), H = tIdiot.height = Math.round(r.height), g = tIdiot.getContext('2d'), sz = Math.max(46, Math.round(Math.min(H / 6, W / 4.2))), rowH = sz * .98, cols = ['#ff1a1a', '#ffffff', '#8a0000'];
-    g.font = `900 ${sz}px "Share Tech Mono","Courier New",monospace`; g.textBaseline = 'top'; const unit = IDIOT_WORD + '  ', uw = g.measureText(unit).width || 1; let scroll = 0, last = performance.now(); const t0 = last;
+  function idiotLoop() {          // 흑백만. 글자는 가로로 가지런히 한 줄씩, 간격 일정하게 아래로 계속 흘러내린다
+    const r = view.getBoundingClientRect(), W = tIdiot.width = Math.round(r.width), H = tIdiot.height = Math.round(r.height), g = tIdiot.getContext('2d');
+    g.font = '900 100px "Share Tech Mono","Courier New",monospace'; const w100 = g.measureText(IDIOT_WORD).width || 600, sz = Math.min(W * .9 / w100 * 100, H / 5), rowH = sz * 1.12;
+    g.font = `900 ${sz}px "Share Tech Mono","Courier New",monospace`; g.textBaseline = 'middle'; g.textAlign = 'center'; let scroll = 0, last = performance.now(); const t0 = last;
     const f = ts => {
       trapRaf = requestAnimationFrame(f); const dt = Math.min(.05, (ts - last) / 1000); last = ts; const t = (ts - t0) / 1000; scroll += (520 + t * 380) * dt;
-      g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = Math.sin(t * 17) > .6 ? '#1c0000' : '#000'; g.fillRect(0, 0, W, H);
+      g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
       const base = Math.floor(scroll / rowH), off = scroll % rowH;
-      for (let k = -1; k * rowH - rowH < H; k++) {
-        const row = base - k, y = k * rowH + off, sh = ((row * 97) % 7) * (uw / 7) * .5 + Math.sin(t * 2 + row) * 8;
-        g.fillStyle = cols[((row % 3) + 3) % 3];
-        for (let x = -uw + (sh % uw); x < W; x += uw) g.fillText(unit, x, y);
-      }
-      for (let n = 0, m = 2 + (Math.random() * 4 | 0); n < m; n++) { const y = Math.random() * H, h = 3 + Math.random() * 30; g.drawImage(tIdiot, 0, y, W, h, (Math.random() - .5) * 90, y, W, h); }
+      for (let k = -1; k * rowH - rowH < H; k++) { const row = base - k; g.fillStyle = ((row % 2) + 2) % 2 ? '#ffffff' : '#8c8c8c'; g.fillText(IDIOT_WORD, W / 2, k * rowH + off + rowH / 2); }
     };
     trapRaf = requestAnimationFrame(f);
   }
@@ -220,7 +216,7 @@ void main(){
     await twait(RM ? 200 : 1600);
     for (const ch of TRAP_TEXT) { tTx.textContent += ch; if (ch !== ' ') SND.knock(); await twait(RM ? 15 : 230); }
     await twait(RM ? 300 : 2000);
-    SND.laugh(150, -.5, 0, 12, 1); SND.laugh(235, .5, .05, 14, .86); SND.laugh(98, 0, .12, 10, 1.15);   // 세 겹의 웃음을 동시에
+    SND.laugh(150, -.5, 0, 26, 1); SND.laugh(235, .5, .05, 30, .86); SND.laugh(98, 0, .12, 23, 1.15);   // 세 겹의 웃음을 동시에
     cancelAnimationFrame(trapRaf); tEye.setAttribute('hidden', ''); tTx.textContent = ''; tIdiot.hidden = false; idiotLoop();
     await twait(RM ? 600 : 4000);
     cancelAnimationFrame(trapRaf); tIdiot.hidden = true; tBin.hidden = false; SND.beep(1.5); binaryLoop();
