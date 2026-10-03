@@ -12,6 +12,14 @@
     <div class="g-hud mono"><span id="gHudA">회장실</span><span class="g-keys">WASD 이동 · Shift 달리기 · Space/Enter 조사</span></div>
     <div class="g-msg" id="gMsg" hidden><b id="gName"></b><p id="gTxt"></p><i id="gNext" aria-hidden="true">▼</i></div>
     <div class="g-choice" id="gChoice" hidden role="listbox" aria-label="선택"><button type="button" data-v="1" role="option">네</button><button type="button" data-v="0" role="option">아니요</button></div>
+    <div class="g-quest" id="gQuest" hidden><b class="mono">QUEST</b><h4>카네히라의 질문</h4><p>카네히라가 설립자에게 여쭐 것이 있다.</p><em class="mono">준비 중 · 나중에 진행할 수 있습니다</em></div>
+    <div class="g-elev" id="gElev" hidden role="dialog" aria-label="엘리베이터">
+      <div class="ge-top mono"><span>ELEVATOR</span><b id="geNow">100F</b></div>
+      <button type="button" data-f="100"><i>100F</i><span>회장실</span><em>CHAIRMAN</em></button>
+      <button type="button" data-f="95"><i>95F</i><span>사무층</span><em>OFFICE</em></button>
+      <button type="button" data-f="0" class="ge-x"><span>닫기</span></button>
+    </div>
+    <div class="g-fade" id="gFade"><div class="g-floor mono" id="gFloor" hidden></div></div>
     <div class="g-pad" id="gPad" hidden>
       <div class="g-stick" id="gStick"><i></i></div>
       <button type="button" class="g-act" id="gAct">조사</button>
