@@ -141,6 +141,16 @@ Object.assign(SND, {
     for (let i = 0; i < d * 9; i++) this._n(Math.random() * d, .006 + Math.random() * .02, 3000 + Math.random() * 6000, 2000, .07 + Math.random() * .06, 1.2, 'highpass', Math.random() * 2 - 1);
     this._t(90, .45, 'sine', .22, 0, 40); this._n(0, .25, 1200, 150, .12, .7);          // 전원이 켜질 때 '퉁'
   },
+  /* 브라운관 눈보라가 계속 켜져 있는 동안의 소리: 낮은 전원 웅웅거림 + 넓은 대역 지글거림. 반환값 stop() 으로 끈다 */
+  crtLoop() {
+    if (!this.ctx || !this.on) return () => {};
+    const c = this.ctx, t = c.currentTime, s = c.createBufferSource(), hp = c.createBiquadFilter(), lp = c.createBiquadFilter(), g = c.createGain(), nodes = [s];
+    s.buffer = this.nbuf; s.loop = true; hp.type = 'highpass'; hp.frequency.value = 600; lp.type = 'lowpass'; lp.frequency.value = 8500;
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.075, t + .1); s.connect(hp); hp.connect(lp); lp.connect(g); g.connect(this.sfx); s.start(t);
+    const o1 = c.createOscillator(), o2 = c.createOscillator(), og = c.createGain(); o1.frequency.value = 50; o2.frequency.value = 15734; og.gain.value = .03; o1.connect(og); o2.connect(og); og.connect(g); o1.start(t); o2.start(t); nodes.push(o1, o2);   // 전원 웅웅 + 수평 주사음
+    this._t(90, .45, 'sine', .2, 0, 40); this._n(0, .25, 1200, 150, .12, .7);
+    return () => { const n = c.currentTime; g.gain.cancelScheduledValues(n); g.gain.setTargetAtTime(0, n, .04); nodes.forEach(x => { try { x.stop(n + .3); } catch (e) { /* 이미 멈춤 */ } }); };
+  },
   crtOff() {              // 브라운관이 꺼질 때: 높은 소리가 떨어지며 사라지고 '퍽'
     this._t(4200, .38, 'sine', .05, 0, 70); this._t(60, .3, 'sine', .22, .32, 30); this._n(.3, .06, 3000, 800, .1, .8); this._n(.3, .4, 400, 60, .06, .6, 'lowpass');
   },
