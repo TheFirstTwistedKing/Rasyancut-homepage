@@ -9717,7 +9717,12 @@ const Game = (() => {
     const hD = S.hairD || S.hair, hL = S.hairL || S.hair, skD = S.skinD || S.skin, bL = S.bottomL || S.bottom, shL = S.shoeL || S.shoe, iris = S.iris || '#5a4636', irisD = S.irisD || '#2a2018';
     const fr = (x, y, w, h, c) => { px(x, y, w, 2, c); px(x, y + h - 2, w, 2, c); px(x, y, 2, h, c); px(x + w - 2, y, 2, h, c); };   // 뿔테 (알 없음)
     const fur = (x, y, w, h, hem) => { px(x, y, w, h, S.fur); for (let j = 0; j < h; j += 4) for (let i = (j / 4) % 2 ? 2 : 0; i < w; i += 5) px(x + i, y + j + 1, 2, 2, S.furL); px(x, y, 1, h, S.furD); px(x + w - 1, y, 1, h, S.furD); px(x, y + h - 1, w, 1, S.furD); if (hem) for (let i = 0; i < w; i += 3) px(x + i, y + h, 2, 2, S.fur); };
-    const eye = (x, y) => { px(x, y, 4, 1, S.lid || '#1a1418'); px(x, y + 1, 4, 4, '#f4eee8'); px(x + 1, y + 1, 3, 4, iris); px(x + 1, y + 3, 3, 2, irisD); px(x + 2, y + 2, 1, 2, '#0a0810'); px(x + 1, y + 1, 1, 1, '#ffffff'); px(x + 3, y + 4, 1, 1, '#ffffff'); };
+    const fem = S.style === 'long';
+    const eye = (x, y, side = 0) => {        // 반짝임 없는 눈: 윗눈꺼풀 선 · 흰자 · 홍채+동공 · 아래 그늘 (여성은 속눈썹)
+      px(x - 1, y, 6, 1, S.lid || '#1a1418'); px(x, y + 1, 4, 3, '#e6e0da'); px(x + 1, y + 1, 2, 3, iris); px(x + 1, y + 2, 2, 2, irisD); px(x + 1, y + 2, 2, 1, '#0a0810'); px(x, y + 4, 4, 1, skD);
+      if (fem) { px(x + (side ? 4 : -2), y - 1, 1, 1, S.lid || '#1a1418'); px(x + (side ? 4 : -2), y, 1, 1, S.lid || '#1a1418'); }
+    };
+    const brow = (x, y, side) => { const c = hD; px(x, y, 4, 1, c); px(x + (side ? 3 : -1), y - (fem ? 0 : 0), 2, 1, c); if (!fem) px(x, y + 1, 4, 1, c); };
     const hairTop = () => {            // 머리 윗면: 둥근 덮개 + 결 + 하이라이트
       px(14, 4 + bob, 16, 2, S.hair); px(12, 5 + bob, 20, 3, S.hair); px(11, 7 + bob, 22, 5, S.hair);
       px(15, 4 + bob, 9, 1, hL); px(13, 6 + bob, 7, 1, hL); px(23, 6 + bob, 5, 1, hL); px(12, 11 + bob, 20, 1, hD);
@@ -9736,14 +9741,15 @@ const Game = (() => {
       else if (S.style === 'slick') { px(11, 4 + bob, 22, 19, S.hair); px(13, 22 + bob, 18, 2, hD); px(14, 7 + bob, 16, 1, hL); px(14, 12 + bob, 16, 1, hL); px(14, 17 + bob, 16, 1, hD); }
       else { px(10, 4 + bob, 24, 21, S.hair); px(12, 24 + bob, 20, 2, hD); px(13, 7 + bob, 8, 1, hL); px(24, 10 + bob, 6, 1, hL); px(14, 16 + bob, 16, 1, hD); if (S.style === 'messy') { px(13, 2 + bob, 4, 3, S.hair); px(20, 1 + bob, 5, 4, S.hair); px(28, 3 + bob, 4, 3, S.hair); } }
     };
-    const face = () => {
-      px(13, 11 + bob, 18, 13, S.skin); px(14, 24 + bob, 16, 1, S.skin); px(13, 22 + bob, 18, 2, S.skin); px(29, 12 + bob, 2, 12, skD); px(14, 24 + bob, 16, 1, skD);
-      if (S.blush) { px(14, 21 + bob, 3, 1, S.blush); px(27, 21 + bob, 3, 1, S.blush); }
+    const face = () => {                 // 갸름한 얼굴: 광대에서 턱으로 좁아진다
+      px(13, 11 + bob, 18, 8, S.skin); px(14, 19 + bob, 16, 3, S.skin); px(15, 22 + bob, 14, 1, S.skin); px(16, 23 + bob, 12, 1, S.skin); px(18, 24 + bob, 8, 1, S.skin);
+      px(29, 12 + bob, 2, 7, skD); px(28, 19 + bob, 2, 3, skD); px(27, 22 + bob, 2, 1, skD); px(18, 24 + bob, 8, 1, skD); px(13, 11 + bob, 1, 8, skD);
+      if (S.blush) { px(15, 20 + bob, 2, 1, S.blush); px(27, 20 + bob, 2, 1, S.blush); }
     };
     const eyes = () => {
-      if (S.glasses) { eye(16, 15 + bob); eye(25, 15 + bob); fr(13, 13 + bob, 9, 9, S.glasses); fr(23, 13 + bob, 9, 9, S.glasses); px(22, 15 + bob, 1, 2, S.glasses); px(11, 15 + bob, 2, 2, S.glasses); px(32, 15 + bob, 2, 2, S.glasses); }
-      else { eye(16, 15 + bob); eye(24, 15 + bob); }
-      px(21, 22 + bob, 2, 1, S.mouth || '#b2685a'); px(22, 20 + bob, 1, 1, skD);
+      if (S.glasses) { eye(16, 16 + bob, 0); eye(25, 16 + bob, 1); fr(13, 13 + bob, 9, 9, S.glasses); fr(23, 13 + bob, 9, 9, S.glasses); px(22, 15 + bob, 1, 2, S.glasses); px(11, 15 + bob, 2, 2, S.glasses); px(32, 15 + bob, 2, 2, S.glasses); }
+      else { brow(15, 13 + bob, 0); brow(25, 13 + bob, 1); eye(16, 15 + bob, 0); eye(24, 15 + bob, 1); }
+      px(22, 19 + bob, 1, 2, skD); px(21, 21 + bob, 3, 1, skD);       // 코 · 입은 생략
     };
     const legs = (side) => {
       if (sit) return;
@@ -9788,13 +9794,12 @@ const Game = (() => {
       else { px(17, 27 + bob, 4, 9 + sw, S.coat ? S.top : (S.sleeve || S.top)); px(17, 27 + bob, 1, 9 + sw, S.topL || S.top); px(16, 36 + bob + sw, 5, 3, S.hand); }
       px(19, 24 + bob, 5, 3, skD);
       if (S.style !== 'long') { px(12, 4 + bob, 21, 20, S.hair); px(13, 22 + bob, 17, 2, hD); }
-      px(11, 11 + bob, 13, 13, S.skin); px(10, 17 + bob, 1, 2, S.skin); px(12, 24 + bob, 11, 1, skD);
+      px(11, 11 + bob, 13, 8, S.skin); px(12, 19 + bob, 12, 3, S.skin); px(13, 22 + bob, 10, 2, S.skin); px(10, 17 + bob, 1, 3, S.skin); px(12, 24 + bob, 9, 1, skD); px(22, 12 + bob, 2, 10, skD);
       // 윗머리 · 앞머리
       px(12, 4 + bob, 21, 3, S.hair); px(11, 6 + bob, 22, 5, S.hair); px(14, 4 + bob, 9, 1, hL); px(12, 6 + bob, 7, 1, hL); px(11, 9 + bob, 13, 3, S.hair); px(11, 11 + bob, 4, 3, S.hair); px(12, 11 + bob, 12, 1, hD);
       if (S.style === 'messy') { px(13, 2 + bob, 4, 3, S.hair); px(20, 1 + bob, 5, 4, S.hair); px(28, 3 + bob, 4, 3, S.hair); }
       if (S.fur) px(13, 24 + bob, 15, 3, S.fur);
-      if (S.glasses) { eye(13, 15 + bob); fr(11, 13 + bob, 9, 9, S.glasses); px(20, 15 + bob, 13, 2, S.glasses); } else eye(13, 15 + bob);
-      px(11, 22 + bob, 3, 1, S.mouth || '#b2685a');
+      if (S.glasses) { eye(13, 16 + bob); fr(11, 13 + bob, 9, 9, S.glasses); px(20, 15 + bob, 13, 2, S.glasses); } else { px(12, 13 + bob, 4, 1, hD); eye(13, 15 + bob); }
       if (o.carry) { px(10, 34 + bob, 7, 6, '#e8efff'); px(10, 34 + bob, 7, 1, '#fff'); }
     }
   }
