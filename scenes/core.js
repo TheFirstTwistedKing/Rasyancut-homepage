@@ -236,7 +236,7 @@ const Scenes = (() => {
   }
   async function rebootEye() {          // 함정 끝: 레드스크린 그대로 심하게 지지직거리다가, 한가운데에서 곧바로 인트로로 바뀐다 (다른 화면은 보이지 않음)
     if (busy) return; busy = true;
-    const pre = () => { Eye.leave(); Object.keys(V).forEach(k => V[k].classList.remove('on')); active = null; Obs.hold(false); black.style.background = ''; black.style.opacity = '0'; black.classList.remove('on'); root.hidden = true; };
+    const pre = () => { try { if (window.RSC && window.RSC.resetAll) window.RSC.resetAll(); } catch (e) { console.error(e); } setTimeout(() => { try { location.reload(); } catch (e) { /* 샌드박스에서 막히면 아래 메모리 초기화만 적용 */ } }, 60); Eye.leave(); Object.keys(V).forEach(k => V[k].classList.remove('on')); active = null; Obs.hold(false); black.style.background = ''; black.style.opacity = '0'; black.classList.remove('on'); root.hidden = true; };
     try { if (window.RSC && window.RSC.go) await window.RSC.go('intro', { force: true }, { glitch: true, power: 2.2, ms: 1900, pre }); else pre(); } catch (e) { console.error(e); pre(); }
     busy = false;
   }
