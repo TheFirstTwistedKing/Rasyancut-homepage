@@ -210,13 +210,13 @@ void main(){
   async function startTrap() {
     if (!on || !locked || vaultSeen || trapOn || raging) return;
     trapOn = true; clearInterval(ambTimer); enterIn.blur(); enterF.hidden = true; vault.hidden = true; crtStop(); view.classList.remove('locked'); view.classList.add('trap');
-    SND.blackout(); trap.hidden = false; tTx.textContent = '';
+    SND.blackout(); SND.laughLoad(); trap.hidden = false; tTx.textContent = '';
     await twait(RM ? 300 : 3000);                                    // 완전한 어둠 3초
     tEye.removeAttribute('hidden'); trapEyeLoop(performance.now());
     await twait(RM ? 200 : 1600);
     for (const ch of TRAP_TEXT) { tTx.textContent += ch; if (ch !== ' ') SND.knock(); await twait(RM ? 15 : 230); }
     await twait(RM ? 300 : 2000);
-    SND.laugh(150, -.5, 0, 26, 1); SND.laugh(235, .5, .05, 30, .86); SND.laugh(98, 0, .12, 23, 1.15);   // 세 겹의 웃음을 동시에
+    SND.laughSample(RM ? .6 : 4.1);   // 웃음 샘플 3종(기본 + 변형 2개)을 동시에
     cancelAnimationFrame(trapRaf); tEye.setAttribute('hidden', ''); tTx.textContent = ''; tIdiot.hidden = false; idiotLoop();
     await twait(RM ? 600 : 4000);
     cancelAnimationFrame(trapRaf); tIdiot.hidden = true; tBin.hidden = false; SND.beep(1.5); binaryLoop();

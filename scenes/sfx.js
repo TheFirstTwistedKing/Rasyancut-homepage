@@ -151,6 +151,25 @@ Object.assign(SND, {
     this._t(90, .45, 'sine', .2, 0, 40); this._n(0, .25, 1200, 150, .12, .7);
     return () => { const n = c.currentTime; g.gain.cancelScheduledValues(n); g.gain.setTargetAtTime(0, n, .04); nodes.forEach(x => { try { x.stop(n + .3); } catch (e) { /* 이미 멈춤 */ } }); };
   },
+  /* 웃음 샘플 3종(기본 + 변형 2개): 미리 디코딩해 두었다가 한꺼번에 겹쳐 튼다 */
+  async laughLoad() {
+    if (this._lb || !this.ctx || typeof LAUGH_B64 === 'undefined') return this._lb;
+    if (this._lbp) return this._lbp;
+    const dec = k => { const bin = atob(LAUGH_B64[k]), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return this.ctx.decodeAudioData(u.buffer); };
+    return (this._lbp = Promise.all(['a', 'b', 'c'].map(dec)).then(b => (this._lb = b)).catch(() => (this._lbp = null)));
+  },
+  /* d초 동안 3종을 동시에 틀고 끝에서 부드럽게 줄인다. 샘플이 준비되지 않았으면 합성 웃음으로 대신한다 */
+  laughSample(d = 4.1) {
+    if (!this.ctx || !this.on) return;
+    const b = this._lb; if (!b) { this.laugh(150, -.5, 0, 26, 1); this.laugh(235, .5, .05, 30, .86); this.laugh(98, 0, .12, 23, 1.15); return; }
+    const c = this.ctx, t0 = c.currentTime + .02;
+    [[0, 1.25, -.3], [1, 1.0, .45], [2, .8, 0]].forEach(([i, gv, pan]) => {
+      const s = c.createBufferSource(), g = c.createGain(), pn = c.createStereoPanner ? c.createStereoPanner() : null; s.buffer = b[i];
+      g.gain.setValueAtTime(gv, t0); g.gain.setValueAtTime(gv, t0 + d - .4); g.gain.linearRampToValueAtTime(.0001, t0 + d);
+      s.connect(g); if (pn) { pn.pan.value = pan; g.connect(pn); pn.connect(this.sfx); } else g.connect(this.sfx);
+      s.start(t0); s.stop(t0 + d + .05);
+    });
+  },
   /* 모든 소리를 끊는다 (바람·음악) */
   blackout() {
     if (!this.ctx) return; this.windStop(); this.musicTo(0, .06);
