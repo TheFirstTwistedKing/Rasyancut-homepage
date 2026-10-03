@@ -216,6 +216,11 @@ const Scenes = (() => {
     if (busy) return; busy = true; black.style.background = '#fff'; black.classList.add('on'); SND.tone(880, .5, 'sine', .05, 0, 1760); await fade(1, 600);
     Eye.leave(); Object.keys(V).forEach(k => V[k].classList.remove('on')); active = null; Obs.hold(false); black.style.background = ''; await fade(0, 1100); black.classList.remove('on'); root.hidden = true; busy = false;
   }
+  async function rebootEye() {          // 함정 끝: 인트로 화면으로 돌아간다
+    if (busy) return; busy = true; black.style.background = '#000'; black.classList.add('on'); await fade(1, 500);
+    Eye.leave(); Object.keys(V).forEach(k => V[k].classList.remove('on')); active = null; Obs.hold(false); black.style.background = ''; root.hidden = true; black.classList.remove('on'); busy = false;
+    if (window.RSC && window.RSC.go) window.RSC.go('intro', { force: true });
+  }
   async function leaveGame() { if (busy) return; busy = true; SND.warp(1.9); await warp(1900, () => { Game.leave(); hide(); }); busy = false; }
   /* 신호기를 눌렀을 때 */
   async function start(n, from) {
@@ -230,6 +235,6 @@ const Scenes = (() => {
     if (!inp) { if (active === 'game' && Game.key(e, true)) { e.preventDefault(); } e.stopImmediatePropagation(); }
   }, true);
   addEventListener('keyup', e => { if (active === 'game') Game.key(e, false); }, true);
-  return { start, show, hide, leaveRss, leaveDesk, leaveEye, leaveGame, active: () => active };
+  return { start, show, hide, leaveRss, leaveDesk, leaveEye, rebootEye, leaveGame, active: () => active };
 })();
 window.RSC.Scenes = Scenes;

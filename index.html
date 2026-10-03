@@ -1702,6 +1702,17 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
   .e-only{bottom:auto;top:max(28%,calc(env(safe-area-inset-top,0px) + 90px))}
   .e-vault{top:calc(max(28%,90px) + 84px);translate:-50% 0;width:calc(100% - 24px);height:min(300px,calc(100% - max(28%,90px) - 110px))}
 }
+
+/* 30초 뒤의 함정: 검은 화면 → 붉은 눈과 글자 → 'Iditot' 도배 → 이진수 레드스크린 */
+.e-trap{position:absolute;inset:0;z-index:20;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(16px,4vh,38px);padding:0 16px;overflow:hidden}
+.e-trap[hidden],.e-trap [hidden]{display:none!important}
+.e-trap canvas{position:absolute;inset:0;width:100%;height:100%;z-index:1}
+.et-eye{position:relative;z-index:2;width:min(88vw,620px);height:auto;filter:drop-shadow(0 0 26px rgba(255,30,20,.85));animation:etThrob 2.6s ease-in-out infinite}
+@keyframes etThrob{50%{filter:drop-shadow(0 0 46px rgba(255,30,20,1))}}
+.et-tx{position:relative;z-index:2;margin:0;min-height:1.5em;max-width:92vw;text-align:center;font:800 clamp(20px,3.4vw,42px)/1.5 var(--f-body);letter-spacing:.06em;color:#ff2a1a;text-shadow:0 0 18px rgba(255,30,20,.8);word-break:keep-all}
+.et-reboot{position:absolute;z-index:3;left:50%;bottom:max(9%,calc(env(safe-area-inset-bottom,0px) + 40px));translate:-50% 0;display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 26px;color:#fff;background:rgba(0,0,0,.78);border:2px solid #fff;font:700 14px var(--f-mono);letter-spacing:.3em;box-shadow:0 0 30px rgba(0,0,0,.8);animation:rise .6s var(--ease-soft) both}
+.et-reboot svg{width:46px;height:46px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round}
+.et-reboot:hover,.et-reboot:focus-visible{background:#fff;color:#a00}
 /* SCENES-CSS:END */
 
 /* ================= 공지 (메인 우측 상단 종 아이콘 + 공지 화면) ================= */
@@ -2248,6 +2259,17 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
     <canvas id="eCrt" hidden></canvas>
     <form class="e-only" id="eEnter" hidden autocomplete="off"><input id="eEnterIn" type="text" maxlength="24" spellcheck="false" autocapitalize="off" aria-label="입력"></form>
     <div class="e-vault" id="eVault" hidden role="dialog" aria-label="비밀 기록 보관소"><div class="evt"><span>비밀 기록 보관소</span><button type="button" id="eVaultX" aria-label="닫기">✕</button></div><div class="evb"></div></div>
+    <div class="e-trap" id="eTrap" hidden>
+      <canvas id="eIdiot" hidden></canvas><canvas id="eBin" hidden></canvas>
+      <svg class="et-eye" id="eTrapEye" viewBox="-170 -116 340 232" hidden aria-hidden="true">
+        <defs><radialGradient id="etG"><stop offset="0" stop-color="#ff8a70"/><stop offset=".5" stop-color="#e01010"/><stop offset="1" stop-color="#520000"/></radialGradient><clipPath id="etCl"><path id="etClP" d=""/></clipPath></defs>
+        <g stroke="#ff2a1a" stroke-width="4" stroke-linecap="round" opacity=".85"><path d="M0 -86V-112M-48 -80L-62 -102M48 -80L62 -102M-92 -62L-116 -80M92 -62L116 -80"/></g>
+        <path id="etAl" d="" fill="#060000" stroke="#ff2a1a" stroke-width="6" stroke-linejoin="round"/>
+        <g clip-path="url(#etCl)"><g id="etIr"><circle r="66" fill="url(#etG)"/><circle r="66" fill="none" stroke="#ffb09c" stroke-width="2" stroke-dasharray="4 7"/><circle r="42" fill="none" stroke="#300" stroke-width="2" opacity=".7"/><ellipse id="etPu" rx="11" ry="56" fill="#000"/><circle cx="-18" cy="-22" r="7" fill="#fff" opacity=".7"/></g></g>
+      </svg>
+      <p class="et-tx" id="eTrapTx" aria-live="polite"></p>
+      <button class="et-reboot" id="eReboot" type="button" hidden aria-label="Reboot"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 4v13" /><path d="M11 9.5A14 14 0 1 0 29 9.5"/></svg><span>REBOOT</span></button>
+    </div>
     <form class="e-code" id="eCode" autocomplete="off">
       <label for="eIn" class="mono">RECOVERY CODE</label>
       <div class="e-hint">복구 코드 : <b>Re-code</b></div>
@@ -8947,6 +8969,11 @@ const Scenes = (() => {
     if (busy) return; busy = true; black.style.background = '#fff'; black.classList.add('on'); SND.tone(880, .5, 'sine', .05, 0, 1760); await fade(1, 600);
     Eye.leave(); Object.keys(V).forEach(k => V[k].classList.remove('on')); active = null; Obs.hold(false); black.style.background = ''; await fade(0, 1100); black.classList.remove('on'); root.hidden = true; busy = false;
   }
+  async function rebootEye() {          // 함정 끝: 인트로 화면으로 돌아간다
+    if (busy) return; busy = true; black.style.background = '#000'; black.classList.add('on'); await fade(1, 500);
+    Eye.leave(); Object.keys(V).forEach(k => V[k].classList.remove('on')); active = null; Obs.hold(false); black.style.background = ''; root.hidden = true; black.classList.remove('on'); busy = false;
+    if (window.RSC && window.RSC.go) window.RSC.go('intro', { force: true });
+  }
   async function leaveGame() { if (busy) return; busy = true; SND.warp(1.9); await warp(1900, () => { Game.leave(); hide(); }); busy = false; }
   /* 신호기를 눌렀을 때 */
   async function start(n, from) {
@@ -8961,7 +8988,7 @@ const Scenes = (() => {
     if (!inp) { if (active === 'game' && Game.key(e, true)) { e.preventDefault(); } e.stopImmediatePropagation(); }
   }, true);
   addEventListener('keyup', e => { if (active === 'game') Game.key(e, false); }, true);
-  return { start, show, hide, leaveRss, leaveDesk, leaveEye, leaveGame, active: () => active };
+  return { start, show, hide, leaveRss, leaveDesk, leaveEye, rebootEye, leaveGame, active: () => active };
 })();
 window.RSC.Scenes = Scenes;
 
@@ -9117,6 +9144,30 @@ Object.assign(SND, {
     const o1 = c.createOscillator(), o2 = c.createOscillator(), og = c.createGain(); o1.frequency.value = 50; o2.frequency.value = 15734; og.gain.value = .03; o1.connect(og); o2.connect(og); og.connect(g); o1.start(t); o2.start(t); nodes.push(o1, o2);   // 전원 웅웅 + 수평 주사음
     this._t(90, .45, 'sine', .2, 0, 40); this._n(0, .25, 1200, 150, .12, .7);
     return () => { const n = c.currentTime; g.gain.cancelScheduledValues(n); g.gain.setTargetAtTime(0, n, .04); nodes.forEach(x => { try { x.stop(n + .3); } catch (e) { /* 이미 멈춤 */ } }); };
+  },
+  /* 모든 소리를 끊는다 (바람·음악) */
+  blackout() { this.windStop(); this.musicTo(0, .06); },
+  /* 글자가 한 자씩 찍힐 때: 딱딱한 '탁' */
+  knock() {
+    const v = .85 + Math.random() * .3;
+    this._n(0, .025, 2600 * v, 500, .2, 1.3, 'bandpass', Math.random() * .4 - .2); this._t(150 * v, .09, 'sine', .22, 0, 55); this._n(.002, .012, 5200, 3000, .08, 1.5, 'highpass');
+  },
+  /* 기괴한 웃음 한 줄기: 쉰 목소리 '하' 를 점점 빨라지고 낮아지게 이어 붙인다 (f0: 높이, n: 횟수) */
+  laugh(f0 = 170, pan = 0, at = 0, n = 9, tempo = 1) {
+    if (!this.ctx || !this.on) return;
+    const c = this.ctx, t0 = c.currentTime + at, pn = c.createStereoPanner ? c.createStereoPanner() : null; if (pn) { pn.pan.value = pan; pn.connect(this.sfx); }
+    const dst = pn || this.sfx; let tt = t0;
+    for (let k = 0; k < n; k++) {
+      const d = (.17 + Math.random() * .05) * tempo, f = f0 * (1.22 - k * .028) * (1 + (Math.random() - .5) * .05), o = c.createOscillator(), o2 = c.createOscillator(), env = c.createGain(), b1 = c.createBiquadFilter(), b2 = c.createBiquadFilter(), vb = c.createOscillator(), vg = c.createGain();
+      o.type = 'sawtooth'; o2.type = 'square'; o.frequency.setValueAtTime(f * 1.12, tt); o.frequency.exponentialRampToValueAtTime(f * .84, tt + d); o2.frequency.value = f * 1.005; o2.frequency.setValueAtTime(f * 1.12, tt); o2.frequency.exponentialRampToValueAtTime(f * .84, tt + d);
+      vb.frequency.value = 22; vg.gain.value = f * .025; vb.connect(vg); vg.connect(o.frequency);
+      b1.type = 'bandpass'; b1.frequency.value = 760 + Math.random() * 120; b1.Q.value = 5; b2.type = 'bandpass'; b2.frequency.value = 1250 + Math.random() * 200; b2.Q.value = 7;
+      env.gain.setValueAtTime(.0001, tt); env.gain.exponentialRampToValueAtTime(.16, tt + .02); env.gain.exponentialRampToValueAtTime(.0001, tt + d);
+      o.connect(b1); o2.connect(b2); b1.connect(env); b2.connect(env); env.connect(dst);
+      o.start(tt); o2.start(tt); vb.start(tt); o.stop(tt + d + .03); o2.stop(tt + d + .03); vb.stop(tt + d + .03);
+      const ns = c.createBufferSource(), hp = c.createBiquadFilter(), ng = c.createGain(); ns.buffer = this.nbuf; hp.type = 'highpass'; hp.frequency.value = 2200; ng.gain.setValueAtTime(.05, tt); ng.gain.exponentialRampToValueAtTime(.0001, tt + d * .6); ns.connect(hp); hp.connect(ng); ng.connect(dst); ns.start(tt); ns.stop(tt + d);
+      tt += d * (1.02 - k * .02);
+    }
   },
   crtOff() {              // 브라운관이 꺼질 때: 높은 소리가 떨어지며 사라지고 '퍽'
     this._t(4200, .38, 'sine', .05, 0, 70); this._t(60, .3, 'sine', .22, .32, 30); this._n(.3, .06, 3000, 800, .1, .8); this._n(.3, .4, 400, 60, .06, .6, 'lowpass');
@@ -9854,17 +9905,76 @@ void main(){
     raging = false; enterLocked();
   }
 
+
+  /* ---------- 30초가 지나도 비밀 기록 보관소를 열지 않으면: 검은 화면 → 붉은 눈 → 글자 → 웃음 + 'Iditot' → 이진수 레드스크린 ---------- */
+  const trap = $('#eTrap'), tEye = $('#eTrapEye'), tTx = $('#eTrapTx'), tIdiot = $('#eIdiot'), tBin = $('#eBin'), tReboot = $('#eReboot');
+  const TRAP_TEXT = '들어오지 말았어야지, 멍청한 놈.', IDIOT_WORD = 'Iditot';
+  let trapOn = false, trapT = [], trapRaf = 0, lockTimer = 0, vaultSeen = false;
+  const twait = ms => new Promise(res => trapT.push(setTimeout(res, ms)));
+  function trapEyeLoop(t0) {
+    const al = $('#etAl'), cp = $('#etClP'), ir = $('#etIr'), pu = $('#etPu');
+    const f = ts => { trapRaf = requestAnimationFrame(f); const t = (ts - t0) / 1000, o = Math.min(1, t / 1.3), k = Math.max(.02, 1 - Math.pow(1 - o, 3)) * (t > 3 && Math.sin(t * 1.7) > .985 ? .1 : 1), tp = -86 * k, bt = 86 * k, d = `M-150 0C-90 ${tp} 90 ${tp} 150 0C90 ${bt} -90 ${bt} -150 0Z`; al.setAttribute('d', d); cp.setAttribute('d', d); ir.setAttribute('transform', `translate(${(Math.sin(t * .9) * 5).toFixed(1)} ${(Math.sin(t * 1.3) * 3).toFixed(1)})`); pu.setAttribute('rx', (10 + Math.sin(t * 2.2) * 2.5).toFixed(1)); };
+    trapRaf = requestAnimationFrame(f);
+  }
+  function idiotLoop() {
+    const r = view.getBoundingClientRect(), W = tIdiot.width = Math.round(r.width), H = tIdiot.height = Math.round(r.height), g = tIdiot.getContext('2d'), sz = Math.max(46, Math.round(Math.min(H / 6, W / 4.2))), rowH = sz * .98, cols = ['#ff1a1a', '#ffffff', '#8a0000'];
+    g.font = `900 ${sz}px "Share Tech Mono","Courier New",monospace`; g.textBaseline = 'top'; const unit = IDIOT_WORD + '  ', uw = g.measureText(unit).width || 1; let scroll = 0, last = performance.now(); const t0 = last;
+    const f = ts => {
+      trapRaf = requestAnimationFrame(f); const dt = Math.min(.05, (ts - last) / 1000); last = ts; const t = (ts - t0) / 1000; scroll += (520 + t * 380) * dt;
+      g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = Math.sin(t * 17) > .6 ? '#1c0000' : '#000'; g.fillRect(0, 0, W, H);
+      const base = Math.floor(scroll / rowH), off = scroll % rowH;
+      for (let k = -1; k * rowH - rowH < H; k++) {
+        const row = base - k, y = k * rowH + off, sh = ((row * 97) % 7) * (uw / 7) * .5 + Math.sin(t * 2 + row) * 8;
+        g.fillStyle = cols[((row % 3) + 3) % 3];
+        for (let x = -uw + (sh % uw); x < W; x += uw) g.fillText(unit, x, y);
+      }
+      for (let n = 0, m = 2 + (Math.random() * 4 | 0); n < m; n++) { const y = Math.random() * H, h = 3 + Math.random() * 30; g.drawImage(tIdiot, 0, y, W, h, (Math.random() - .5) * 90, y, W, h); }
+    };
+    trapRaf = requestAnimationFrame(f);
+  }
+  function binaryLoop() {
+    const r = view.getBoundingClientRect(), W = tBin.width = Math.round(r.width), H = tBin.height = Math.round(r.height), g = tBin.getContext('2d'), cs = W < 700 ? 15 : 20, cols = Math.ceil(W / cs), rows = Math.ceil(H / cs); let last = 0;
+    g.font = `700 ${cs}px "Share Tech Mono","Courier New",monospace`; g.textBaseline = 'top';
+    const f = ts => {
+      trapRaf = requestAnimationFrame(f); if (ts - last < 70) return; last = ts;
+      g.fillStyle = '#c40000'; g.fillRect(0, 0, W, H);
+      for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) { const v = Math.random(); g.fillStyle = v < .08 ? '#ff9a8a' : v < .5 ? '#5a0000' : '#2a0000'; g.fillText(Math.random() < .5 ? '0' : '1', x * cs, y * cs); }
+      g.fillStyle = 'rgba(0,0,0,.18)'; for (let y = 0; y < H; y += 4) g.fillRect(0, y, W, 1);
+    };
+    trapRaf = requestAnimationFrame(f);
+  }
+  function trapReset() {
+    trapOn = false; trapT.forEach(clearTimeout); trapT = []; cancelAnimationFrame(trapRaf); trapRaf = 0; trap.hidden = true; tEye.setAttribute('hidden', ''); tIdiot.hidden = true; tBin.hidden = true; tReboot.hidden = true; tTx.textContent = '';
+  }
+  async function startTrap() {
+    if (!on || !locked || vaultSeen || trapOn || raging) return;
+    trapOn = true; clearInterval(ambTimer); enterIn.blur(); enterF.hidden = true; vault.hidden = true; crtStop(); view.classList.remove('locked'); view.classList.add('trap');
+    SND.blackout(); trap.hidden = false; tTx.textContent = '';
+    await twait(RM ? 300 : 3000);                                    // 완전한 어둠 3초
+    tEye.removeAttribute('hidden'); trapEyeLoop(performance.now());
+    await twait(RM ? 200 : 1600);
+    for (const ch of TRAP_TEXT) { tTx.textContent += ch; if (ch !== ' ') SND.knock(); await twait(RM ? 15 : 230); }
+    await twait(RM ? 300 : 2000);
+    SND.laugh(150, -.5, 0, 12, 1); SND.laugh(235, .5, .05, 14, .86); SND.laugh(98, 0, .12, 10, 1.15);   // 세 겹의 웃음을 동시에
+    cancelAnimationFrame(trapRaf); tEye.setAttribute('hidden', ''); tTx.textContent = ''; tIdiot.hidden = false; idiotLoop();
+    await twait(RM ? 600 : 4000);
+    cancelAnimationFrame(trapRaf); tIdiot.hidden = true; tBin.hidden = false; SND.beep(1.5); binaryLoop();
+    await twait(RM ? 100 : 1200); tReboot.hidden = false; try { tReboot.focus({ preventScroll: true }); } catch (e) { /* 무시 */ }
+  }
+  tReboot.addEventListener('click', () => { SND.click(); Scenes.rebootEye(); });
+
   /* 분노 이후: 브라운관 눈보라가 계속 켜져 있고 'Enter-code' 가 화면 가득, 입력창은 하나뿐 */
   const enterF = $('#eEnter'), enterIn = $('#eEnterIn'), vault = $('#eVault');
   function enterLocked() {
     locked = true; view.classList.add('locked'); say.hidden = true; vault.hidden = true; rageTx.hidden = true;
     enterF.hidden = false; enterIn.value = ''; enterIn.disabled = false; try { enterIn.focus({ preventScroll: true }); } catch (e) { /* 무시 */ }
+    vaultSeen = false; clearTimeout(lockTimer); lockTimer = setTimeout(startTrap, RM ? 3000 : 30000);
   }
-  function leaveLocked() { locked = false; clearInterval(ambTimer); crtStop(); enterF.hidden = true; vault.hidden = true; view.classList.remove('locked'); }
+  function leaveLocked() { locked = false; clearInterval(ambTimer); clearTimeout(lockTimer); trapReset(); view.classList.remove('trap'); crtStop(); enterF.hidden = true; vault.hidden = true; view.classList.remove('locked'); }
   enterIn.addEventListener('input', () => SND.type());
   enterF.addEventListener('submit', e => {
     e.preventDefault(); const v = enterIn.value.trim().toLowerCase().replace(/[\s_]/g, '');
-    if (v === 'enter-code' || v === 'entercode') { enterIn.value = ''; SND.tone(1318, .12, 'sine', .06); SND.tone(1760, .2, 'sine', .05, .08); SND._n(0, .25, 4000, 300, .14, .8); vault.hidden = false; return; }
+    if (v === 'enter-code' || v === 'entercode') { enterIn.value = ''; SND.tone(1318, .12, 'sine', .06); SND.tone(1760, .2, 'sine', .05, .08); SND._n(0, .25, 4000, 300, .14, .8); vault.hidden = false; vaultSeen = true; clearTimeout(lockTimer); return; }
     if (v === 're-code' || v === 'recode') { enterIn.blur(); leaveLocked(); Scenes.leaveEye(); return; }
     enterIn.value = ''; enterF.classList.remove('bad'); void enterF.offsetWidth; enterF.classList.add('bad'); SND.tone(160, .16, 'square', .05); SND.tone(110, .22, 'square', .05, .13);
   });

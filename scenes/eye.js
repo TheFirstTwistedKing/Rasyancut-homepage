@@ -170,17 +170,76 @@ void main(){
     raging = false; enterLocked();
   }
 
+
+  /* ---------- 30초가 지나도 비밀 기록 보관소를 열지 않으면: 검은 화면 → 붉은 눈 → 글자 → 웃음 + 'Iditot' → 이진수 레드스크린 ---------- */
+  const trap = $('#eTrap'), tEye = $('#eTrapEye'), tTx = $('#eTrapTx'), tIdiot = $('#eIdiot'), tBin = $('#eBin'), tReboot = $('#eReboot');
+  const TRAP_TEXT = '들어오지 말았어야지, 멍청한 놈.', IDIOT_WORD = 'Iditot';
+  let trapOn = false, trapT = [], trapRaf = 0, lockTimer = 0, vaultSeen = false;
+  const twait = ms => new Promise(res => trapT.push(setTimeout(res, ms)));
+  function trapEyeLoop(t0) {
+    const al = $('#etAl'), cp = $('#etClP'), ir = $('#etIr'), pu = $('#etPu');
+    const f = ts => { trapRaf = requestAnimationFrame(f); const t = (ts - t0) / 1000, o = Math.min(1, t / 1.3), k = Math.max(.02, 1 - Math.pow(1 - o, 3)) * (t > 3 && Math.sin(t * 1.7) > .985 ? .1 : 1), tp = -86 * k, bt = 86 * k, d = `M-150 0C-90 ${tp} 90 ${tp} 150 0C90 ${bt} -90 ${bt} -150 0Z`; al.setAttribute('d', d); cp.setAttribute('d', d); ir.setAttribute('transform', `translate(${(Math.sin(t * .9) * 5).toFixed(1)} ${(Math.sin(t * 1.3) * 3).toFixed(1)})`); pu.setAttribute('rx', (10 + Math.sin(t * 2.2) * 2.5).toFixed(1)); };
+    trapRaf = requestAnimationFrame(f);
+  }
+  function idiotLoop() {
+    const r = view.getBoundingClientRect(), W = tIdiot.width = Math.round(r.width), H = tIdiot.height = Math.round(r.height), g = tIdiot.getContext('2d'), sz = Math.max(46, Math.round(Math.min(H / 6, W / 4.2))), rowH = sz * .98, cols = ['#ff1a1a', '#ffffff', '#8a0000'];
+    g.font = `900 ${sz}px "Share Tech Mono","Courier New",monospace`; g.textBaseline = 'top'; const unit = IDIOT_WORD + '  ', uw = g.measureText(unit).width || 1; let scroll = 0, last = performance.now(); const t0 = last;
+    const f = ts => {
+      trapRaf = requestAnimationFrame(f); const dt = Math.min(.05, (ts - last) / 1000); last = ts; const t = (ts - t0) / 1000; scroll += (520 + t * 380) * dt;
+      g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = Math.sin(t * 17) > .6 ? '#1c0000' : '#000'; g.fillRect(0, 0, W, H);
+      const base = Math.floor(scroll / rowH), off = scroll % rowH;
+      for (let k = -1; k * rowH - rowH < H; k++) {
+        const row = base - k, y = k * rowH + off, sh = ((row * 97) % 7) * (uw / 7) * .5 + Math.sin(t * 2 + row) * 8;
+        g.fillStyle = cols[((row % 3) + 3) % 3];
+        for (let x = -uw + (sh % uw); x < W; x += uw) g.fillText(unit, x, y);
+      }
+      for (let n = 0, m = 2 + (Math.random() * 4 | 0); n < m; n++) { const y = Math.random() * H, h = 3 + Math.random() * 30; g.drawImage(tIdiot, 0, y, W, h, (Math.random() - .5) * 90, y, W, h); }
+    };
+    trapRaf = requestAnimationFrame(f);
+  }
+  function binaryLoop() {
+    const r = view.getBoundingClientRect(), W = tBin.width = Math.round(r.width), H = tBin.height = Math.round(r.height), g = tBin.getContext('2d'), cs = W < 700 ? 15 : 20, cols = Math.ceil(W / cs), rows = Math.ceil(H / cs); let last = 0;
+    g.font = `700 ${cs}px "Share Tech Mono","Courier New",monospace`; g.textBaseline = 'top';
+    const f = ts => {
+      trapRaf = requestAnimationFrame(f); if (ts - last < 70) return; last = ts;
+      g.fillStyle = '#c40000'; g.fillRect(0, 0, W, H);
+      for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) { const v = Math.random(); g.fillStyle = v < .08 ? '#ff9a8a' : v < .5 ? '#5a0000' : '#2a0000'; g.fillText(Math.random() < .5 ? '0' : '1', x * cs, y * cs); }
+      g.fillStyle = 'rgba(0,0,0,.18)'; for (let y = 0; y < H; y += 4) g.fillRect(0, y, W, 1);
+    };
+    trapRaf = requestAnimationFrame(f);
+  }
+  function trapReset() {
+    trapOn = false; trapT.forEach(clearTimeout); trapT = []; cancelAnimationFrame(trapRaf); trapRaf = 0; trap.hidden = true; tEye.setAttribute('hidden', ''); tIdiot.hidden = true; tBin.hidden = true; tReboot.hidden = true; tTx.textContent = '';
+  }
+  async function startTrap() {
+    if (!on || !locked || vaultSeen || trapOn || raging) return;
+    trapOn = true; clearInterval(ambTimer); enterIn.blur(); enterF.hidden = true; vault.hidden = true; crtStop(); view.classList.remove('locked'); view.classList.add('trap');
+    SND.blackout(); trap.hidden = false; tTx.textContent = '';
+    await twait(RM ? 300 : 3000);                                    // 완전한 어둠 3초
+    tEye.removeAttribute('hidden'); trapEyeLoop(performance.now());
+    await twait(RM ? 200 : 1600);
+    for (const ch of TRAP_TEXT) { tTx.textContent += ch; if (ch !== ' ') SND.knock(); await twait(RM ? 15 : 230); }
+    await twait(RM ? 300 : 2000);
+    SND.laugh(150, -.5, 0, 12, 1); SND.laugh(235, .5, .05, 14, .86); SND.laugh(98, 0, .12, 10, 1.15);   // 세 겹의 웃음을 동시에
+    cancelAnimationFrame(trapRaf); tEye.setAttribute('hidden', ''); tTx.textContent = ''; tIdiot.hidden = false; idiotLoop();
+    await twait(RM ? 600 : 4000);
+    cancelAnimationFrame(trapRaf); tIdiot.hidden = true; tBin.hidden = false; SND.beep(1.5); binaryLoop();
+    await twait(RM ? 100 : 1200); tReboot.hidden = false; try { tReboot.focus({ preventScroll: true }); } catch (e) { /* 무시 */ }
+  }
+  tReboot.addEventListener('click', () => { SND.click(); Scenes.rebootEye(); });
+
   /* 분노 이후: 브라운관 눈보라가 계속 켜져 있고 'Enter-code' 가 화면 가득, 입력창은 하나뿐 */
   const enterF = $('#eEnter'), enterIn = $('#eEnterIn'), vault = $('#eVault');
   function enterLocked() {
     locked = true; view.classList.add('locked'); say.hidden = true; vault.hidden = true; rageTx.hidden = true;
     enterF.hidden = false; enterIn.value = ''; enterIn.disabled = false; try { enterIn.focus({ preventScroll: true }); } catch (e) { /* 무시 */ }
+    vaultSeen = false; clearTimeout(lockTimer); lockTimer = setTimeout(startTrap, RM ? 3000 : 30000);
   }
-  function leaveLocked() { locked = false; clearInterval(ambTimer); crtStop(); enterF.hidden = true; vault.hidden = true; view.classList.remove('locked'); }
+  function leaveLocked() { locked = false; clearInterval(ambTimer); clearTimeout(lockTimer); trapReset(); view.classList.remove('trap'); crtStop(); enterF.hidden = true; vault.hidden = true; view.classList.remove('locked'); }
   enterIn.addEventListener('input', () => SND.type());
   enterF.addEventListener('submit', e => {
     e.preventDefault(); const v = enterIn.value.trim().toLowerCase().replace(/[\s_]/g, '');
-    if (v === 'enter-code' || v === 'entercode') { enterIn.value = ''; SND.tone(1318, .12, 'sine', .06); SND.tone(1760, .2, 'sine', .05, .08); SND._n(0, .25, 4000, 300, .14, .8); vault.hidden = false; return; }
+    if (v === 'enter-code' || v === 'entercode') { enterIn.value = ''; SND.tone(1318, .12, 'sine', .06); SND.tone(1760, .2, 'sine', .05, .08); SND._n(0, .25, 4000, 300, .14, .8); vault.hidden = false; vaultSeen = true; clearTimeout(lockTimer); return; }
     if (v === 're-code' || v === 'recode') { enterIn.blur(); leaveLocked(); Scenes.leaveEye(); return; }
     enterIn.value = ''; enterF.classList.remove('bad'); void enterF.offsetWidth; enterF.classList.add('bad'); SND.tone(160, .16, 'square', .05); SND.tone(110, .22, 'square', .05, .13);
   });

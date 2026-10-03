@@ -151,6 +151,30 @@ Object.assign(SND, {
     this._t(90, .45, 'sine', .2, 0, 40); this._n(0, .25, 1200, 150, .12, .7);
     return () => { const n = c.currentTime; g.gain.cancelScheduledValues(n); g.gain.setTargetAtTime(0, n, .04); nodes.forEach(x => { try { x.stop(n + .3); } catch (e) { /* 이미 멈춤 */ } }); };
   },
+  /* 모든 소리를 끊는다 (바람·음악) */
+  blackout() { this.windStop(); this.musicTo(0, .06); },
+  /* 글자가 한 자씩 찍힐 때: 딱딱한 '탁' */
+  knock() {
+    const v = .85 + Math.random() * .3;
+    this._n(0, .025, 2600 * v, 500, .2, 1.3, 'bandpass', Math.random() * .4 - .2); this._t(150 * v, .09, 'sine', .22, 0, 55); this._n(.002, .012, 5200, 3000, .08, 1.5, 'highpass');
+  },
+  /* 기괴한 웃음 한 줄기: 쉰 목소리 '하' 를 점점 빨라지고 낮아지게 이어 붙인다 (f0: 높이, n: 횟수) */
+  laugh(f0 = 170, pan = 0, at = 0, n = 9, tempo = 1) {
+    if (!this.ctx || !this.on) return;
+    const c = this.ctx, t0 = c.currentTime + at, pn = c.createStereoPanner ? c.createStereoPanner() : null; if (pn) { pn.pan.value = pan; pn.connect(this.sfx); }
+    const dst = pn || this.sfx; let tt = t0;
+    for (let k = 0; k < n; k++) {
+      const d = (.17 + Math.random() * .05) * tempo, f = f0 * (1.22 - k * .028) * (1 + (Math.random() - .5) * .05), o = c.createOscillator(), o2 = c.createOscillator(), env = c.createGain(), b1 = c.createBiquadFilter(), b2 = c.createBiquadFilter(), vb = c.createOscillator(), vg = c.createGain();
+      o.type = 'sawtooth'; o2.type = 'square'; o.frequency.setValueAtTime(f * 1.12, tt); o.frequency.exponentialRampToValueAtTime(f * .84, tt + d); o2.frequency.value = f * 1.005; o2.frequency.setValueAtTime(f * 1.12, tt); o2.frequency.exponentialRampToValueAtTime(f * .84, tt + d);
+      vb.frequency.value = 22; vg.gain.value = f * .025; vb.connect(vg); vg.connect(o.frequency);
+      b1.type = 'bandpass'; b1.frequency.value = 760 + Math.random() * 120; b1.Q.value = 5; b2.type = 'bandpass'; b2.frequency.value = 1250 + Math.random() * 200; b2.Q.value = 7;
+      env.gain.setValueAtTime(.0001, tt); env.gain.exponentialRampToValueAtTime(.16, tt + .02); env.gain.exponentialRampToValueAtTime(.0001, tt + d);
+      o.connect(b1); o2.connect(b2); b1.connect(env); b2.connect(env); env.connect(dst);
+      o.start(tt); o2.start(tt); vb.start(tt); o.stop(tt + d + .03); o2.stop(tt + d + .03); vb.stop(tt + d + .03);
+      const ns = c.createBufferSource(), hp = c.createBiquadFilter(), ng = c.createGain(); ns.buffer = this.nbuf; hp.type = 'highpass'; hp.frequency.value = 2200; ng.gain.setValueAtTime(.05, tt); ng.gain.exponentialRampToValueAtTime(.0001, tt + d * .6); ns.connect(hp); hp.connect(ng); ng.connect(dst); ns.start(tt); ns.stop(tt + d);
+      tt += d * (1.02 - k * .02);
+    }
+  },
   crtOff() {              // 브라운관이 꺼질 때: 높은 소리가 떨어지며 사라지고 '퍽'
     this._t(4200, .38, 'sine', .05, 0, 70); this._t(60, .3, 'sine', .22, .32, 30); this._n(.3, .06, 3000, 800, .1, .8); this._n(.3, .4, 400, 60, .06, .6, 'lowpass');
   },
