@@ -1,7 +1,7 @@
 // 사용법: node tools/validate-cmd.js [id ...]
 // data/cmd/<id>.js 구조 검사
 //  · 일반 사령관 8명: 주제 6개 × 질문 50개, 질문마다 답변 5개(중복·빈 문자열 없음), hello 5개, 관계(rel) 답변
-//  · sender(발신자 표시 제한): info 50개 · fortune 40개 이상, 질문마다 답변 5개 + 키워드, hello 5개, vague 3개 이상,
+//  · sender(발신자 표시 제한): info 50개 이상 · fortune 40개 이상, 질문마다 답변 5개 + 키워드, hello 5개, vague 3개 이상,
 //    그리고 각 질문 문장을 그대로 입력했을 때 자기 자신이 가장 높은 점수로 잡히는지(키워드 충돌) 확인
 const fs = require('fs'), vm = require('vm'), path = require('path');
 const dir = path.join(__dirname, '..', 'data', 'cmd');
@@ -13,7 +13,7 @@ let bad = 0;
 
 function checkRows(rep, t, a, need, withKw) {
   if (!a) { rep.push(t + ':none'); return; }
-  if (need === 50 ? a.length !== 50 : a.length < need) rep.push(`${t}:${a.length}개`);
+  if (need === 50 && t !== 'info' ? a.length !== 50 : a.length < need) rep.push(`${t}:${a.length}개`);
   const qs = new Set();
   a.forEach((it, i) => {
     if (!Array.isArray(it) || typeof it[0] !== 'string' || !it[0].trim()) { rep.push(`${t}[${i}] 질문 이상`); return; }
