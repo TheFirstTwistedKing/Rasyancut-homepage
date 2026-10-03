@@ -331,15 +331,15 @@ const Game = (() => {
 
   /* ---------- 사람 그리기: 직원(여러 팔레트) · 아비시온 크리토스 ---------- */
   const WSPR = new Map(); let KR_SPR = null;
-  const KRITOS = { skin: '#f3dccb', skinD: '#d9bfae', hair: '#2f5bff', hairL: '#9ab8ff', style: 'slick', glasses: '#0b1030', iris: '#3a66d8', irisD: '#14246a', jacket: '#1d3fd6', shirt: '#6f90ff', tie: '#15226e', gold: '#e6c04a', fur: '#d9b44a', furL: '#f6e19a', furD: '#9a7a24', bottom: '#0a0a10', bottomL: '#22222c', shoe: '#0a0a10', shoeL: '#30303c', blush: '#eab0a4', hand: '#f3dccb', mouth: '#b98a7a', hairD: '#1c3ab0' };
+  const KRITOS = { skin: '#f3dccb', skinD: '#d9bfae', hair: '#2f5bff', hairL: '#9ab8ff', style: 'slick', glasses: '#0b1030', iris: '#3a7cff', irisD: '#14246a', irisL: '#8fc4ff', jacket: '#1d3fd6', shirt: '#6f90ff', tie: '#15226e', gold: '#e6c04a', fur: '#d9b44a', furL: '#f6e19a', furD: '#9a7a24', bottom: '#0a0a10', bottomL: '#22222c', shoe: '#0a0a10', shoeL: '#30303c', blush: '#eab0a4', hand: '#f3dccb', mouth: '#b98a7a', hairD: '#1c3ab0' };
   const mkNpc = (hair, hairL, style, skin, top, topD, shirt, tie, extra = {}) => Object.assign({ skin, skinD: '#c6a58a', hair, hairL, hairD: hair, style, top, topD, topL: top, shirt, tie, bottom: '#0d1020', bottomL: '#1e2848', shoe: '#06070c', shoeL: '#2a2e3a', hand: skin, belt: '#06070c', blush: '#e8a898' }, extra);
   const NPC_SPECS = [
-    mkNpc('#2a1f18', '#5a463a', 'short', '#f0d2b8', '#1c2f6e', '#0f1c48', '#e8f0ff', '#38d6ff', { topL: '#2f4a9a', skinD: '#d8b59c', iris: '#3a4a6a' }),
-    mkNpc('#7a5232', '#b88a58', 'long', '#f4d9c4', '#27408c', '#16265a', '#ffffff', '#ff7a9a', { topL: '#3f60b8', skinD: '#dcb8a2', glasses: '#2a2f55', iris: '#6a4a8a', irisD: '#2a1a40' }),
-    mkNpc('#14141c', '#3a3a52', 'short', '#e8c9ae', '#20242f', '#12151c', '#d8e4ff', '#ffd93d', { topL: '#363c4e', skinD: '#c6a58a', iris: '#2a3a2a' }),
-    mkNpc('#a87a4a', '#e0b078', 'long', '#f0d2b8', '#142a5e', '#0a1838', '#dbe6ff', '#ff6a8a', { topL: '#2a4a98', skinD: '#d6b49c', iris: '#4a8a6a', irisD: '#1a3a2a' }),
-    mkNpc('#3a3c48', '#6a6e82', 'slick', '#d4ae90', '#262e44', '#151b2c', '#eef3ff', '#38d6ff', { topL: '#3a4666', skinD: '#b48c70', glasses: '#14141e', iris: '#3a3a4a' }),
-    mkNpc('#2a1408', '#6a3a1a', 'messy', '#e8c9ae', '#1c3470', '#0e1c44', '#dbe6ff', '#c9a94c', { topL: '#2c4e9e', skinD: '#c6a58a', iris: '#5a3a1a', irisD: '#2a1a08' })];
+    mkNpc('#2a2f5a', '#5a64a8', 'short', '#f6dcc8', '#1c2f6e', '#0f1c48', '#e8f0ff', '#38d6ff', { topL: '#2f4a9a', skinD: '#e0b8a0', iris: '#3a6ad8', irisD: '#142a6a', irisL: '#9ec4ff' }),
+    mkNpc('#8a5a3a', '#d8a070', 'long', '#fbe4d2', '#27408c', '#16265a', '#ffffff', '#ff7a9a', { topL: '#3f60b8', skinD: '#e6c0aa', glasses: '#2a2f55', iris: '#9a5ad8', irisD: '#3a1a6a', irisL: '#e0b8ff' }),
+    mkNpc('#14141c', '#3a4a7a', 'short', '#f0d2b8', '#20242f', '#12151c', '#d8e4ff', '#ffd93d', { topL: '#363c4e', skinD: '#d0ac92', iris: '#3a8a5a', irisD: '#143a24', irisL: '#a0e8b8' }),
+    mkNpc('#d8a0b8', '#ffd0e0', 'long', '#fbe4d2', '#142a5e', '#0a1838', '#dbe6ff', '#ff6a8a', { topL: '#2a4a98', skinD: '#e6c0aa', iris: '#e0507a', irisD: '#6a1a3a', irisL: '#ffb0c8' }),
+    mkNpc('#9aa4c0', '#e0e8ff', 'slick', '#e8c9ae', '#262e44', '#151b2c', '#eef3ff', '#38d6ff', { topL: '#3a4666', skinD: '#c09a80', glasses: '#14141e', iris: '#5a6a8a', irisD: '#1a2038', irisL: '#b8c8e8' }),
+    mkNpc('#3a1a10', '#8a4a2a', 'messy', '#f6dcc8', '#1c3470', '#0e1c44', '#dbe6ff', '#c9a94c', { topL: '#2c4e9e', skinD: '#e0b8a0', iris: '#d89a3a', irisD: '#6a3a0a', irisL: '#ffd890' })];
   function npcSprite(spec, dir, f, sit, carry) {
     const key = spec.top + spec.hair + dir + f + (sit ? 's' : '') + (carry ? 'c' : ''); if (WSPR.has(key)) return WSPR.get(key);
     const base = dir === 'right' ? 'left' : dir; let c = outline(mk(CW, CH, g => drawChibi(g, base, f, spec, { sit, carry })));
@@ -405,7 +405,7 @@ const Game = (() => {
   const SPR = {};
   const CW = 44, CH = 64;
   function drawChar(g, dir, f) { drawChibi(g, dir, f, PLAYER); drawGuandao(g, dir, f); }
-  const PLAYER = { skin: SK, skinD: SKD, hair: HR, hairL: HRL, hairD: '#0d0e12', style: 'messy', iris: '#6a8f8a', irisD: '#2e4642',  top: CG, topD: CGD, topL: CGL, coat: true, inner: IN, innerL: INL, shirt: IN, bottom: PT, shoe: BT, hand: GLV, eye: '#15161a' };
+  const PLAYER = { skin: SK, skinD: SKD, hair: HR, hairL: HRL, hairD: '#0d0e12', style: 'messy', iris: '#4fa59a', irisD: '#1d4a44', irisL: '#9ee0d2',  top: CG, topD: CGD, topL: CGL, coat: true, inner: IN, innerL: INL, shirt: IN, bottom: PT, shoe: BT, hand: GLV, eye: '#15161a' };
   function drawGuandao(g, dir, f) {
     const px = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); }, bob = f === 1 || f === 3 ? -1 : 0;
     const guandao = (x, out, gx, by) => {   // 언월도: 긴 자루 + 폭 넓은 초승달 날 + 금 마디 + 녹색 술, 손(장갑)이 자루를 쥠
@@ -460,15 +460,24 @@ const Game = (() => {
       px(18, 12 + bob, 2, 1, S.blush || skD); px(25, 12 + bob, 2, 1, S.blush || skD); px(21, 15 + bob, 3, 1, skD);
       if (S.fur) { px(15, SH - 2 + bob, 15, 3, S.fur); for (let i = 0; i < 15; i += 2) px(15 + i, SH + bob, 1, 1, S.furL); }
       rows(0, 4, S.hair); px(21, 2 + bob, 4, 1, hL); px(19, 3 + bob, 3, 1, hL); px(17, 4 + bob, 2, 1, hL); px(24, 6 + bob, 4, 1, hD);
-      if (S.style === 'short') { px(16, 7 + bob, 1, 5, S.hair); px(28, 7 + bob, 1, 5, S.hair); px(17, 7 + bob, 11, 1, S.hair); px(17, 7 + bob, 5, 1, hL); px(18, 8 + bob, 3, 1, S.hair); }
-      else if (S.style === 'slick') { px(16, 7 + bob, 1, 3, S.hair); px(28, 7 + bob, 1, 3, S.hair); px(19, 4 + bob, 9, 1, hL); px(17, 5 + bob, 11, 1, hL); px(17, 6 + bob, 11, 1, hD); }
-      else if (S.style === 'long') { px(15, 7 + bob, 2, 31, S.hair); px(28, 7 + bob, 2, 31, S.hair); px(17, 7 + bob, 5, 2, S.hair); px(15, 9 + bob, 1, 26, hL); px(29, 9 + bob, 1, 26, hD); px(18, 6 + bob, 4, 1, hD); }
-      else { px(17, 0 + bob, 3, 4, S.hair); px(21, 0 + bob, 4, 4, S.hair); px(26, 1 + bob, 3, 3, S.hair); px(16, 7 + bob, 1, 4, S.hair); px(28, 7 + bob, 1, 4, S.hair); px(17, 7 + bob, 4, 2, S.hair); px(23, 7 + bob, 3, 1, S.hair); px(26, 7 + bob, 2, 2, S.hair); px(22, 0 + bob, 1, 1, hL); }
-      // 눈 · 눈썹 · 코 (입은 생략)
-      const eyeF = (x) => { px(x, 9 + bob, 3, 1, lid); px(x, 10 + bob, 3, 1, '#e6e0da'); px(x + (x < 22 ? 1 : 0), 10 + bob, 2, 1, iris); px(x + (x < 22 ? 1 : 1), 10 + bob, 1, 1, irisD); };
-      if (S.glasses) { px(17, 8 + bob, 5, 5, S.glasses); px(23, 8 + bob, 5, 5, S.glasses); px(18, 9 + bob, 3, 3, S.skin); px(24, 9 + bob, 3, 3, S.skin); px(22, 9 + bob, 1, 1, S.glasses); px(16, 9 + bob, 1, 1, S.glasses); px(28, 9 + bob, 1, 1, S.glasses); px(18, 9 + bob, 3, 1, lid); px(24, 9 + bob, 3, 1, lid); px(18, 10 + bob, 3, 1, '#e6e0da'); px(24, 10 + bob, 3, 1, '#e6e0da'); px(19, 10 + bob, 2, 1, iris); px(24, 10 + bob, 2, 1, iris); }
-      else { px(18, 8 + bob, 4, 1, hD); px(24, 8 + bob, 4, 1, hD); eyeF(18); eyeF(24); if (fem) { px(17, 9 + bob, 1, 1, lid); px(27, 9 + bob, 1, 1, lid); } }
-      px(22, 11 + bob, 1, 2, skD);
+      // 애니메 풍 앞머리: 이마 위에서 세 가닥으로 갈라져 뾰족하게 내려오는 가닥 + 옆머리 + 뿔(아호게)
+      const lockL = () => { px(16, 7 + bob, 5, 1, S.hair); px(16, 8 + bob, 4, 1, S.hair); px(16, 9 + bob, 2, 1, S.hair); px(16, 10 + bob, 1, 1, S.hair); px(17, 7 + bob, 3, 1, hL); };
+      const lockR = () => { px(24, 7 + bob, 5, 1, S.hair); px(25, 8 + bob, 4, 1, S.hair); px(27, 9 + bob, 2, 1, S.hair); px(28, 10 + bob, 1, 1, S.hair); px(25, 7 + bob, 3, 1, hL); };
+      const lockC = () => { px(20, 7 + bob, 5, 1, S.hair); px(21, 8 + bob, 3, 1, S.hair); px(22, 9 + bob, 1, 1, S.hair); };
+      if (S.style === 'slick') { px(16, 7 + bob, 1, 7, S.hair); px(28, 7 + bob, 1, 7, S.hair); px(16, 13 + bob, 1, 2, hD); px(19, 4 + bob, 9, 1, hL); px(17, 5 + bob, 11, 1, hL); px(17, 6 + bob, 11, 1, hD); }
+      else if (S.style === 'short') { lockL(); lockC(); lockR(); px(16, 11 + bob, 1, 4, S.hair); px(28, 11 + bob, 1, 4, S.hair); px(16, 14 + bob, 1, 1, hD); px(28, 14 + bob, 1, 1, hD); }
+      else if (S.style === 'long') { lockL(); lockR(); px(15, 7 + bob, 2, 31, S.hair); px(28, 7 + bob, 2, 31, S.hair); px(15, 9 + bob, 1, 26, hL); px(29, 9 + bob, 1, 26, hD); px(17, 7 + bob, 3, 1, S.hair); px(13, 20 + bob, 2, 8, S.hair); px(30, 20 + bob, 2, 8, S.hair); px(20, 7 + bob, 5, 1, S.hair); px(21, 8 + bob, 3, 1, S.hair); }
+      else { px(17, 0 + bob, 3, 4, S.hair); px(21, 0 + bob, 4, 4, S.hair); px(26, 1 + bob, 3, 3, S.hair); px(23, 0 + bob, 1, 1, hL); px(22, -1 + bob < 0 ? 0 : -1 + bob, 1, 1, S.hair); lockL(); lockC(); lockR(); px(15, 8 + bob, 1, 6, S.hair); px(29, 8 + bob, 1, 6, S.hair); px(16, 12 + bob, 1, 3, S.hair); px(28, 12 + bob, 1, 3, S.hair); }
+      // 눈: 크고 또렷한 애니메 눈 (윗눈꺼풀 굵은 선 · 세로로 긴 홍채 · 위가 어둡고 아래가 밝은 그라데이션 · 흰자는 바깥쪽에 약간). 반짝이는 하이라이트는 넣지 않는다
+      const irisL = S.irisL || iris;
+      const eyeA = (x, side) => {
+        px(x, 8 + bob, 4, 1, lid); px(side ? x : x - 1, 8 + bob, 1, 1, lid); if (fem) px(side ? x + 4 : x - 2, 7 + bob, 1, 1, lid);
+        px(x, 9 + bob, 4, 1, irisD); px(x, 10 + bob, 4, 2, iris); px(x, 12 + bob, 4, 1, irisL); px(x + 1, 10 + bob, 2, 2, '#0a0810'); px(side ? x + 3 : x, 9 + bob, 1, 4, '#e6e0da'); px(side ? x : x + 3, 9 + bob, 1, 4, irisD); px(x + 1, 12 + bob, 2, 1, irisL);
+        px(x, 13 + bob, 4, 1, skD);
+      };
+      if (S.glasses) { eyeA(17, 0); eyeA(24, 1); px(16, 7 + bob, 6, 1, S.glasses); px(16, 13 + bob, 6, 1, S.glasses); px(16, 7 + bob, 1, 7, S.glasses); px(21, 7 + bob, 1, 7, S.glasses); px(23, 7 + bob, 6, 1, S.glasses); px(23, 13 + bob, 6, 1, S.glasses); px(23, 7 + bob, 1, 7, S.glasses); px(28, 7 + bob, 1, 7, S.glasses); px(22, 9 + bob, 1, 1, S.glasses); px(15, 9 + bob, 1, 1, S.glasses); px(29, 9 + bob, 1, 1, S.glasses); px(16, 6 + bob, 6, 1, S.glasses); px(23, 6 + bob, 6, 1, S.glasses); }
+      else { eyeA(17, 0); eyeA(24, 1); }
+      px(22, 13 + bob, 1, 1, skD);
       if (o.carry) { px(9, 24 + bob, 7, 6, '#e8efff'); px(9, 24 + bob, 7, 1, '#fff'); px(10, 26 + bob, 5, 1, '#9fb4e8'); px(10, 28 + bob, 4, 1, '#9fb4e8'); }
     } else if (dir === 'up') {
       legs(false);
@@ -497,8 +506,8 @@ const Game = (() => {
       if (S.style === 'messy') { px(17, 0 + bob, 3, 4, S.hair); px(21, 0 + bob, 4, 4, S.hair); px(26, 1 + bob, 3, 3, S.hair); }
       if (S.style === 'long') px(16, 7 + bob, 3, 2, S.hair);
       if (S.fur) px(16, SH - 2 + bob, 12, 3, S.fur);
-      px(16, 8 + bob, 4, 1, hD); px(16, 9 + bob, 3, 1, lid); px(16, 10 + bob, 1, 1, '#e6e0da'); px(17, 10 + bob, 2, 1, iris); px(14, 11 + bob, 1, 1, skD);
-      if (S.glasses) { px(15, 8 + bob, 5, 5, S.glasses); px(16, 9 + bob, 3, 3, S.skin); px(16, 9 + bob, 3, 1, lid); px(17, 10 + bob, 2, 1, iris); px(20, 9 + bob, 7, 1, S.glasses); }
+      px(15, 8 + bob, 4, 1, lid); px(15, 9 + bob, 4, 1, irisD); px(15, 10 + bob, 4, 2, iris); px(15, 12 + bob, 4, 1, S.irisL || iris); px(16, 10 + bob, 2, 2, '#0a0810'); px(15, 9 + bob, 1, 4, '#e6e0da'); px(15, 13 + bob, 4, 1, skD); px(14, 12 + bob, 1, 1, skD);
+      if (S.glasses) { px(14, 7 + bob, 6, 1, S.glasses); px(14, 13 + bob, 6, 1, S.glasses); px(14, 7 + bob, 1, 7, S.glasses); px(19, 7 + bob, 1, 7, S.glasses); px(20, 9 + bob, 7, 1, S.glasses); }
       if (o.carry) { px(10, 24 + bob, 7, 6, '#e8efff'); px(10, 24 + bob, 7, 1, '#fff'); }
     }
   }
