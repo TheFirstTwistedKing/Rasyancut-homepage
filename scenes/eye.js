@@ -11,17 +11,20 @@ const Eye = (() => {
     eye.insertAdjacentHTML('beforeend', `<svg viewBox="-110 -104 220 208" style="--k:${i}"><defs><clipPath id="eCl${i}"><path class="cp" d=""/></clipPath></defs><path d="M-6 -50L0 -102L6 -50Z" fill="#e4e4e4"/><path d="M-11 48C-7 72 -2 90 0 104C2 90 7 72 11 48Z" fill="#d2d2d2"/><path class="al" d="" fill="#0b0b0b" stroke="#e2e2e2" stroke-width="11" stroke-linejoin="round"/><g clip-path="url(#eCl${i})"><g class="ir"><ellipse rx="33" ry="28" fill="#f4f4f4"/></g></g></svg>`);
     const s = eye.lastElementChild; eyes.push({ s, al: s.querySelector('.al'), cp: s.querySelector('.cp'), ir: s.querySelector('.ir'), open: .02, target: 1, blink: 1.5 + Math.random() * 4 });
   }
+  let px = -1, py = -1;
   function layoutEyes() {
-    const r = view.getBoundingClientRect(), W = r.width, H = r.height, rows = W < 700 ? 2 : 1, per = NEYE / rows, pos = [];
-    let minD = 1e9;
-    for (let row = 0; row < rows; row++) {
-      const rx = rows > 1 ? W * .465 - row * W * .075 : Math.min(W * .44, H * .9), ry = Math.min(H * (rows > 1 ? .09 : .27), 260), apex = (rows > 1 ? 40 : 56) + row * (W * .095), tm = (rows > 1 ? 68 : 62) * Math.PI / 180, p = [];
-      for (let i = 0; i < per; i++) { const th = -tm + (2 * tm) * i / (per - 1); p.push({ x: W / 2 + Math.sin(th) * rx, y: apex + (1 - Math.cos(th)) * ry, th }); }
-      for (let i = 1; i < per; i++) minD = Math.min(minD, Math.hypot(p[i].x - p[i - 1].x, p[i].y - p[i - 1].y));
-      pos.push(...p);
-    }
-    const w = Math.min(minD * 1.12, 120), h = w * 208 / 220;
-    pos.forEach((p, i) => { const s = eyes[i].s.style; s.width = w + 'px'; s.height = h + 'px'; s.left = (p.x - w / 2) + 'px'; s.top = (p.y - h / 2) + 'px'; s.transform = `rotate(${(p.th * 180 / Math.PI).toFixed(1)}deg)`; });
+    const r = view.getBoundingClientRect(), W = r.width, H = r.height, mob = W < 700, counts = mob ? [7, 7, 6] : [10, 10], pos = [];
+    const arc = (rx, ry, apex, tm, n) => {          // 타원 호를 '호 길이' 기준으로 똑같은 간격으로 나눈다
+      const S = 400, pts = []; let len = 0;
+      for (let k = 0; k <= S; k++) { const th = -tm + 2 * tm * k / S, x = W / 2 + Math.sin(th) * rx, y = apex + (1 - Math.cos(th)) * ry; if (k) len += Math.hypot(x - pts[k - 1].x, y - pts[k - 1].y); pts.push({ x, y, len }); }
+      const out = []; for (let i = 0; i < n; i++) { const tl = len * (i + .5) / n; let k = 1; while (k < S && pts[k].len < tl) k++; const p0 = pts[k - 1], p1 = pts[k], f = (tl - p0.len) / Math.max(1e-6, p1.len - p0.len); out.push({ x: p0.x + (p1.x - p0.x) * f, y: p0.y + (p1.y - p0.y) * f, a: Math.atan2(p1.y - p0.y, p1.x - p0.x) }); }
+      return { out, len };
+    };
+    const rx0 = mob ? W * .47 : Math.min(W * .45, H * .95), ry0 = mob ? H * .1 : Math.min(H * .27, 260), tm = (mob ? 66 : 62) * Math.PI / 180, apex0 = mob ? 44 : 60;
+    const first = arc(rx0, ry0, apex0, tm, counts[0]), w0 = Math.min(first.len / counts[0], mob ? 66 : 150) * (mob ? .9 : 1), rows = counts.map((n, row) => { const g = row * w0 * 1.0; return arc(rx0 - g, Math.max(10, ry0 - g * .35), apex0 + g, tm, n); });
+    const w = Math.min(w0, ...rows.map((r, i) => r.len / counts[i] * .96)), h = w * 208 / 220;
+    rows.forEach(rr => rr.out.forEach(p => pos.push(p)));
+    pos.forEach((p, i) => { const e = eyes[i], s = e.s.style; e.cx = p.x; e.cy = p.y; e.ang = p.a; s.width = w + 'px'; s.height = h + 'px'; s.left = (p.x - w / 2) + 'px'; s.top = (p.y - h / 2) + 'px'; s.transform = `rotate(${(p.a * 180 / Math.PI).toFixed(1)}deg)`; });
   }
   let raf = 0, on = false, t0 = 0, li = 0, open = 0, target = 1, blinkT = 0, mx = .5, my = .3, W = 0, H = 0, dpr = 1, tm = [];
   const parts = Array.from({ length: 90 }, (_, i) => ({ x: Math.random(), y: Math.random(), v: .04 + Math.random() * .16, l: 30 + Math.random() * 120, a: .05 + Math.random() * .22, m: i % 4 === 0 }));
@@ -40,7 +43,8 @@ const Eye = (() => {
       if (t > .6) { e.blink -= .016; if (e.blink < 0) { e.target = e.target > .5 ? .04 : 1; e.blink = e.target < .5 ? .12 : 2.2 + Math.random() * 5; } }
       e.open += (e.target - e.open) * (e.target < .5 ? .5 : .08);
       const d = eyePath(e.open); e.al.setAttribute('d', d); e.cp.setAttribute('d', d);
-      const ix = (mx - (i % 10 + .5) / 10) * 60, iy = (my - .1) * 30; e.ir.setAttribute('transform', `translate(${Math.max(-26, Math.min(26, ix)).toFixed(1)} ${Math.max(-8, Math.min(10, iy)).toFixed(1)})`);
+      const tx = px < 0 ? W / 2 : px, ty = py < 0 ? H * .62 : py, dx = tx - e.cx, dy = ty - e.cy, ca = Math.cos(-e.ang), sa = Math.sin(-e.ang), lx = dx * ca - dy * sa, ly = dx * sa + dy * ca, dist = Math.hypot(lx, ly) || 1, mag = Math.min(1, dist / 160);
+      e.ir.setAttribute('transform', `translate(${(lx / dist * 27 * mag).toFixed(1)} ${(ly / dist * 11 * mag).toFixed(1)})`);
     });
   }
   function nextLine() {
@@ -48,7 +52,8 @@ const Eye = (() => {
     say.hidden = false; Typer.say(txt, LINES[li], () => { });
   }
   say.addEventListener('click', () => { if (!Typer.done) { Typer.finish(); return; } li++; SND.tick(); nextLine(); });
-  view.addEventListener('pointermove', e => { const r = view.getBoundingClientRect(); mx = (e.clientX - r.left) / r.width; my = (e.clientY - r.top) / r.height; });
+  view.addEventListener('pointermove', e => { const r = view.getBoundingClientRect(); mx = (e.clientX - r.left) / r.width; my = (e.clientY - r.top) / r.height; px = e.clientX - r.left; py = e.clientY - r.top; });
+  view.addEventListener('pointerdown', e => { const r = view.getBoundingClientRect(); px = e.clientX - r.left; py = e.clientY - r.top; });
 
   /* ---------- 'No-code' 를 적으면: 영어 글자가 화면을 가득 채우고 경보 · 글리치 · 분노 → 10초 뒤 '삐' + 브라운관 지지직 ---------- */
   const RAGE_LINES = ['…지금 무슨 말을 적은 겁니까.', 'NO-CODE?!\n그런 코드는 존재하지 않습니다!!', '여기서 장난을 치면\n어떻게 되는지 아십니까?!', '멈추십시오!!\n당장 멈추라고 했습니다!!', '…돌아가고 싶다면 ‘Re-code’.\n그 외에는 전부 소음일 뿐입니다.'];
@@ -190,7 +195,7 @@ void main(){
   addEventListener('orientationchange', () => { if (on) setTimeout(() => { resize(); crtResize(); }, 250); });
   return {
     enter() {
-      on = true; li = 0; open = .02; target = 1; blinkT = 1.5; eyes.forEach(e => { e.open = .02; e.target = 1; e.blink = 1.5 + Math.random() * 4; }); inp.value = ''; err.textContent = ''; say.hidden = true; eye.classList.remove('show'); fig.classList.remove('show'); resize();
+      on = true; li = 0; px = py = -1; open = .02; target = 1; blinkT = 1.5; eyes.forEach(e => { e.open = .02; e.target = 1; e.blink = 1.5 + Math.random() * 4; }); inp.value = ''; err.textContent = ''; say.hidden = true; eye.classList.remove('show'); fig.classList.remove('show'); resize();
       SND.musicTo(0, 1.2); SND.windStart();
       t0 = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(frame);
       tm.push(setTimeout(() => eye.classList.add('show'), 500 * (RM ? .1 : 1)), setTimeout(() => fig.classList.add('show'), 2200 * (RM ? .1 : 1)), setTimeout(nextLine, 4200 * (RM ? .1 : 1)));
