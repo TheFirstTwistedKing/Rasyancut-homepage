@@ -1746,6 +1746,10 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
 .g-quest.in{animation:qIn .7s var(--ease-soft) both}.g-quest.still{animation:none}
 @keyframes qIn{from{opacity:0;translate:60px 0}to{opacity:1;translate:0 0}}
 #scGame.touch .g-quest{top:calc(max(14px,env(safe-area-inset-top,0px)) + 28px)}
+
+/* 출력 상승 모드(html[data-boost])는 화면 전체의 색조를 돌리지만, 신호기 1·2·4번의 연출은 원래 색을 유지한다 (3번 신호기 = 바탕화면만 색이 바뀜) */
+#scGame,#scRss,#scEye{filter:hue-rotate(0deg) saturate(1);transition:filter 2.4s ease}
+html[data-boost] #scGame,html[data-boost] #scRss,html[data-boost] #scEye{filter:hue-rotate(-168deg) saturate(.893)}
 /* SCENES-CSS:END */
 
 /* ================= 공지 (메인 우측 상단 종 아이콘 + 공지 화면) ================= */
