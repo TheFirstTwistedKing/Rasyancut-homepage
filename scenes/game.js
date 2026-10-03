@@ -23,7 +23,10 @@ const Game = (() => {
         R(g, x, y, T, T, shade('#5b3a22', k));
         for (let p = 0; p < 2; p++) {
           const px = h ? x + p * 16 : x, py = h ? y : y + p * 16, pw = h ? 16 : T, ph = h ? T : 16, kk = .9 + rnd() * .2;
-          R(g, px, py, pw, ph, shade(p ? '#68432a' : '#5a3a22', kk)); R(g, px, py, pw, 1, 'rgba(255,220,160,.07)'); R(g, px + pw - 1, py, 1, ph, 'rgba(0,0,0,.28)'); R(g, px, py + ph - 1, pw, 1, 'rgba(0,0,0,.28)');
+          R(g, px, py, pw, ph, shade(p ? '#68432a' : '#5a3a22', kk));
+          for (let q = 0; q < 4; q++) { if (h) R(g, px + 2 + rnd() * (pw - 4), py + rnd() * 6, 1, ph - 8 + rnd() * 8, `rgba(${rnd() < .5 ? '30,15,6' : '170,120,70'},${(.08 + rnd() * .12).toFixed(2)})`); else R(g, px + rnd() * 6, py + 2 + rnd() * (ph - 4), pw - 8 + rnd() * 8, 1, `rgba(${rnd() < .5 ? '30,15,6' : '170,120,70'},${(.08 + rnd() * .12).toFixed(2)})`); }
+          if (rnd() < .05) { const kx = px + 4 + rnd() * (pw - 8), ky = py + 3 + rnd() * (ph - 6); g.fillStyle = 'rgba(40,20,8,.55)'; g.beginPath(); g.ellipse(kx, ky, 3, 2, 0, 0, 7); g.fill(); g.strokeStyle = 'rgba(40,20,8,.25)'; g.beginPath(); g.ellipse(kx, ky, 6, 3.5, 0, 0, 7); g.stroke(); }
+          R(g, px, py, pw, 1, 'rgba(255,220,160,.07)'); R(g, px + pw - 1, py, 1, ph, 'rgba(0,0,0,.28)'); R(g, px, py + ph - 1, pw, 1, 'rgba(0,0,0,.28)');
         }
       }
       // 카펫
@@ -176,7 +179,7 @@ const Game = (() => {
   /* ==========================================================================
      여러 맵: 회장실(100F) → 복도 → 엘리베이터 → 95F 사무층
      ========================================================================== */
-  const MAPS = {}, mapNames = { office: '회장실 · 100F', hall: '복도 · 100F', f95: '사무층 · 95F' };
+  const MAPS = {}, mapNames = { office: '회장실 · 100F', hall: '복도 · 100F', f95: '사무층 · 95F', roof: '옥상 · RF' };
   let curMap = 'office', npcs = [], trans = false, elevOpen = false, elevI = 0, elevFloor = 100, questOn = false;
   const fadeEl = $('#gFade'), floorEl = $('#gFloor'), elevEl = $('#gElev'), questEl = $('#gQuest');
   function useMap(name) {
@@ -186,6 +189,15 @@ const Game = (() => {
     $('#gHudA').textContent = mapNames[name];
   }
 
+  /* ---------- 현실감: 벽·가구 둘레의 부드러운 접촉 그림자(앰비언트 오클루전)와 미세한 입자 노이즈를 바닥 그림에 구워 넣는다 ---------- */
+  function bakeLighting(noise = 7) {
+    const g = floorC.getContext('2d'); g.save();
+    solids.forEach(s => { if (s.noAO || s.w <= 0 || s.h <= 0) return; g.shadowColor = 'rgba(0,0,0,.5)'; g.shadowBlur = 18; g.shadowOffsetX = 6000 + 3; g.shadowOffsetY = 6; g.fillStyle = '#000'; g.fillRect(s.x - 6000, s.y, s.w, s.h); });
+    g.restore();
+    const W = floorC.width, H = floorC.height, id = g.getImageData(0, 0, W, H), d = id.data, r = rng(4242);
+    for (let i = 0; i < d.length; i += 4) { const n = (r() - .5) * noise; d[i] += n; d[i + 1] += n; d[i + 2] += n; }
+    g.putImageData(id, 0, 0);
+  }
   /* ---------- 공용 소품 그리기 (산업·테크니컬) ---------- */
   const STEEL = { d: '#12161b', m: '#1d242c', l: '#2c3640', h: '#46525f', hh: '#6c7a88' };
   const hazard = (g, x, y, w, h, a = '#d9a21b', b = '#14110a') => { g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip(); R(g, x, y, w, h, b); g.fillStyle = a; for (let i = -h; i < w + h; i += 12) { g.beginPath(); g.moveTo(x + i, y + h); g.lineTo(x + i + 6, y + h); g.lineTo(x + i + 6 + h, y); g.lineTo(x + i + h, y); g.fill(); } g.restore(); };
@@ -237,7 +249,12 @@ const Game = (() => {
     // 엘리베이터(아래쪽 끝)
     const elevIa = () => openElev(100);
     add({ x: 5.5, y: BOT - .8, w: 4, h: 1.2, solid: false, sx: 5, sy: BOT - .05, sw: 5, sh: 4, name: '엘리베이터', ia: elevIa, draw: (g, W, H) => elevatorArt(g, W, H, 100, '#ffb84a') });
-    add({ x: 10.2, y: BOT - 1.4, w: .8, h: 1, solid: false, sx: 10, sy: BOT - 1.9, sw: 1.2, sh: 1.4, name: '호출 단말', ia: elevIa, draw: (g, W, H) => { R(g, 4, 4, W - 8, H - 6, '#0b0e12'); R(g, 4, 4, W - 8, 1, STEEL.h); R(g, W / 2 - 3, 10, 6, 6, '#ffb84a'); R(g, W / 2 - 3, 20, 6, 6, '#555'); R(g, W / 2 - 1, 11, 2, 2, '#fff0c0'); } });
+    add({ x: 3.3, y: BOT - 1.4, w: .8, h: 1, solid: false, sx: 3.1, sy: BOT - 1.9, sw: 1.2, sh: 1.4, name: '호출 단말', ia: elevIa, draw: (g, W, H) => { R(g, 4, 4, W - 8, H - 6, '#0b0e12'); R(g, 4, 4, W - 8, 1, STEEL.h); R(g, W / 2 - 3, 10, 6, 6, '#ffb84a'); R(g, W / 2 - 3, 20, 6, 6, '#555'); R(g, W / 2 - 1, 11, 2, 2, '#fff0c0'); } });
+    // 계단실 문(엘리베이터 바로 옆): 옥상으로 올라가는 계단
+    add({ x: 10.3, y: BOT - .8, w: 1.7, h: 1.2, solid: false, sx: 10.2, sy: BOT - .05, sw: 1.8, sh: 3, name: '계단실 문', ia: () => ask('계단으로 옥상에 올라갈까?', '', yes => { if (yes) travel('roof', { stairs: 'up', x: 10 * T, y: 11.6 * T, dir: 'down', first: true }); else say('…나중에 올라가 보자.', ''); }), draw: (g, W, H) => {
+      R(g, 0, 0, W, H, STEEL.d); hazard(g, 0, 0, W, 6); R(g, 6, 12, W - 12, 18, '#04170c'); g.fillStyle = '#44e08a'; g.font = '700 9px "Share Tech Mono", monospace'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('STAIRS ▲', W / 2, 21); g.textAlign = 'left';
+      R(g, 8, 36, W - 16, H - 40, '#3a444f'); R(g, 8, 36, W - 16, 2, STEEL.hh); R(g, 12, 42, W - 24, 26, '#2a323b'); R(g, 12, 42, W - 24, 1, STEEL.h); R(g, 12, 74, W - 24, 14, '#2a323b');
+      R(g, W - 18, 58, 4, 14, '#c9a94c'); R(g, 10, H - 8, W - 20, 5, STEEL.h); R(g, W / 2 - 3, 30, 6, 4, '#44e08a'); } });
     // 옆 문들 (잠긴 방): 왼쪽 3 · 오른쪽 3
     const sideDoor = (left, ty, label, text) => add({ x: left ? 2.1 : 12, y: ty, w: .9, h: 2.4, solid: false, sx: left ? 1.3 : 12, sy: ty - .2, sw: 1.7, sh: 2.8, name: label, ia: text, draw: (g, W, H) => {
       const x0 = left ? W - 40 : 0; R(g, x0, 6, 40, H - 8, '#06080a'); R(g, x0 + 4, 10, 32, H - 16, '#27303a'); R(g, x0 + 4, 10, 32, 2, STEEL.hh); R(g, x0 + 8, 18, 24, 30, '#1c242c'); R(g, x0 + 8, 54, 24, 16, '#1c242c');
@@ -254,6 +271,7 @@ const Game = (() => {
     add({ x: 3.2, y: 30.6, w: 1.6, h: 1.2, sx: 3.1, sy: 29.6, sw: 1.8, sh: 2.2, name: '보급 상자', ia: ['보급 상자다. 내가 직접 서명한 봉인이 그대로 붙어 있다.'], draw: (g, W, H) => { R(g, 4, 14, W - 8, H - 18, '#2a313a'); R(g, 4, 14, W - 8, 3, STEEL.h); hazard(g, 4, 28, W - 8, 8, '#c9a94c'); R(g, 4, H - 6, W - 8, 4, '#0a0d11'); R(g, W / 2 - 8, 20, 16, 5, '#e9e2cf'); } });
     // 천장 조명(빛만)
     for (let ty = TOP + 2; ty < BOT; ty += 5) add({ x: 7.5, y: ty, w: .1, h: .1, solid: false, glow: [7.5 * T, ty * T, 150], gc: '170,200,255' });
+    bakeLighting(6);
     objs.sort((a, b) => a.base - b.base);
   }
 
@@ -323,11 +341,64 @@ const Game = (() => {
     add({ x: 21.5, y: 10.2, w: 1, h: 1, sx: 21.3125, sy: 9.09375, sw: 1.375, sh: 2, name: '아비시온 크리토스', sortY: 11, ia: () => {
       if (!questOn) say(['안녕하십니까, 설립자님.', '오늘 카네히라가 여쭈어 볼께 있다고 합니다.'], '아비시온 크리토스', giveQuest); else say(['안녕하십니까, 설립자님.', '카네히라의 용건은 아직 준비 중입니다. 때가 되면 다시 말씀드리겠습니다.'], '아비시온 크리토스'); },
       draw: (g, W, H) => g.drawImage(KR_SPR, 0, 0) });
+    bakeLighting(5);
     objs.sort((a, b) => a.base - b.base);
   }
-  MAPS.office = { cols: 48, rows: 34, build: () => { floorC = buildFloor(); buildObjects(); } };
+
+  /* ---------- 옥상(RF): 난간 없는 매끄러운 흰색 바닥과 고장 난 수신탑. 계단으로만 올라올 수 있다 ---------- */
+  function buildRoof() {
+    const X0 = 7, X1 = 33, Y0 = 7, Y1 = 25, sx0 = X0 * T, sx1 = X1 * T, sy0 = Y0 * T, sy1 = Y1 * T, r = rng(909);
+    floorC = mk(WW, WH, g => {
+      const sk = g.createLinearGradient(0, 0, 0, WH); sk.addColorStop(0, '#02040c'); sk.addColorStop(.55, '#07142e'); sk.addColorStop(1, '#0d2147'); g.fillStyle = sk; g.fillRect(0, 0, WW, WH);
+      for (let i = 0; i < 260; i++) R(g, r() * WW, r() * WH, 1, 1, `rgba(255,255,255,${(.15 + r() * .6).toFixed(2)})`);
+      for (let c = 0; c < 9; c++) { const cx = r() * WW, cy = r() * WH; for (let k = 0; k < 14; k++) { g.fillStyle = 'rgba(120,150,210,.05)'; g.beginPath(); g.ellipse(cx + (r() - .5) * 220, cy + (r() - .5) * 60, 60 + r() * 120, 8 + r() * 14, 0, 0, 7); g.fill(); } }
+      for (let c = 0; c < 70; c++) { const cx = r() * WW, cy = r() * WH; if (cx > sx0 - 20 && cx < sx1 + 20 && cy > sy0 - 20 && cy < sy1 + 20) continue; R(g, cx, cy, 2, 2, r() < .7 ? 'rgba(255,200,110,.55)' : 'rgba(150,200,255,.5)'); }       // 저 아래 도시의 불빛
+      g.save(); g.shadowColor = 'rgba(0,0,0,.75)'; g.shadowBlur = 36; g.shadowOffsetY = 14; g.fillStyle = '#d9e0ea'; g.fillRect(sx0, sy0, sx1 - sx0, sy1 - sy0); g.restore();
+      const fl = g.createLinearGradient(0, sy0, 0, sy1); fl.addColorStop(0, '#f6f9fd'); fl.addColorStop(.5, '#edf1f7'); fl.addColorStop(1, '#dde4ee'); g.fillStyle = fl; g.fillRect(sx0, sy0, sx1 - sx0, sy1 - sy0);
+      g.save(); g.globalCompositeOperation = 'lighter'; const mn = g.createRadialGradient(sx1 - 160, sy0 + 40, 10, sx1 - 160, sy0 + 40, 420); mn.addColorStop(0, 'rgba(150,180,255,.20)'); mn.addColorStop(1, 'rgba(150,180,255,0)'); g.fillStyle = mn; g.fillRect(sx0, sy0, sx1 - sx0, sy1 - sy0); g.restore();
+      R(g, sx0, sy0, sx1 - sx0, 2, '#ffffff'); R(g, sx0, sy0, 2, sy1 - sy0, '#ffffff'); R(g, sx0, sy1 - 5, sx1 - sx0, 5, '#a9b3c0'); R(g, sx1 - 5, sy0, 5, sy1 - sy0, '#a9b3c0'); R(g, sx0, sy1 - 1, sx1 - sx0, 1, '#7d8794'); R(g, sx1 - 1, sy0, 1, sy1 - sy0, '#7d8794'); R(g, sx0, sy0 - 3, sx1 - sx0, 3, '#c4ccd7'); R(g, sx0 - 3, sy0, 3, sy1 - sy0, '#c4ccd7');   // 가장자리 단면(난간 없음)
+      // 수신탑이 드리우는 긴 그림자
+      const tx = 20 * T, ty = 12.4 * T; const sh = g.createLinearGradient(tx, ty, tx - 120, ty + 330); sh.addColorStop(0, 'rgba(30,45,80,.38)'); sh.addColorStop(1, 'rgba(30,45,80,0)'); g.fillStyle = sh; g.beginPath(); g.moveTo(tx - 22, ty); g.lineTo(tx + 22, ty); g.lineTo(tx - 60, ty + 340); g.lineTo(tx - 150, ty + 330); g.closePath(); g.fill();
+    });
+    [{ x: 0, y: 0, w: WW, h: sy0 }, { x: 0, y: sy1, w: WW, h: WH - sy1 }, { x: 0, y: 0, w: sx0, h: WH }, { x: sx1, y: 0, w: WW - sx1, h: WH }].forEach(s => { s.noAO = true; solids.push(s); });
+    // 가장자리(난간이 없다): 가까이 가서 조사하면 한마디
+    const edge = ['난간이 없다. 한 걸음만 더 가면 떨어진다.', '저 아래로 리바이어던의 불빛이 점처럼 흩어져 있다.'];
+    add({ x: X0, y: Y0 - .6, w: X1 - X0, h: 1, solid: false, name: '옥상 가장자리', ia: edge }); add({ x: X0, y: Y1 - .4, w: X1 - X0, h: 1, solid: false, name: '옥상 가장자리', ia: edge });
+    add({ x: X0 - .6, y: Y0, w: 1, h: Y1 - Y0, solid: false, name: '옥상 가장자리', ia: edge }); add({ x: X1 - .4, y: Y0, w: 1, h: Y1 - Y0, solid: false, name: '옥상 가장자리', ia: edge });
+    // 계단실 출입구
+    add({ x: 8.4, y: 8.4, w: 3.2, h: 1.6, sx: 8.2, sy: 6.6, sw: 3.6, sh: 3.6, name: '계단실 출입구', ia: () => ask('계단으로 내려갈까?', '', yes => { if (yes) travel('hall', { stairs: 'down', x: 11.2 * T, y: 38.8 * T, dir: 'up' }); else say('…조금 더 있자.', ''); }), draw: (g, W, H) => {
+      R(g, 4, 24, W - 8, H - 28, '#cfd6e0'); R(g, 4, 24, W - 8, 3, '#ffffff'); R(g, 4, H - 8, W - 8, 8, '#8d97a4'); R(g, 4, 28, 6, H - 36, '#bcc4cf'); R(g, W - 10, 28, 6, H - 36, '#a6afbc');
+      R(g, W / 2 - 22, 46, 44, H - 56, '#4a5561'); R(g, W / 2 - 22, 46, 44, 2, '#8d99a8'); R(g, W / 2 - 18, 54, 36, 30, '#38424d'); R(g, W / 2 + 12, 72, 3, 10, '#c9a94c'); R(g, W / 2 - 14, 34, 28, 8, '#04170c'); g.fillStyle = '#44e08a'; g.font = '700 7px "Share Tech Mono", monospace'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('STAIRS ▼', W / 2, 38); g.textAlign = 'left'; } });
+    // 고장 난 수신탑
+    add({ x: 18.6, y: 11, w: 2.8, h: 1.4, sx: 17.5, sy: 1.4, sw: 5, sh: 11, name: '수신탑', ia: ['수신탑이다. 이미 고장 나 있다. 윗부분이 꺾였고, 접시 안테나는 케이블 하나에 매달려 있다.', '전파는 하나도 들어오지 않는다. 지금은 쓸 수 없다.', '언젠가 이 탑이 필요해질 것이다. 그때까지 이대로 두자.'], draw: towerArt,
+      anim: (c, t, o) => { const ph = t % 5.3; if (ph < .1 || (ph > .22 && ph < .3)) { const x = o.px + o.pw / 2 + 14, y = o.py - 262; c.save(); c.globalCompositeOperation = 'lighter'; c.strokeStyle = 'rgba(170,215,255,.95)'; c.lineWidth = 1; c.beginPath(); c.moveTo(x, y); c.lineTo(x + 5 * (ph < .1 ? 1 : -1), y + 7); c.lineTo(x - 2, y + 12); c.moveTo(x, y); c.lineTo(x - 7, y + 4); c.stroke(); c.fillStyle = 'rgba(190,225,255,.5)'; c.fillRect(x - 1, y - 1, 3, 3); c.restore(); } } });
+    objs.sort((a, b) => a.base - b.base);
+    bakeLighting(3);
+  }
+  function towerArt(g, W, H) {          // 꺾이고 녹슨 격자 철탑 · 매달린 접시 안테나 · 꺼진 경고등 · 늘어진 케이블
+    const ST = '#6b7683', SH = '#aab8c8', SD = '#2a313a', RU = 'rgba(130,75,40,.35)', cx = W / 2;
+    R(g, cx - 40, H - 22, 80, 22, '#9aa3b0'); R(g, cx - 40, H - 22, 80, 3, '#d6dce6'); R(g, cx - 40, H - 4, 80, 4, '#6a7480'); [-32, -10, 12, 30].forEach(x => { R(g, cx + x, H - 18, 4, 4, '#4a525e'); R(g, cx + x, H - 18, 4, 1, '#c0c8d2'); });
+    const legL = y => cx - 6 - (y - 70) * .13, legR = y => cx + 6 + (y - 70) * .13, bot = H - 22;
+    g.lineCap = 'round';
+    for (const [f, c, w] of [[legL, SD, 5], [legR, SD, 5], [legL, ST, 3], [legR, ST, 3]]) { g.strokeStyle = c; g.lineWidth = w; g.beginPath(); g.moveTo(f(70), 70); g.lineTo(f(bot), bot); g.stroke(); }
+    g.strokeStyle = SH; g.lineWidth = 1; g.beginPath(); g.moveTo(legL(70) - 1, 70); g.lineTo(legL(bot) - 1, bot); g.stroke();
+    for (let y = bot - 12, k = 0; y > 84; y -= 26, k++) { const y2 = y - 26; g.strokeStyle = ST; g.lineWidth = 2; g.beginPath(); g.moveTo(legL(y), y); g.lineTo(legR(y2), y2); g.moveTo(legR(y), y); g.lineTo(legL(y2), y2); g.stroke(); R(g, legL(y) - 2, y - 1, legR(y) - legL(y) + 4, 3, SD); R(g, legL(y) - 2, y - 1, legR(y) - legL(y) + 4, 1, SH); if (k === 3) { g.strokeStyle = SD; g.lineWidth = 2; g.beginPath(); g.moveTo(legL(y), y); g.lineTo(legR(y2) + 14, y2 + 6); g.stroke(); } }   // 한 칸은 가새가 끊겨 있다
+    for (let i = 0; i < 9; i++) R(g, cx - 12 + (i * 7) % 24, 90 + i * 20, 2, 18 + (i % 3) * 8, RU);
+    // 꺾인 윗부분
+    g.save(); g.translate(cx, 70); g.rotate(.42); g.strokeStyle = SD; g.lineWidth = 5; g.beginPath(); g.moveTo(-6, 0); g.lineTo(-3, -58); g.moveTo(6, 0); g.lineTo(3, -58); g.stroke(); g.strokeStyle = ST; g.lineWidth = 3; g.beginPath(); g.moveTo(-6, 0); g.lineTo(-3, -58); g.moveTo(6, 0); g.lineTo(3, -58); g.stroke();
+    for (let y = -6; y > -58; y -= 14) { g.strokeStyle = ST; g.lineWidth = 1.5; g.beginPath(); g.moveTo(-5, y); g.lineTo(5, y - 14); g.moveTo(5, y); g.lineTo(-5, y - 14); g.stroke(); }
+    R(g, -9, -64, 18, 6, '#4a525e'); R(g, -2, -80, 4, 18, SD); R(g, -14, -72, 28, 3, ST); R(g, -1, -88, 2, 10, SH); R(g, -3, -92, 6, 6, '#3a1212'); R(g, -2, -91, 2, 2, '#7a3030'); g.restore();
+    // 매달린 접시 안테나
+    g.save(); g.translate(cx + 22, 100); g.rotate(.5); g.fillStyle = '#c8d0da'; g.beginPath(); g.ellipse(0, 0, 18, 7, 0, 0, 7); g.fill(); g.fillStyle = '#7d8896'; g.beginPath(); g.ellipse(2, 1, 15, 5, 0, 0, 7); g.fill(); R(g, -1, -2, 3, 12, SD); g.strokeStyle = '#222'; g.lineWidth = 1; g.beginPath(); g.moveTo(-14, -3); g.lineTo(-9, 4); g.stroke(); g.restore();
+    g.strokeStyle = '#15191f'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(cx + 12, 80); g.quadraticCurveTo(cx + 24, 98, cx + 22, 100); g.stroke();
+    // 늘어진 케이블
+    g.strokeStyle = '#101418'; g.lineWidth = 1.5; [[cx - 8, 76, cx - 44, 190, cx - 30, bot - 6], [cx + 6, 84, cx + 40, 220, cx + 44, bot - 2]].forEach(([x0, y0, x1, y1, x2, y2]) => { g.beginPath(); g.moveTo(x0, y0); g.quadraticCurveTo(x1, y1, x2, y2); g.stroke(); });
+    R(g, cx + 40, H - 14, 14, 3, '#2a313a'); R(g, cx + 56, H - 12, 6, 2, '#2a313a');
+  }
+  MAPS.office = { cols: 48, rows: 34, build: () => { floorC = buildFloor(); buildObjects(); bakeLighting(7); } };
   MAPS.hall = { cols: 15, rows: 44, build: buildHall };
   MAPS.f95 = { cols: 44, rows: 34, build: buildF95 };
+  MAPS.roof = { cols: 40, rows: 32, build: buildRoof };
 
   /* ---------- 사람 그리기: 직원(여러 팔레트) · 아비시온 크리토스 ---------- */
   const WSPR = new Map(); let KR_SPR = null;
@@ -369,6 +440,11 @@ const Game = (() => {
     if (trans) return; trans = true; keys.clear(); joy.x = joy.y = 0; P.moving = false; fadeEl.classList.add('on');
     if (o.ride) SND.tone(220, .5, 'sine', .05, 0, 160); else SND.click();
     await sleep(RM ? 20 : 420);
+    if (o.stairs) {
+      floorEl.hidden = false; const up = o.stairs === 'up', n = 16; SND.tone(90, .4, 'sine', .04, 0, 70);
+      for (let k = 0; k < n; k++) { floorEl.innerHTML = `<small>STAIRS</small><b>${up ? 'RF' : '100F'}</b><em>${up ? '▲' : '▼'}</em><i>${k + 1}/${n}</i>`; SND.step(); await sleep(RM ? 8 : 190); }
+      SND.tone(880, .3, 'sine', .05); await sleep(RM ? 10 : 300); floorEl.hidden = true;
+    }
     if (o.ride) {
       floorEl.hidden = false; const a = o.ride[0], b = o.ride[1], dir = b > a ? 1 : -1; SND.tone(70, 1.2, 'sine', .08, 0, 55);
       for (let f = a; f !== b + dir; f += dir) { floorEl.innerHTML = `<small>FLOOR</small><b>${f}</b><i>F</i><em>${dir > 0 ? '▲' : '▼'}</em>`; SND.tick(); await sleep(RM ? 10 : 170); }
@@ -376,6 +452,7 @@ const Game = (() => {
     }
     useMap(dest); P.x = o.x; P.y = o.y; P.dir = o.dir || 'up'; P.t = 0; msgEl.hidden = true; busyMsg = false; choice = null; choiceEl.hidden = true;
     await sleep(RM ? 20 : 260); fadeEl.classList.remove('on'); await sleep(RM ? 20 : 420); trans = false;
+    if (dest === 'roof' && o.first) say(['…옥상이다. 난간이 없다.', '매끄러운 흰 바닥과 하늘뿐이다. 그리고 저 멀리, 꺾인 탑이 하나 보인다.'], '');
     if (dest === 'f95' && o.first) say(['여기가 95층이다. 내가 맡긴 사무층.', '직원들이 분주하게 움직이고 있다.'], '');
   }
   function openElev(from) {
