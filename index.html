@@ -7070,6 +7070,7 @@ function buildCodex() {
    body: 문자열 = 문단, 배열 = 점 목록
    ========================================================================== */
 const NOTICES = [
+  { id: "p4-2-2", tag: "FIX", date: "2026.10.03", title: "Patch v-4.2.2 · 신호기 4번 소리 속도", body: ["신호기 4번에서 나오는 소리의 속도가 더 빨라졌어요."] },
   { id: 'p421', tag: 'FIX', date: '2026.10.03', title: 'Patch v-4.2.1 · Reboot 초기화', body: ['신호기 4번의 Reboot가 모든 설정과 진행 기록을 처음 상태로 되돌리도록 바뀌었어요.'] },
   { id: 'p420', tag: 'UPDATE', date: '2026.10.03', title: 'Patch v-4.2.0 · 관리자 권한', body: ['메뉴 아래쪽, 출력 상승 모드 위에 관리자 권한 버튼이 생겼어요.', '관리자 코드를 입력하면 미니게임 없이 모든 기능을 바로 쓸 수 있어요.'] },
   { id: 'p411', tag: 'FIX', date: '2026.10.03', title: 'Patch v-4.1.1 · 출력 상승 모드 색상 유지', body: ['출력 상승 모드를 켜도 신호기 1·2·4번 안의 색이 바뀌지 않아요.', '3번 신호기(바탕화면)는 이전처럼 색이 바뀝니다.'] },
@@ -9344,7 +9345,7 @@ Object.assign(SND, {
     [[0, 1.25, -.3], [1, 1.0, .45], [2, .8, 0]].forEach(([i, gv, pan]) => {
       const s = c.createBufferSource(), g = c.createGain(), pn = c.createStereoPanner ? c.createStereoPanner() : null; s.buffer = b[i];
       g.gain.setValueAtTime(gv, t0); g.gain.setValueAtTime(gv, t0 + d - .4); g.gain.linearRampToValueAtTime(.0001, t0 + d);
-      s.loop = true; s.playbackRate.setValueAtTime(1.5, t0); s.playbackRate.setValueAtTime(1.5, t0 + 1.9); s.playbackRate.linearRampToValueAtTime(2, t0 + 2.1);   // 1.5배속 → 2배속
+      s.loop = true; s.playbackRate.setValueAtTime(3, t0);   // 3배속
       s.connect(g); if (pn) { pn.pan.value = pan; g.connect(pn); pn.connect(this.sfx); } else g.connect(this.sfx);
       s.start(t0); s.stop(t0 + d + .05);
     });

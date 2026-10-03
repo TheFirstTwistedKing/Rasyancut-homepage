@@ -166,7 +166,7 @@ Object.assign(SND, {
     [[0, 1.25, -.3], [1, 1.0, .45], [2, .8, 0]].forEach(([i, gv, pan]) => {
       const s = c.createBufferSource(), g = c.createGain(), pn = c.createStereoPanner ? c.createStereoPanner() : null; s.buffer = b[i];
       g.gain.setValueAtTime(gv, t0); g.gain.setValueAtTime(gv, t0 + d - .4); g.gain.linearRampToValueAtTime(.0001, t0 + d);
-      s.loop = true; s.playbackRate.setValueAtTime(1.5, t0); s.playbackRate.setValueAtTime(1.5, t0 + 1.9); s.playbackRate.linearRampToValueAtTime(2, t0 + 2.1);   // 1.5배속 → 2배속
+      s.loop = true; s.playbackRate.setValueAtTime(3, t0);   // 3배속
       s.connect(g); if (pn) { pn.pan.value = pan; g.connect(pn); pn.connect(this.sfx); } else g.connect(this.sfx);
       s.start(t0); s.stop(t0 + d + .05);
     });
