@@ -177,8 +177,8 @@ void main(){
   let trapOn = false, trapT = [], trapRaf = 0, lockTimer = 0, vaultSeen = false;
   const twait = ms => new Promise(res => trapT.push(setTimeout(res, ms)));
   function trapEyeLoop(t0) {
-    const al = $('#etAl'), cp = $('#etClP'), ir = $('#etIr'), pu = $('#etPu');
-    const f = ts => { trapRaf = requestAnimationFrame(f); const t = (ts - t0) / 1000, o = Math.min(1, t / 1.3), k = Math.max(.02, 1 - Math.pow(1 - o, 3)) * (t > 3 && Math.sin(t * 1.7) > .985 ? .1 : 1), tp = -86 * k, bt = 86 * k, d = `M-150 0C-90 ${tp} 90 ${tp} 150 0C90 ${bt} -90 ${bt} -150 0Z`; al.setAttribute('d', d); cp.setAttribute('d', d); ir.setAttribute('transform', `translate(${(Math.sin(t * .9) * 5).toFixed(1)} ${(Math.sin(t * 1.3) * 3).toFixed(1)})`); pu.setAttribute('rx', (10 + Math.sin(t * 2.2) * 2.5).toFixed(1)); };
+    const al = $('#etAl'), al2 = $('#etAl2'), cp = $('#etClP'), ir = $('#etIr'), pu = $('#etPu');
+    const f = ts => { trapRaf = requestAnimationFrame(f); const t = (ts - t0) / 1000, o = Math.min(1, t / 1.3), k = Math.max(.02, 1 - Math.pow(1 - o, 3)) * (t > 3 && Math.sin(t * 1.7) > .985 ? .3 : 1), tp = -95 * k, bt = 95 * k, d = `M-180 0C-110 ${tp} 110 ${tp} 180 0C110 ${bt} -110 ${bt} -180 0Z`; al.setAttribute('d', d); al2.setAttribute('d', d); al2.setAttribute('transform', 'scale(.93 .9)'); cp.setAttribute('d', d); ir.setAttribute('transform', `translate(${(Math.sin(t * .9) * 4).toFixed(1)} ${(Math.sin(t * 1.3) * 2).toFixed(1)})`); pu.setAttribute('rx', (54 + Math.sin(t * 2.2) * 2.5).toFixed(1)); };
     trapRaf = requestAnimationFrame(f);
   }
   function idiotLoop() {
@@ -259,6 +259,6 @@ void main(){
       t0 = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(frame);
       tm.push(setTimeout(() => eye.classList.add('show'), 500 * (RM ? .1 : 1)), setTimeout(() => fig.classList.add('show'), 2200 * (RM ? .1 : 1)), setTimeout(nextLine, 4200 * (RM ? .1 : 1)));
     },
-    leave() { leaveLocked(); raging = false; rageT.forEach(id => { clearTimeout(id); clearInterval(id); }); rageT.length = 0; if (rageStop) { rageStop(); rageStop = null; } cancelAnimationFrame(rageRaf); crtStop(); rageC.hidden = true; rageTx.hidden = true; view.classList.remove('rage', 'crt-on'); inp.disabled = false; on = false; cancelAnimationFrame(raf); raf = 0; tm.forEach(clearTimeout); tm = []; Typer.stop(); SND.windStop(); SND.musicTo(.95, 2.5); },
+    leave() { leaveLocked(); raging = false; rageT.forEach(id => { clearTimeout(id); clearInterval(id); }); rageT.length = 0; if (rageStop) { rageStop(); rageStop = null; } cancelAnimationFrame(rageRaf); crtStop(); SND.unblackout(); rageC.hidden = true; rageTx.hidden = true; view.classList.remove('rage', 'crt-on'); inp.disabled = false; on = false; cancelAnimationFrame(raf); raf = 0; tm.forEach(clearTimeout); tm = []; Typer.stop(); SND.windStop(); SND.musicTo(.95, 2.5); },
   };
 })();

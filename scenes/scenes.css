@@ -179,7 +179,7 @@
 .e-trap{position:absolute;inset:0;z-index:20;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(16px,4vh,38px);padding:0 16px;overflow:hidden}
 .e-trap[hidden],.e-trap [hidden]{display:none!important}
 .e-trap canvas{position:absolute;inset:0;width:100%;height:100%;z-index:1}
-.et-eye{position:relative;z-index:2;width:min(88vw,620px);height:auto;filter:drop-shadow(0 0 26px rgba(255,30,20,.85));animation:etThrob 2.6s ease-in-out infinite}
+.et-eye{position:relative;z-index:2;width:min(78vw,400px);height:auto;filter:drop-shadow(0 0 26px rgba(255,30,20,.85));animation:etThrob 2.6s ease-in-out infinite}
 @keyframes etThrob{50%{filter:drop-shadow(0 0 46px rgba(255,30,20,1))}}
 .et-tx{position:relative;z-index:2;margin:0;min-height:1.5em;max-width:92vw;text-align:center;font:800 clamp(20px,3.4vw,42px)/1.5 var(--f-body);letter-spacing:.06em;color:#ff2a1a;text-shadow:0 0 18px rgba(255,30,20,.8);word-break:keep-all}
 .et-reboot{position:absolute;z-index:3;left:50%;bottom:max(9%,calc(env(safe-area-inset-bottom,0px) + 40px));translate:-50% 0;display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 26px;color:#fff;background:rgba(0,0,0,.78);border:2px solid #fff;font:700 14px var(--f-mono);letter-spacing:.3em;box-shadow:0 0 30px rgba(0,0,0,.8);animation:rise .6s var(--ease-soft) both}

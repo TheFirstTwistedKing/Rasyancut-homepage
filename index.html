@@ -1707,7 +1707,7 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
 .e-trap{position:absolute;inset:0;z-index:20;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(16px,4vh,38px);padding:0 16px;overflow:hidden}
 .e-trap[hidden],.e-trap [hidden]{display:none!important}
 .e-trap canvas{position:absolute;inset:0;width:100%;height:100%;z-index:1}
-.et-eye{position:relative;z-index:2;width:min(88vw,620px);height:auto;filter:drop-shadow(0 0 26px rgba(255,30,20,.85));animation:etThrob 2.6s ease-in-out infinite}
+.et-eye{position:relative;z-index:2;width:min(78vw,400px);height:auto;filter:drop-shadow(0 0 26px rgba(255,30,20,.85));animation:etThrob 2.6s ease-in-out infinite}
 @keyframes etThrob{50%{filter:drop-shadow(0 0 46px rgba(255,30,20,1))}}
 .et-tx{position:relative;z-index:2;margin:0;min-height:1.5em;max-width:92vw;text-align:center;font:800 clamp(20px,3.4vw,42px)/1.5 var(--f-body);letter-spacing:.06em;color:#ff2a1a;text-shadow:0 0 18px rgba(255,30,20,.8);word-break:keep-all}
 .et-reboot{position:absolute;z-index:3;left:50%;bottom:max(9%,calc(env(safe-area-inset-bottom,0px) + 40px));translate:-50% 0;display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 26px;color:#fff;background:rgba(0,0,0,.78);border:2px solid #fff;font:700 14px var(--f-mono);letter-spacing:.3em;box-shadow:0 0 30px rgba(0,0,0,.8);animation:rise .6s var(--ease-soft) both}
@@ -2261,11 +2261,13 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
     <div class="e-vault" id="eVault" hidden role="dialog" aria-label="비밀 기록 보관소"><div class="evt"><span>비밀 기록 보관소</span><button type="button" id="eVaultX" aria-label="닫기">✕</button></div><div class="evb"></div></div>
     <div class="e-trap" id="eTrap" hidden>
       <canvas id="eIdiot" hidden></canvas><canvas id="eBin" hidden></canvas>
-      <svg class="et-eye" id="eTrapEye" viewBox="-170 -116 340 232" hidden aria-hidden="true">
-        <defs><radialGradient id="etG"><stop offset="0" stop-color="#ff8a70"/><stop offset=".5" stop-color="#e01010"/><stop offset="1" stop-color="#520000"/></radialGradient><clipPath id="etCl"><path id="etClP" d=""/></clipPath></defs>
-        <g stroke="#ff2a1a" stroke-width="4" stroke-linecap="round" opacity=".85"><path d="M0 -86V-112M-48 -80L-62 -102M48 -80L62 -102M-92 -62L-116 -80M92 -62L116 -80"/></g>
-        <path id="etAl" d="" fill="#060000" stroke="#ff2a1a" stroke-width="6" stroke-linejoin="round"/>
-        <g clip-path="url(#etCl)"><g id="etIr"><circle r="66" fill="url(#etG)"/><circle r="66" fill="none" stroke="#ffb09c" stroke-width="2" stroke-dasharray="4 7"/><circle r="42" fill="none" stroke="#300" stroke-width="2" opacity=".7"/><ellipse id="etPu" rx="11" ry="56" fill="#000"/><circle cx="-18" cy="-22" r="7" fill="#fff" opacity=".7"/></g></g>
+      <svg class="et-eye" id="eTrapEye" viewBox="-200 -176 400 372" hidden aria-hidden="true">
+        <defs><clipPath id="etCl"><path id="etClP" d=""/></clipPath></defs>
+        <path d="M-10 -66L0 -172L10 -66Z" fill="#e5281a"/>
+        <path d="M-18 64C-14 100 -5 142 0 192C5 142 14 100 18 64Z" fill="#e5281a"/>
+        <path id="etAl" d="" fill="#0a0000" stroke="#e5281a" stroke-width="13" stroke-linejoin="round"/>
+        <path id="etAl2" d="" fill="none" stroke="#ff9a8a" stroke-width="3" stroke-linejoin="round" opacity=".7"/>
+        <g clip-path="url(#etCl)"><g id="etIr"><ellipse id="etPu" rx="54" ry="46" fill="#ff3a28"/><ellipse rx="54" ry="46" fill="none" stroke="#ffc2b8" stroke-width="3" opacity=".6"/></g></g>
       </svg>
       <p class="et-tx" id="eTrapTx" aria-live="polite"></p>
       <button class="et-reboot" id="eReboot" type="button" hidden aria-label="Reboot"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 4v13" /><path d="M11 9.5A14 14 0 1 0 29 9.5"/></svg><span>REBOOT</span></button>
@@ -9146,7 +9148,13 @@ Object.assign(SND, {
     return () => { const n = c.currentTime; g.gain.cancelScheduledValues(n); g.gain.setTargetAtTime(0, n, .04); nodes.forEach(x => { try { x.stop(n + .3); } catch (e) { /* 이미 멈춤 */ } }); };
   },
   /* 모든 소리를 끊는다 (바람·음악) */
-  blackout() { this.windStop(); this.musicTo(0, .06); },
+  blackout() {
+    if (!this.ctx) return; this.windStop(); this.musicTo(0, .06);
+    const t = this.ctx.currentTime; if (this.bus) { this.bus.gain.cancelScheduledValues(t); this.bus.gain.setTargetAtTime(0, t, .03); }   // 배경 앰비언스까지
+    const old = this.sfx; try { old.disconnect(); } catch (e) { /* 무시 */ }                                                              // 이미 울리던 효과음은 전부 끊고
+    this.sfx = this.ctx.createGain(); this.sfx.connect(this.master); this._vb = null; this._eb = null; this._ws = null;                  // 새 버스로 갈아탄다
+  },
+  unblackout() { if (this.ctx && this.bus) { const t = this.ctx.currentTime; this.bus.gain.cancelScheduledValues(t); this.bus.gain.setTargetAtTime(.55, t, .4); } },
   /* 글자가 한 자씩 찍힐 때: 딱딱한 '탁' */
   knock() {
     const v = .85 + Math.random() * .3;
@@ -9161,11 +9169,11 @@ Object.assign(SND, {
       const d = (.17 + Math.random() * .05) * tempo, f = f0 * (1.22 - k * .028) * (1 + (Math.random() - .5) * .05), o = c.createOscillator(), o2 = c.createOscillator(), env = c.createGain(), b1 = c.createBiquadFilter(), b2 = c.createBiquadFilter(), vb = c.createOscillator(), vg = c.createGain();
       o.type = 'sawtooth'; o2.type = 'square'; o.frequency.setValueAtTime(f * 1.12, tt); o.frequency.exponentialRampToValueAtTime(f * .84, tt + d); o2.frequency.value = f * 1.005; o2.frequency.setValueAtTime(f * 1.12, tt); o2.frequency.exponentialRampToValueAtTime(f * .84, tt + d);
       vb.frequency.value = 22; vg.gain.value = f * .025; vb.connect(vg); vg.connect(o.frequency);
-      b1.type = 'bandpass'; b1.frequency.value = 760 + Math.random() * 120; b1.Q.value = 5; b2.type = 'bandpass'; b2.frequency.value = 1250 + Math.random() * 200; b2.Q.value = 7;
-      env.gain.setValueAtTime(.0001, tt); env.gain.exponentialRampToValueAtTime(.16, tt + .02); env.gain.exponentialRampToValueAtTime(.0001, tt + d);
+      b1.type = 'bandpass'; b1.frequency.value = 760 + Math.random() * 120; b1.Q.value = 3; b2.type = 'bandpass'; b2.frequency.value = 1250 + Math.random() * 200; b2.Q.value = 4;
+      env.gain.setValueAtTime(.0001, tt); env.gain.exponentialRampToValueAtTime(1.1, tt + .02); env.gain.exponentialRampToValueAtTime(.0001, tt + d);
       o.connect(b1); o2.connect(b2); b1.connect(env); b2.connect(env); env.connect(dst);
       o.start(tt); o2.start(tt); vb.start(tt); o.stop(tt + d + .03); o2.stop(tt + d + .03); vb.stop(tt + d + .03);
-      const ns = c.createBufferSource(), hp = c.createBiquadFilter(), ng = c.createGain(); ns.buffer = this.nbuf; hp.type = 'highpass'; hp.frequency.value = 2200; ng.gain.setValueAtTime(.05, tt); ng.gain.exponentialRampToValueAtTime(.0001, tt + d * .6); ns.connect(hp); hp.connect(ng); ng.connect(dst); ns.start(tt); ns.stop(tt + d);
+      const ns = c.createBufferSource(), hp = c.createBiquadFilter(), ng = c.createGain(); ns.buffer = this.nbuf; hp.type = 'highpass'; hp.frequency.value = 2200; ng.gain.setValueAtTime(.22, tt); ng.gain.exponentialRampToValueAtTime(.0001, tt + d * .6); ns.connect(hp); hp.connect(ng); ng.connect(dst); ns.start(tt); ns.stop(tt + d);
       tt += d * (1.02 - k * .02);
     }
   },
@@ -9912,8 +9920,8 @@ void main(){
   let trapOn = false, trapT = [], trapRaf = 0, lockTimer = 0, vaultSeen = false;
   const twait = ms => new Promise(res => trapT.push(setTimeout(res, ms)));
   function trapEyeLoop(t0) {
-    const al = $('#etAl'), cp = $('#etClP'), ir = $('#etIr'), pu = $('#etPu');
-    const f = ts => { trapRaf = requestAnimationFrame(f); const t = (ts - t0) / 1000, o = Math.min(1, t / 1.3), k = Math.max(.02, 1 - Math.pow(1 - o, 3)) * (t > 3 && Math.sin(t * 1.7) > .985 ? .1 : 1), tp = -86 * k, bt = 86 * k, d = `M-150 0C-90 ${tp} 90 ${tp} 150 0C90 ${bt} -90 ${bt} -150 0Z`; al.setAttribute('d', d); cp.setAttribute('d', d); ir.setAttribute('transform', `translate(${(Math.sin(t * .9) * 5).toFixed(1)} ${(Math.sin(t * 1.3) * 3).toFixed(1)})`); pu.setAttribute('rx', (10 + Math.sin(t * 2.2) * 2.5).toFixed(1)); };
+    const al = $('#etAl'), al2 = $('#etAl2'), cp = $('#etClP'), ir = $('#etIr'), pu = $('#etPu');
+    const f = ts => { trapRaf = requestAnimationFrame(f); const t = (ts - t0) / 1000, o = Math.min(1, t / 1.3), k = Math.max(.02, 1 - Math.pow(1 - o, 3)) * (t > 3 && Math.sin(t * 1.7) > .985 ? .3 : 1), tp = -95 * k, bt = 95 * k, d = `M-180 0C-110 ${tp} 110 ${tp} 180 0C110 ${bt} -110 ${bt} -180 0Z`; al.setAttribute('d', d); al2.setAttribute('d', d); al2.setAttribute('transform', 'scale(.93 .9)'); cp.setAttribute('d', d); ir.setAttribute('transform', `translate(${(Math.sin(t * .9) * 4).toFixed(1)} ${(Math.sin(t * 1.3) * 2).toFixed(1)})`); pu.setAttribute('rx', (54 + Math.sin(t * 2.2) * 2.5).toFixed(1)); };
     trapRaf = requestAnimationFrame(f);
   }
   function idiotLoop() {
@@ -9994,7 +10002,7 @@ void main(){
       t0 = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(frame);
       tm.push(setTimeout(() => eye.classList.add('show'), 500 * (RM ? .1 : 1)), setTimeout(() => fig.classList.add('show'), 2200 * (RM ? .1 : 1)), setTimeout(nextLine, 4200 * (RM ? .1 : 1)));
     },
-    leave() { leaveLocked(); raging = false; rageT.forEach(id => { clearTimeout(id); clearInterval(id); }); rageT.length = 0; if (rageStop) { rageStop(); rageStop = null; } cancelAnimationFrame(rageRaf); crtStop(); rageC.hidden = true; rageTx.hidden = true; view.classList.remove('rage', 'crt-on'); inp.disabled = false; on = false; cancelAnimationFrame(raf); raf = 0; tm.forEach(clearTimeout); tm = []; Typer.stop(); SND.windStop(); SND.musicTo(.95, 2.5); },
+    leave() { leaveLocked(); raging = false; rageT.forEach(id => { clearTimeout(id); clearInterval(id); }); rageT.length = 0; if (rageStop) { rageStop(); rageStop = null; } cancelAnimationFrame(rageRaf); crtStop(); SND.unblackout(); rageC.hidden = true; rageTx.hidden = true; view.classList.remove('rage', 'crt-on'); inp.disabled = false; on = false; cancelAnimationFrame(raf); raf = 0; tm.forEach(clearTimeout); tm = []; Typer.stop(); SND.windStop(); SND.musicTo(.95, 2.5); },
   };
 })();
 /* SCENES-JS:END */
