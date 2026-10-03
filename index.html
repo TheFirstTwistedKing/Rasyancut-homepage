@@ -742,6 +742,28 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
 #bsod .bs-stop{margin-top:34px;font-size:12px;letter-spacing:.06em;opacity:.78;font-family:var(--f-mono)}
 
 /* ---------- 성공 팝업 ---------- */
+
+#drawer .boostbtn.admin{border-color:var(--gold)}
+#drawer .boostbtn.admin::before{background:repeating-linear-gradient(180deg,var(--gold) 0 6px,#0a0a0a 6px 12px)}
+#drawer .boostbtn.admin .ic{color:var(--pale);filter:drop-shadow(0 0 6px rgba(233,216,166,.5))}
+#drawer .boostbtn.admin b{color:var(--pale)}
+#drawer .boostbtn.admin.on{border-color:var(--yellow);background:rgba(255,217,61,.08)}
+#drawer .boostbtn.admin.on .ic{color:var(--yellow)}
+#drawer .boostbtn.admin.on small{color:var(--yellow)}
+#drawer .dfoot{display:flex;flex-direction:column;gap:10px}
+#adminPop{position:fixed;inset:0;z-index:1600;display:none;place-items:center;background:rgba(0,0,0,.6);backdrop-filter:blur(2px)}
+#adminPop.on{display:grid}
+#adminPop .pp{width:min(420px,calc(100% - 32px));padding:28px 26px 24px;text-align:center;border:1px solid var(--gold);outline:1px solid var(--line-2);outline-offset:6px;background:linear-gradient(180deg,rgba(24,20,10,.96),rgba(8,8,8,.97));box-shadow:0 0 90px rgba(255,217,61,.18),0 30px 80px rgba(0,0,0,.7);animation:rise .6s var(--ease) both}
+#adminPop .pp-top{font-size:12px;color:var(--gold)}
+#adminPop .pp-ic{width:54px;height:54px;margin:16px auto 8px;color:var(--yellow);filter:drop-shadow(0 0 12px rgba(255,217,61,.7))}
+#adminPop .pp-msg{margin:0 0 16px;font-size:clamp(19px,3vw,24px);font-weight:800;letter-spacing:.05em;color:var(--lemon)}
+#adminPop input{width:100%;padding:12px 14px;text-align:center;font:700 22px var(--f-mono);letter-spacing:.35em;color:#fff;background:rgba(0,0,0,.7);border:1px solid var(--gold);outline:0}
+#adminPop input:focus{box-shadow:0 0 22px rgba(255,217,61,.35)}
+#adminPop .pp-err{min-height:1.6em;margin:8px 0 6px;font-size:11px;letter-spacing:.14em;color:#ff7a6a}
+#adminPop .pp-btns{display:flex;gap:10px;justify-content:center}
+#adminPop .act{min-width:110px}
+#adminPop .act.ghost{opacity:.75}
+#adminPop .pp.bad{animation:bstDeny .34s}
 #boostPop{position:fixed;inset:0;z-index:1500;display:none;place-items:center;background:rgba(0,0,0,.55);backdrop-filter:blur(2px)}
 #boostPop.on{display:grid}
 #boostPop .pp{width:min(440px,calc(100% - 32px));padding:30px 28px 26px;text-align:center;border:1px solid var(--gold);outline:1px solid var(--line-2);outline-offset:6px;
@@ -2349,6 +2371,16 @@ html[data-boost] #scGame,html[data-boost] #scRss,html[data-boost] #scEye{filter:
   </div>
 </div>
 
+<div id="adminPop" aria-hidden="true" role="dialog" aria-modal="true" aria-label="관리자 권한">
+  <form class="pp brk" id="adminForm" autocomplete="off">
+    <div class="mono pp-top">System // Administrator</div>
+    <div class="pp-ic" data-ic="admin"></div>
+    <p class="pp-msg">관리자 코드를 입력하세요</p>
+    <input id="adminIn" type="password" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="24" aria-label="관리자 코드">
+    <div class="pp-err mono" id="adminErr" aria-live="polite"></div>
+    <div class="pp-btns"><button class="act" type="submit">확인</button><button class="act ghost" type="button" id="adminCancel">취소</button></div>
+  </form>
+</div>
 <div id="boostPop" aria-hidden="true" role="dialog" aria-modal="true" aria-label="알림">
   <div class="pp brk">
     <div class="mono pp-top">System // Notice</div>
@@ -5569,6 +5601,7 @@ const IC = {
   universe: '<circle cx="12" cy="12" r="9.6"/><circle cx="12" cy="12" r="5.6"/><circle cx="12" cy="12" r="1.7"/><circle cx="17.6" cy="6.4" r="1.5"/><path d="M8.7 12a3.3 3.3 0 1 1 3.3 3.3"/>',
   codex: '<path d="M4 21V9.4C4 5.3 7.6 2.6 12 2.6s8 2.7 8 6.8V21"/><circle cx="12" cy="11.2" r="4.7"/><path d="M12 6.5v9.4"/><path d="M2.5 21h19"/><path d="M6.6 17.6h10.8"/>',
   bolt: '<path d="M13.4 2.4L4.6 13.6h6.2l-1.2 8 8.8-11.4h-6.2z"/>',
+  admin: '<path d="M12 2.4l7.6 2.8v6.1c0 4.7-3.2 8.2-7.6 10.3-4.4-2.1-7.6-5.6-7.6-10.3V5.2z"/><circle cx="12" cy="10.4" r="2.3"/><path d="M12 12.7v4.2"/><path d="M12 15h1.8"/>',
   reset: '<path d="M4.2 12a7.8 7.8 0 1 0 2.4-5.6"/><path d="M4 4.2V9h4.8"/><path d="M12 8.4V12l2.6 1.6"/>',
   code: '<path d="M8.6 7.2L3.6 12l5 4.8"/><path d="M15.4 7.2l5 4.8-5 4.8"/><path d="M13.6 4.6l-3.2 14.8"/>',
   hole: '<circle cx="12" cy="12" r="3.4"/><ellipse cx="12" cy="12" rx="9.8" ry="2.5" transform="rotate(-12 12 12)"/><path d="M6.6 9.2a6.2 6.2 0 0 1 10.8 0"/><path d="M7.6 15.4a6 6 0 0 0 8.8 0"/>',
@@ -7123,6 +7156,7 @@ const Boost = (() => {
     /* ---------- 메뉴 하단 버튼 ---------- */
     mountDrawer() {
       const foot = $('#drawerFoot'); foot.innerHTML = '';
+      Admin.mount(foot);
       const b = document.createElement('button'); b.type = 'button'; b.className = 'boostbtn';
       if (!this.unlocked) {
         b.id = 'btnBoost';
@@ -7135,7 +7169,7 @@ const Boost = (() => {
         r.innerHTML = ic('reset') + '<span><b>성능 리셋</b><small>Reset // restore default</small></span>';
         r.addEventListener('mouseenter', () => SND.hover());
         r.addEventListener('click', () => this.reset());
-        foot.appendChild(r);
+        if (!Admin.on) foot.appendChild(r);
         b.id = 'btnDecode'; b.classList.add('decode');
         b.innerHTML = ic('code') + '<span><b>코드 번역</b><small>Code translator // online</small></span>';
         b.addEventListener('mouseenter', () => SND.hover());
@@ -7150,6 +7184,7 @@ const Boost = (() => {
     /* 성능 리셋: 파란 화면과 해금된 기능을 지우고 처음 상태로. 메뉴에 '출력 상승 모드'가 다시 나타나 미니게임을 다시 할 수 있다 */
     reset() {
       if (!this.unlocked || busy) return;
+      if (Admin.on) { toast('관리자 권한이 켜져 있어 초기화할 수 없습니다'); return; }
       if (cur === 'decode') go('main');
       this.halt(); this.st = 'idle'; this.unlocked = false;
       SND.init(); SND.toggle(false); SND.tone(260, .35, 'sawtooth', .04, .05, 120);
@@ -7160,6 +7195,7 @@ const Boost = (() => {
     /* ---------- 진입 / 경고 연출 ---------- */
     open() {
       if (busy || this.unlocked) return;
+      if (Admin.on) { Admin.unlockNow(); return; }          // 관리자 권한: 미니게임 없이 바로 열린다
       SND.init(); SND.click();
       closeDrawer();
       this.alert(true);
@@ -7555,9 +7591,49 @@ const Boost = (() => {
   SHOW.boost = () => B.showIntro();
   bsod.querySelector('form').addEventListener('submit', e => B.submit(e));
   $('#popOk').addEventListener('click', () => B.popClose());
+  /* ---------- 관리자 권한: 코드를 입력하면 미니게임 없이 출력 상승 모드의 모든 기능에 바로 접근할 수 있다 ---------- */
+  const ADMIN_CODE = '58130958', adminPop = $('#adminPop'), adminIn = $('#adminIn'), adminErr = $('#adminErr'), adminForm = $('#adminForm');
+  const Admin = {
+    on: false,
+    mount(foot) {
+      const a = document.createElement('button'); a.type = 'button'; a.className = 'boostbtn admin' + (this.on ? ' on' : ''); a.id = 'btnAdmin';
+      a.innerHTML = ic('admin') + '<span><b>관리자 권한</b><small>' + (this.on ? 'Administrator // active' : 'Administrator // code required') + '</small></span>';
+      a.addEventListener('mouseenter', () => SND.hover());
+      a.addEventListener('click', () => { if (busy) return; SND.init(); SND.click(); if (this.on) this.revoke(); else this.openPop(); });
+      foot.appendChild(a);
+    },
+    openPop() { closeDrawer(); adminIn.value = ''; adminErr.textContent = ''; adminPop.classList.add('on'); adminPop.setAttribute('aria-hidden', 'false'); setTimeout(() => adminIn.focus({ preventScroll: true }), 120); },
+    closePop() { adminPop.classList.remove('on'); adminPop.setAttribute('aria-hidden', 'true'); adminIn.blur(); },
+    submit(e) {
+      e.preventDefault();
+      if (adminIn.value.trim() === ADMIN_CODE) { this.grant(); return; }
+      adminErr.textContent = 'ACCESS DENIED // 코드가 일치하지 않습니다'; adminForm.classList.remove('bad'); void adminForm.offsetWidth; adminForm.classList.add('bad'); adminIn.value = '';
+      SND.tone(160, .16, 'square', .05); SND.tone(110, .22, 'square', .05, .13);
+    },
+    unlockNow() {
+      B.halt(); B.st = 'idle'; B.unlocked = true; B.siren(false); delete R.dataset.alert;
+      alertFx.classList.remove('flash'); void alertFx.offsetWidth; alertFx.classList.add('flash');
+      [523.25, 783.99, 1046.5].forEach((f, k) => SND.tone(f, .5, 'sine', .06, k * .1));
+      B.applyUnlocked(); B.mountDrawer();
+    },
+    grant() {
+      this.on = true; try { localStorage.setItem('rsc.admin', '1'); } catch (e) { /* 저장 불가 */ }
+      this.closePop(); this.unlockNow(); toast('관리자 권한을 얻었습니다 — 모든 기능에 접근할 수 있습니다');
+    },
+    revoke() {
+      this.on = false; try { localStorage.removeItem('rsc.admin'); } catch (e) { /* 무시 */ }
+      B.reset(); toast('관리자 권한이 해제되었습니다');
+    },
+  };
+  adminForm.addEventListener('submit', e => Admin.submit(e));
+  $('#adminCancel').addEventListener('click', () => { SND.click(); Admin.closePop(); });
+  adminPop.addEventListener('keydown', e => { if (e.key === 'Escape') Admin.closePop(); });
+  adminPop.addEventListener('pointerdown', e => { if (e.target === adminPop) Admin.closePop(); });
+  if (window.RSC) window.RSC.Admin = Admin;
   if (window.RSC) window.RSC.Boost = B;
   try { localStorage.removeItem('rsc.boost'); } catch (e) {}   // 예전에 저장돼 있던 '성공' 기록은 지운다: 새로 열면 항상 원래 상태
   B.applyUnlocked(true);
+  try { if (localStorage.getItem('rsc.admin') === '1') { Admin.on = true; B.unlocked = true; B.applyUnlocked(true); } } catch (e) { /* 무시 */ }
   return B;
 })();
 
