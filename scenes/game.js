@@ -316,13 +316,13 @@ const Game = (() => {
     const BOT = ROWS - 3;
     add({ x: 20, y: BOT - .8, w: 4, h: 1.2, solid: false, sx: 19.5, sy: BOT - .05, sw: 5, sh: 3, name: '엘리베이터', ia: () => openElev(95), draw: (g, W, H) => elevatorArt(g, W, H, 95, '#5d7bff') });
     // 직원들(걸어 다니는 사람 · 앉아 일하는 사람) + 아비시온 크리토스
-    const PAL = [{ h: '#1a1410', s: '#10204e', t: '#38d6ff', sh: '#dbe6ff', k: '#e8c9ae' }, { h: '#3a2a1a', s: '#171b26', t: '#ffd93d', sh: '#cfe0ff', k: '#d8b494' }, { h: '#0d0d12', s: '#1a2d70', t: '#5d7bff', sh: '#ffffff', k: '#f0d2b8' }, { h: '#6a4a2a', s: '#0f1a3a', t: '#ff6a8a', sh: '#dbe6ff', k: '#e0bfa0' }, { h: '#2a2a32', s: '#222a3c', t: '#38d6ff', sh: '#eef3ff', k: '#c9a284' }, { h: '#1c1008', s: '#142654', t: '#c9a94c', sh: '#dbe6ff', k: '#e8c9ae' }];
+    const PAL = NPC_SPECS;
     const LX = [9, 17, 27, 35], LY = [12.6, 19.6, 26.4];
     for (let i = 0; i < 7; i++) { const xi = (i * 3) % 4, yi = i % 3; npcs.push({ kind: 'walk', pal: PAL[i % 6], x: LX[xi] * T, y: LY[yi] * T, xi, yi, nx: xi, ny: yi, dir: 'down', t: rnd() * 5, wait: rnd() * 2, carry: i % 2 === 0, sp: 46 + rnd() * 22, prev: -1 }); }
     [[3, 8], [10, 15], [29, 22], [36, 8], [10, 22], [29, 15], [3, 22]].forEach(([x, y], i) => npcs.push({ kind: 'sit', pal: PAL[(i + 2) % 6], x: (x + 2.4) * T, y: (y + 2.6) * T, dir: 'up', t: rnd() * 6 }));
-    add({ x: 21.4, y: 10.2, w: 1.2, h: .6, sx: 20.5, sy: 7.86, sw: 3, sh: 3, name: '아비시온 크리토스', sortY: 11, ia: () => {
+    add({ x: 21.5, y: 10.2, w: 1, h: 1, sx: 21.3125, sy: 9.4063, sw: 1.375, sh: 1.6875, name: '아비시온 크리토스', sortY: 11, ia: () => {
       if (!questOn) say(['안녕하십니까, 설립자님.', '오늘 카네히라가 여쭈어 볼께 있다고 합니다.'], '아비시온 크리토스', giveQuest); else say(['안녕하십니까, 설립자님.', '카네히라의 용건은 아직 준비 중입니다. 때가 되면 다시 말씀드리겠습니다.'], '아비시온 크리토스'); },
-      draw: (g, W, H) => g.drawImage(KR_SPR, 0, 0, W, H) , anim: (c, t, o) => { c.save(); c.globalCompositeOperation = 'lighter'; const a = .35 + .25 * Math.sin(t * 2.4); c.fillStyle = `rgba(93,123,255,${a})`; c.fillRect(Math.round(o.px + o.pw / 2) - 1, Math.round(o.py - 32), 3, 3); c.restore(); } });
+      draw: (g, W, H) => g.drawImage(KR_SPR, 0, 0) });
     objs.sort((a, b) => a.base - b.base);
   }
   MAPS.office = { cols: 48, rows: 34, build: () => { floorC = buildFloor(); buildObjects(); } };
@@ -331,42 +331,16 @@ const Game = (() => {
 
   /* ---------- 사람 그리기: 직원(여러 팔레트) · 아비시온 크리토스 ---------- */
   const WSPR = new Map(); let KR_SPR = null;
-  function drawWorker(g, dir, f, p, sit, carry) {
-    const px = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); }, bob = f === 1 || f === 3 ? -1 : 0, st = f === 1 ? 1 : f === 3 ? -1 : 0, arm = sit ? (f === 1 ? 1 : 0) : 0;
-    if (dir === 'down') {
-      if (!sit) { px(7, 25 + (st > 0 ? -1 : 0), 3, 8, '#0c0e16'); px(12, 25 + (st < 0 ? -1 : 0), 3, 8, '#0c0e16'); px(7, 32 + (st > 0 ? -1 : 0), 3, 2, '#050608'); px(12, 32 + (st < 0 ? -1 : 0), 3, 2, '#050608'); }
-      px(5, 14 + bob, 12, 12, p.s); px(10, 14 + bob, 2, 7, p.sh); px(10.5, 16 + bob, 1, 6, p.t); px(3, 15 + bob, 3, 10, p.s); px(16, 15 + bob, 3, 10, p.s); px(3, 24 + bob, 3, 2, p.k); px(16, 24 + bob, 3, 2, p.k);
-      px(7, 4 + bob, 8, 9, p.k); px(6, 2 + bob, 10, 4, p.h); px(6, 4 + bob, 2, 4, p.h); px(14, 4 + bob, 2, 4, p.h); px(9, 8 + bob, 1, 2, '#1a1a22'); px(12, 8 + bob, 1, 2, '#1a1a22');
-    } else if (dir === 'up') {
-      if (!sit) { px(7, 25 + (st > 0 ? -1 : 0), 3, 8, '#0c0e16'); px(12, 25 + (st < 0 ? -1 : 0), 3, 8, '#0c0e16'); px(7, 32, 3, 2, '#050608'); px(12, 32, 3, 2, '#050608'); }
-      px(5, 14 + bob, 12, 12, p.s); px(3, 15 + bob + (arm ? -1 : 0), 3, 9, p.s); px(16, 15 + bob + (arm ? 0 : -1), 3, 9, p.s); px(3, 22 + bob, 3, 2, p.k); px(16, 22 + bob, 3, 2, p.k);
-      px(6, 3 + bob, 10, 11, p.h); px(7, 12 + bob, 8, 2, p.h);
-    } else {
-      if (!sit) { px(9 - st, 25, 4, 8, '#0c0e16'); px(9 + st, 25, 4, 8, '#161824'); px(8 - st, 32, 5, 2, '#050608'); }
-      px(7, 14 + bob, 8, 12, p.s); px(9, 15 + bob, 4, 10, p.s); px(9, 24 + bob, 3, 2, p.k); px(10, 16 + bob, 1, 6, p.t);
-      px(7, 4 + bob, 8, 9, p.k); px(7, 2 + bob, 9, 4, p.h); px(11, 4 + bob, 4, 6, p.h); px(7, 8 + bob, 1, 2, '#1a1a22'); px(7, 5 + bob, 1, 5, p.k);
-    }
-    if (carry) { px(dir === 'left' ? 3 : 4, 22 + bob, 6, 5, '#e8efff'); px(dir === 'left' ? 4 : 5, 23 + bob, 4, 1, '#9fb4e8'); }
-  }
-  function npcSprite(pal, dir, f, sit, carry) {
-    const key = pal.s + pal.h + dir + f + (sit ? 's' : '') + (carry ? 'c' : ''); if (WSPR.has(key)) return WSPR.get(key);
-    const base = dir === 'right' ? 'left' : dir; let c = outline(mk(22, 36, g => drawWorker(g, base, f, pal, sit, carry)));
-    if (dir === 'right') c = mk(22, 36, g => { g.translate(22, 0); g.scale(-1, 1); g.drawImage(c, 0, 0); });
+  const KRITOS = { skin: '#f3dccb', skinD: '#d9bfae', hair: '#2f5bff', hairL: '#8fb0ff', style: 'slick', glasses: '#0b1030', eye: '#0b1030', jacket: '#1d3fd6', shirt: '#6f90ff', tie: '#15226e', gold: '#e6c04a', fur: '#d9b44a', furL: '#f6e19a', furD: '#9a7a24', bottom: '#0a0a10', shoe: '#0a0a10', hand: '#f3dccb', mouth: '#b98a7a' };
+  const mkNpc = (hair, style, skin, top, topD, shirt, tie, extra = {}) => Object.assign({ skin, skinD: skin, hair, hairL: hair, style, top, topD, topL: top, shirt, tie, bottom: '#0d1020', shoe: '#06070c', hand: skin, belt: '#06070c' }, extra);
+  const NPC_SPECS = [mkNpc('#1a1410', 'short', '#e8c9ae', '#10204e', '#0a1536', '#dbe6ff', '#38d6ff'), mkNpc('#3a2a1a', 'long', '#d8b494', '#1a2d70', '#101c4a', '#ffffff', '#5d7bff', { glasses: '#222a4a' }), mkNpc('#0d0d12', 'short', '#f0d2b8', '#171b26', '#0e111a', '#cfe0ff', '#ffd93d'), mkNpc('#6a4a2a', 'long', '#e0bfa0', '#0f1a3a', '#080f26', '#dbe6ff', '#ff6a8a'), mkNpc('#2a2a32', 'slick', '#c9a284', '#222a3c', '#141a28', '#eef3ff', '#38d6ff', { glasses: '#10101a' }), mkNpc('#1c1008', 'messy', '#e8c9ae', '#142654', '#0a1636', '#dbe6ff', '#c9a94c')];
+  function npcSprite(spec, dir, f, sit, carry) {
+    const key = spec.top + spec.hair + dir + f + (sit ? 's' : '') + (carry ? 'c' : ''); if (WSPR.has(key)) return WSPR.get(key);
+    const base = dir === 'right' ? 'left' : dir; let c = outline(mk(CW, CH, g => drawChibi(g, base, f, spec, { sit, carry })));
+    if (dir === 'right') { const src = c; c = mk(CW, CH, g => { g.translate(CW, 0); g.scale(-1, 1); g.drawImage(src, 0, 0); }); }
     WSPR.set(key, c); return c;
   }
-  function buildKritos() {
-    return outline(mk(96, 96, g => {
-      const px = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); }, X = 33;      // 키가 크고 긴 진청색 코트 · 은빛 머리 · 얇은 안경 · 가슴의 울트라마린 문장
-      px(X + 3, 78, 8, 14, '#070b1c'); px(X + 13, 78, 8, 14, '#070b1c'); px(X + 2, 90, 10, 4, '#030510'); px(X + 12, 90, 10, 4, '#030510');
-      px(X - 4, 34, 32, 50, '#0a1440'); px(X - 4, 34, 3, 50, '#15246a'); px(X + 25, 34, 3, 50, '#15246a'); px(X + 11, 40, 2, 44, '#2b3fe6'); px(X - 4, 82, 32, 3, '#2b3fe6'); px(X - 2, 70, 28, 1, '#15246a');
-      px(X - 8, 36, 5, 30, '#0a1440'); px(X + 27, 36, 5, 30, '#0a1440'); px(X - 8, 64, 5, 5, '#0a0c16'); px(X + 27, 64, 5, 5, '#0a0c16');
-      px(X + 29, 52, 16, 12, '#cfe0ff'); px(X + 30, 53, 14, 10, '#1d3a8a'); px(X + 32, 55, 8, 1, '#38d6ff'); px(X + 32, 58, 10, 1, '#38d6ff');
-      px(X + 6, 38, 12, 14, '#0e1a52'); px(X + 11, 44, 3, 3, '#38d6ff'); px(X + 10, 43, 5, 1, '#5d7bff'); px(X + 10, 47, 5, 1, '#5d7bff'); px(X + 12, 41, 1, 9, '#5d7bff');
-      px(X + 2, 28, 20, 8, '#0a1440'); px(X + 2, 28, 20, 2, '#2b3fe6');
-      px(X + 4, 10, 16, 20, '#ecd7c8'); px(X + 4, 28, 16, 2, '#d4bfb0'); px(X + 1, 5, 22, 9, '#d8e0f4'); px(X + 1, 9, 4, 14, '#d8e0f4'); px(X + 19, 9, 4, 14, '#d8e0f4'); px(X + 5, 12, 14, 3, '#b7c4e6');
-      px(X + 6, 18, 5, 3, '#0a1126'); px(X + 13, 18, 5, 3, '#0a1126'); px(X + 7, 19, 3, 1, '#38d6ff'); px(X + 14, 19, 3, 1, '#38d6ff'); px(X + 11, 19, 2, 1, '#5d7bff'); px(X + 9, 25, 6, 1, '#a88f84');
-    }));
-  }
+  function buildKritos() { return outline(mk(CW, CH, g => drawChibi(g, 'down', 0, KRITOS))); }
   const NPC_NODES = { LX: [9, 17, 27, 35], LY: [12.6, 19.6, 26.4] };
   function updateNpcs(dt) {
     if (curMap !== 'f95') return;
@@ -424,9 +398,10 @@ const Game = (() => {
   const SK = '#e8c9ae', SKD = '#c6a58a', HR = '#1b1c22', HRL = '#3b404b', CG = '#566763', CGD = '#3a4846', CGL = '#728480', CGE = '#1e2828', IN = '#14151a', INL = '#262830', PT = '#1a1b21', PTL = '#2c2e36', BT = '#0e0f12', GLV = '#121317', SCB = '#1b1b21', SCL = '#3a3a44', TSU = '#9097a2', HLT = '#24252c', HLTL = '#3c3d47';
   const SPR = {};
   const CW = 44, CH = 54;
-  function drawChar(g, dir, f) {
-    const px = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
-    const bob = f === 1 || f === 3 ? -1 : 0, lf = f === 1 ? 1 : 0, rf = f === 3 ? 1 : 0, sw = f === 1 ? 1 : f === 3 ? -1 : 0;
+  function drawChar(g, dir, f) { drawChibi(g, dir, f, PLAYER); drawGuandao(g, dir, f); }
+  const PLAYER = { skin: SK, skinD: SKD, hair: HR, hairL: HRL, style: 'messy', top: CG, topD: CGD, topL: CGL, coat: true, inner: IN, innerL: INL, shirt: IN, bottom: PT, shoe: BT, hand: GLV, eye: '#15161a' };
+  function drawGuandao(g, dir, f) {
+    const px = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); }, bob = f === 1 || f === 3 ? -1 : 0;
     const guandao = (x, out, gx, by) => {   // 언월도: 긴 자루 + 폭 넓은 초승달 날 + 금 마디 + 녹색 술, 손(장갑)이 자루를 쥠
       const BL = '#dfe6ec', BLD = '#8f9ba5', PL = '#6e4a28', PLD = '#4a3018', GD = '#d9b44a', TASS = '#36a86e';
       const R2 = (dy, d0, w, c) => { const x0 = out > 0 ? x + 2 + d0 : x - d0 - w + 2; px(x0, dy, w, 1, c); };
@@ -436,45 +411,74 @@ const Game = (() => {
       R2(9, 0, 8, BL); R2(10, 0, 7, BL); R2(11, 1, 6, BL); R2(12, 2, 5, BL); R2(13, 3, 3, BL);
       px(x, 2, 2, 12, BLD); for (let y = 4; y <= 10; y++) R2(y, y < 9 ? 8 : 7, 1, '#fff'); R2(3, 5, 1, '#fff');
       px(x, 14, 2, 2, GD); px(x, 16, 2, 5, TASS); px(x + (out > 0 ? 1 : 0), 21, 1, 3, TASS);
-      px(gx, 36 + by, 5, 3, GLV);
+      px(gx, 34 + by, 5, 4, GLV);
     };
-    const coat = (y0, y1, x0, x1, flare) => { for (let y = y0; y <= y1; y++) { const e = y > 36 ? Math.min(flare, Math.floor((y - 36) / 3)) : 0; px(x0 - e, y, x1 - x0 + 1 + e * 2, 1, CG); px(x0 - e, y, 1, 1, CGD); px(x1 + e, y, 1, 1, CGD); } px(x0 - flare, y1, x1 - x0 + 1 + flare * 2, 1, CGD); };
+    if (dir === 'down') guandao(8, -1, 9, bob); else if (dir === 'up') guandao(35, 1, 31, bob); else guandao(8, -1, 9, bob);
+  }
+  /* ---------- 델타룬식 캐릭터: 큰 머리 · 작은 몸 · 단순한 색면 · 굵은 윤곽선. 플레이어와 모든 NPC가 같은 크기(44×54, 발끝 y=51)를 쓴다 ---------- */
+  function drawChibi(g, dir, f, S, o = {}) {
+    const px = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
+    const bob = f === 1 || f === 3 ? -1 : 0, lf = f === 1 ? 1 : 0, rf = f === 3 ? 1 : 0, sw = f === 1 ? 1 : f === 3 ? -1 : 0, sit = !!o.sit, eye = S.eye || '#15161a';
+    const fr = (x, y, w, h, c) => { px(x, y, w, 2, c); px(x, y + h - 2, w, 2, c); px(x, y, 2, h, c); px(x + w - 2, y, 2, h, c); };   // 뿔테 (알 없음)
+    const fur = (x, y, w, h, hem) => { px(x, y, w, h, S.fur); for (let j = 0; j < h; j += 4) for (let i = (j / 4) % 2 ? 2 : 0; i < w; i += 5) px(x + i, y + j + 1, 2, 2, S.furL); px(x, y, 1, h, S.furD); px(x + w - 1, y, 1, h, S.furD); if (hem) for (let i = 0; i < w; i += 3) px(x + i, y + h, 2, 2, S.fur); };
+    const hairBack = () => {      // 뒷모습/옆모습에서 머리 전체
+      px(11, 3 + bob, 22, 17, S.hair); px(13, 19 + bob, 18, 3, S.hair); px(14, 5 + bob, 14, 1, S.hairL); px(15, 9 + bob, 12, 1, S.hairL);
+      if (S.style === 'messy') { px(14, 1 + bob, 3, 3, S.hair); px(20, 0 + bob, 4, 4, S.hair); px(27, 2 + bob, 3, 3, S.hair); }
+      if (S.style === 'long') px(10, 10 + bob, 24, 16, S.hair);
+    };
+    const hairFront = () => {
+      if (S.style === 'slick') { px(12, 3 + bob, 20, 7, S.hair); px(11, 6 + bob, 2, 8, S.hair); px(31, 6 + bob, 2, 8, S.hair); px(14, 1 + bob, 16, 3, S.hair); px(15, 4 + bob, 14, 1, S.hairL); px(14, 6 + bob, 16, 1, S.hairL); px(16, 8 + bob, 12, 1, S.hairL); }
+      else if (S.style === 'messy') { px(12, 3 + bob, 20, 8, S.hair); px(11, 6 + bob, 22, 5, S.hair); px(11, 9 + bob, 3, 9, S.hair); px(30, 9 + bob, 3, 9, S.hair); px(14, 10 + bob, 4, 3, S.hair); px(19, 10 + bob, 3, 5, S.hair); px(25, 10 + bob, 4, 3, S.hair); px(14, 1 + bob, 3, 3, S.hair); px(20, 0 + bob, 4, 4, S.hair); px(27, 2 + bob, 3, 3, S.hair); px(16, 5 + bob, 7, 1, S.hairL); px(24, 7 + bob, 5, 1, S.hairL); }
+      else if (S.style === 'long') { px(12, 3 + bob, 20, 8, S.hair); px(10, 6 + bob, 24, 6, S.hair); px(10, 10 + bob, 4, 14, S.hair); px(30, 10 + bob, 4, 14, S.hair); px(14, 10 + bob, 16, 2, S.hair); px(16, 5 + bob, 10, 1, S.hairL); }
+      else { px(12, 3 + bob, 20, 8, S.hair); px(11, 6 + bob, 22, 5, S.hair); px(11, 9 + bob, 2, 6, S.hair); px(31, 9 + bob, 2, 6, S.hair); px(13, 10 + bob, 18, 2, S.hair); px(16, 5 + bob, 10, 1, S.hairL); }
+    };
+    const legs = (side) => {
+      if (sit) return;
+      if (side) { px(19 + sw * 2, 40, 5, 9 - (sw ? 1 : 0), S.bottom); px(23 - sw * 2, 40, 5, 9, S.bottom); px(16 + sw * 2, 48 - (sw > 0 ? 1 : 0), 8, 3, S.shoe); px(22 - sw * 2, 48 - (sw < 0 ? 1 : 0), 8, 3, S.shoe); }
+      else { px(16, 40, 5, 9 - lf * 2, S.bottom); px(23, 40, 5, 9 - rf * 2, S.bottom); px(15, 48 - lf * 2, 7, 3, S.shoe); px(22, 48 - rf * 2, 7, 3, S.shoe); }
+    };
     if (dir === 'down') {
-      px(17, 42, 4, 9, PT); px(23, 42, 4, 9, PT); px(17, 45, 4, 1, PTL); px(19, 45, 1, 2, '#6a6f78');          // 다리 · 허벅지 벨트
-      px(16 - lf, 50 - (lf ? 1 : 0), 6, 3, BT); px(22 + rf, 50 - (rf ? 1 : 0), 6, 3, BT);
-      coat(19 + bob, 44 + bob, 15, 29, 2); px(13 + sw, 45 + bob, 4, 1, CGD);
-      px(19, 21 + bob, 6, 24, IN); px(21, 21 + bob, 2, 24, INL);                                                 // 앞이 열린 코트 사이 검은 옷
-      px(14, 19 + bob, 16, 3, CGL); px(12, 21 + bob, 3, 2, CG); px(29, 21 + bob, 3, 2, CG);                       // 어깨
-      px(15, 19 + bob, 5, 8, CGL); px(24, 19 + bob, 5, 8, CGL); px(19, 20 + bob, 1, 7, CGE); px(24, 20 + bob, 1, 7, CGE);   // 라펠(큰 깃)
-      px(12, 22 + bob, 4, 14, CG); px(28, 22 + bob, 4, 14, CG); px(12, 27 + bob, 4, 1, CGD); px(12, 31 + bob, 4, 1, CGD); px(28, 27 + bob, 4, 1, CGD); px(28, 31 + bob, 4, 1, CGD); px(12, 22 + bob, 1, 14, CGD); px(31, 22 + bob, 1, 14, CGD);
-      px(12, 36 + bob, 4, 3, GLV); px(28, 36 + bob, 4, 3, GLV); px(13, 38 + bob, 2, 1, SK); px(29, 38 + bob, 2, 1, SK);   // 장갑
-      px(16, 41 + bob, 12, 2, PT);                                                                                // 허리
-      px(18, 16 + bob, 8, 5, IN); px(18, 16 + bob, 8, 1, INL);                                                    // 터틀넥
-      px(18, 8 + bob, 9, 9, SK); px(25, 9 + bob, 2, 7, SKD);                                                      // 얼굴
-      px(18, 3 + bob, 9, 2, HR); px(16, 4 + bob, 13, 4, HR); px(15, 7 + bob, 4, 7, HR); px(26, 7 + bob, 3, 8, HR); px(17, 2 + bob, 3, 2, HR); px(21, 1 + bob, 2, 3, HR); px(25, 2 + bob, 3, 2, HR); px(18, 8 + bob, 6, 1, HR); px(18, 9 + bob, 3, 1, HR); px(20, 4 + bob, 4, 1, HRL); px(16, 6 + bob, 3, 1, HRL);
-      px(19, 12 + bob, 2, 1, '#15161a'); px(24, 12 + bob, 2, 1, '#15161a'); px(19, 11 + bob, 3, 1, HR); px(24, 11 + bob, 3, 1, HR); px(22, 14 + bob, 1, 1, SKD); px(21, 16 + bob, 3, 1, '#a9806a');
-      guandao(10, -1, 10, bob);
+      legs(false);
+      if (S.coat) { for (let y = 24; y <= 46; y++) { const e = y > 38 ? Math.floor((y - 38) / 3) : 0; px(14 - e, y + bob, 16 + e * 2, 1, S.top); px(14 - e, y + bob, 1, 1, S.topD); px(29 + e, y + bob, 1, 1, S.topD); } px(11, 46 + bob, 22, 1, S.topD); px(19, 24 + bob, 6, 22, S.inner); px(21, 24 + bob, 2, 22, S.innerL); px(14, 24 + bob, 5, 8, S.topL); px(25, 24 + bob, 5, 8, S.topL); }
+      else if (S.fur) { px(14, 24 + bob, 16, 16, S.jacket); px(19, 24 + bob, 6, 9, S.shirt); px(21, 24 + bob, 2, 1, S.shirt); fur(11, 23 + bob, 7, 18, true); fur(26, 23 + bob, 7, 18, true); px(14, 38 + bob, 16, 3, S.jacket); px(20, 25 + bob, 4, 2, S.tie); px(21, 27 + bob, 2, 10, S.tie); [29, 32, 35].forEach(y => { px(21, y + bob, 2, 1, S.gold); px(20, y + 1 + bob, 4, 1, S.gold); }); }
+      else { px(14, 24 + bob, 16, 16, S.top); px(14, 24 + bob, 2, 16, S.topD); px(28, 24 + bob, 2, 16, S.topD); px(14, 38 + bob, 16, 2, S.belt || '#101018'); px(19, 24 + bob, 6, 9, S.shirt); if (S.tie) { px(21, 25 + bob, 2, 10, S.tie); px(20, 25 + bob, 4, 2, S.tie); } }
+      if (S.coat) { px(18, 22 + bob, 8, 4, S.shirt); }
+      // 팔 · 손
+      const armC = S.coat ? S.top : S.fur ? S.fur : S.top;
+      if (S.fur) { fur(8, 24 + bob, 5, 12 + sw, false); fur(31, 24 + bob, 5, 12 - sw, false); px(9, 35 + bob + sw, 3, 3, S.hand); px(32, 35 + bob - sw, 3, 3, S.hand); }
+      else { px(11, 25 + bob, 3, 11 + sw, armC); px(30, 25 + bob, 3, 11 - sw, armC); if (S.coat) { px(11, 25 + bob, 1, 11 + sw, S.topD); px(32, 25 + bob, 1, 11 - sw, S.topD); } px(11, 35 + bob + sw, 3, 3, S.hand); px(30, 35 + bob - sw, 3, 3, S.hand); }
+      // 머리
+      px(12, 9 + bob, 20, 14, S.skin); px(13, 23 + bob, 18, 1, S.skin); px(30, 11 + bob, 2, 11, S.skinD);
+      if (S.fur) { px(11, 22 + bob, 22, 3, S.fur); for (let i = 0; i < 22; i += 3) px(11 + i, 24 + bob, 2, 1, S.furL); }
+      hairFront();
+      if (S.glasses) { fr(14, 14 + bob, 8, 7, S.glasses); fr(24, 14 + bob, 8, 7, S.glasses); px(22, 16 + bob, 2, 2, S.glasses); px(12, 16 + bob, 2, 2, S.glasses); px(32, 16 + bob, 2, 2, S.glasses); px(17, 16 + bob, 2, 3, eye); px(27, 16 + bob, 2, 3, eye); }
+      else { px(16, 15 + bob, 2, 4, eye); px(26, 15 + bob, 2, 4, eye); px(15, 11 + bob, 5, 1, S.hair); px(25, 11 + bob, 5, 1, S.hair); }
+      px(21, 20 + bob, 3, 1, S.mouth || '#a9806a');
+      if (o.carry) px(6, 34 + bob, 7, 5, '#e8efff');
     } else if (dir === 'up') {
-      px(17, 42, 4, 9, PT); px(23, 42, 4, 9, PT);
-      px(16 - lf, 50 - (lf ? 1 : 0), 6, 3, BT); px(22 + rf, 50 - (rf ? 1 : 0), 6, 3, BT);
-      coat(17 + bob, 44 + bob, 15, 29, 2); px(29 + sw, 45 + bob, 4, 1, CGD);
-      px(21, 25 + bob, 2, 20, CGD); px(15, 24 + bob, 15, 1, CGD); px(15, 25 + bob, 15, 1, CGL); px(16, 28 + bob, 4, 1, CGD); px(25, 28 + bob, 4, 1, CGD);   // 등 솔기 · 어깨 요크
-      px(14, 18 + bob, 16, 3, CGL); px(12, 20 + bob, 4, 16, CG); px(28, 20 + bob, 4, 16, CG); px(12, 36 + bob, 4, 3, GLV); px(28, 36 + bob, 4, 3, GLV); px(12, 26 + bob, 4, 1, CGD); px(28, 26 + bob, 4, 1, CGD);
-      px(17, 14 + bob, 10, 5, CGL); px(17, 14 + bob, 10, 1, CGD);                                                  // 세운 칼라
-      px(17, 3 + bob, 11, 12, HR); px(15, 6 + bob, 14, 8, HR); px(17, 2 + bob, 3, 2, HR); px(21, 1 + bob, 3, 3, HR); px(25, 2 + bob, 3, 2, HR); px(19, 5 + bob, 7, 1, HRL); px(20, 9 + bob, 5, 1, HRL); px(18, 13 + bob, 9, 2, '#0e0f12');
-      guandao(34, 1, 31, bob);
-    } else {      // 왼쪽 옆모습 (오른쪽은 반전)
-      px(18, 42, 4, 9, PT); px(23, 42, 4, 9, PT); px(19, 45, 3, 1, PTL);
-      px(15 + lf * 2, 50 - (lf ? 1 : 0), 7, 3, BT); px(22 - rf * 2, 50 - (rf ? 1 : 0), 7, 3, BT);
-      coat(19 + bob, 44 + bob, 17, 29, 1); px(27 + sw, 45 + bob, 5, 1, CGD); px(29 + sw, 38 + bob, 3, 7, CG);
-      px(17, 21 + bob, 2, 23, IN); px(16, 21 + bob, 1, 23, CGL);
-      px(17, 19 + bob, 12, 3, CGL); px(18, 41 + bob, 11, 2, PT);
-      px(14, 21 + bob, 6, 14, CG); px(14, 21 + bob, 1, 14, CGD); px(14, 27 + bob, 6, 1, CGD); px(14, 31 + bob, 6, 1, CGD); px(13, 35 + bob, 6, 3, GLV);
-      px(18, 16 + bob, 6, 5, IN); px(17, 18 + bob, 4, 4, CGL);
-      px(17, 8 + bob, 7, 9, SK); px(16, 11 + bob, 1, 2, SK); px(17, 13 + bob, 2, 1, SKD); px(17, 15 + bob, 3, 1, '#a9806a');
-      px(21, 4 + bob, 9, 11, HR); px(18, 3 + bob, 9, 3, HR); px(17, 5 + bob, 3, 4, HR); px(23, 2 + bob, 2, 3, HR); px(27, 3 + bob, 2, 3, HR); px(20, 2 + bob, 2, 2, HR); px(24, 6 + bob, 4, 1, HRL);
-      px(18, 11 + bob, 2, 1, '#15161a'); px(18, 10 + bob, 3, 1, HR);
-      guandao(10, -1, 10, bob);
+      legs(false);
+      if (S.coat) { for (let y = 24; y <= 46; y++) { const e = y > 38 ? Math.floor((y - 38) / 3) : 0; px(14 - e, y + bob, 16 + e * 2, 1, S.top); px(14 - e, y + bob, 1, 1, S.topD); px(29 + e, y + bob, 1, 1, S.topD); } px(11, 46 + bob, 22, 1, S.topD); px(21, 26 + bob, 2, 20, S.topD); px(15, 24 + bob, 15, 2, S.topL); px(14, 22 + bob, 16, 3, S.topL); }
+      else if (S.fur) { fur(11, 23 + bob, 22, 18, true); px(21, 26 + bob, 2, 14, S.furD); }
+      else { px(14, 24 + bob, 16, 16, S.top); px(14, 24 + bob, 2, 16, S.topD); px(28, 24 + bob, 2, 16, S.topD); px(14, 38 + bob, 16, 2, S.belt || '#101018'); px(20, 25 + bob, 4, 2, S.shirt); }
+      const armC = S.fur ? S.fur : S.top;
+      if (S.fur) { fur(8, 24 + bob, 5, 12 + (sit ? -2 : sw), false); fur(31, 24 + bob, 5, 12 + (sit ? -2 : -sw), false); px(9, 35 + bob + (sit ? -2 : sw), 3, 3, S.hand); px(32, 35 + bob + (sit ? -2 : -sw), 3, 3, S.hand); }
+      else { px(11, 25 + bob, 3, 11 + (sit ? -2 : sw), armC); px(30, 25 + bob, 3, 11 + (sit ? -2 : -sw), armC); px(11, 35 + bob + (sit ? -2 : sw), 3, 3, S.hand); px(30, 35 + bob + (sit ? -2 : -sw), 3, 3, S.hand); }
+      if (S.coat) px(17, 20 + bob, 10, 5, S.topL);
+      hairBack();
+      if (S.fur) { px(11, 22 + bob, 22, 3, S.fur); for (let i = 0; i < 22; i += 3) px(11 + i, 24 + bob, 2, 1, S.furL); }
+    } else {      // 왼쪽 옆모습
+      legs(true);
+      if (S.coat) { for (let y = 24; y <= 46; y++) { const e = y > 38 ? Math.floor((y - 38) / 4) : 0; px(15 - e, y + bob, 14 + e * 2, 1, S.top); px(15 - e, y + bob, 1, 1, S.topD); px(28 + e, y + bob, 1, 1, S.topD); } px(13, 46 + bob, 18, 1, S.topD); px(15, 24 + bob, 3, 22, S.inner); px(18, 24 + bob, 11, 4, S.topL); }
+      else if (S.fur) { px(15, 24 + bob, 13, 16, S.jacket); fur(14, 23 + bob, 15, 18, true); px(14, 24 + bob, 3, 1, S.shirt); }
+      else { px(15, 24 + bob, 13, 16, S.top); px(26, 24 + bob, 2, 16, S.topD); px(15, 38 + bob, 13, 2, S.belt || '#101018'); px(15, 24 + bob, 3, 6, S.shirt); if (S.tie) px(15, 27 + bob, 2, 8, S.tie); }
+      if (S.fur) { fur(15, 24 + bob + (sit ? -2 : 0), 6, 12 + sw, false); px(16, 35 + bob + sw, 4, 3, S.hand); }
+      else { px(17, 25 + bob, 5, 11 + sw, S.coat ? S.top : S.top); px(17, 25 + bob, 1, 11 + sw, S.topD); px(17, 35 + bob + sw, 5, 3, S.hand); }
+      px(11, 10 + bob, 14, 13, S.skin); px(10, 15 + bob, 1, 3, S.skin); px(12, 22 + bob, 12, 2, S.skin);
+      hairBack(); px(11, 6 + bob, 13, 5, S.hair); if (S.style === 'messy') { px(11, 9 + bob, 7, 4, S.hair); px(11, 12 + bob, 3, 3, S.hair); } if (S.style === 'slick') { px(11, 6 + bob, 13, 4, S.hair); px(12, 8 + bob, 12, 1, S.hairL); }
+      if (S.fur) { px(13, 22 + bob, 15, 3, S.fur); }
+      if (S.glasses) { fr(11, 14 + bob, 8, 7, S.glasses); px(19, 16 + bob, 12, 2, S.glasses); px(13, 16 + bob, 2, 3, eye); } else { px(13, 15 + bob, 2, 4, eye); }
+      px(11, 20 + bob, 2, 1, S.mouth || '#a9806a');
+      if (o.carry) px(11, 34 + bob, 7, 5, '#e8efff');
     }
   }
   const outline = c => {        // 윤곽선: 테두리를 어두운 선으로 둘러 작은 그림에서도 형태가 또렷하게
@@ -600,7 +604,7 @@ const Game = (() => {
     ctx.drawImage(floorC, sx, sy, sw2, sh2, sx, sy, sw2, sh2);
     const list = objs.filter(o => o.spr && o.ox + o.spr.width > camX && o.ox < camX + viewW && o.oy + o.spr.height > camY && o.oy < camY + viewH).map(o => ({ b: o.base, f: () => ctx.drawImage(o.spr, o.ox, o.oy) }));
     objs.forEach(o => { if (o.anim && o.spr && o.ox + o.spr.width > camX && o.ox < camX + viewW) list.push({ b: o.base + .5, f: () => o.anim(ctx, clock, o) }); });
-    npcs.forEach(n => { const sit = n.kind === 'sit', f = n.moving ? [0, 1, 0, 3][Math.floor(n.t / .15) % 4] : (sit ? (Math.floor(n.t * 3) % 2 ? 1 : 0) : 0), spr = npcSprite(n.pal, n.dir, f, sit, n.carry && !sit); if (n.x + 20 < camX || n.x - 20 > camX + viewW) return; list.push({ b: n.y + (sit ? 2 : 0), f: () => { if (!sit) { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(Math.round(n.x), Math.round(n.y) - 1, 9, 3, 0, 0, 7); ctx.fill(); } ctx.drawImage(spr, Math.round(n.x) - 11, Math.round(n.y) - (sit ? 27 : 34)); } }); });
+    npcs.forEach(n => { const sit = n.kind === 'sit', f = n.moving ? [0, 1, 0, 3][Math.floor(n.t / .15) % 4] : (sit ? (Math.floor(n.t * 3) % 2 ? 1 : 0) : 0), spr = npcSprite(n.pal, n.dir, f, sit, n.carry && !sit); if (n.x + 20 < camX || n.x - 20 > camX + viewW) return; list.push({ b: n.y + (sit ? 2 : 0), f: () => { if (!sit) { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(Math.round(n.x), Math.round(n.y) - 1, 12, 4, 0, 0, 7); ctx.fill(); } ctx.drawImage(spr, Math.round(n.x) - 22, Math.round(n.y) - (sit ? 38 : 51)); } }); });
     const fi = P.moving ? [0, 1, 0, 3][Math.floor(P.t / .12) % 4] : 0;
     list.push({ b: ppy, f: () => { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(ppx, ppy - 1, 12, 4, 0, 0, 7); ctx.fill(); ctx.drawImage(SPR[P.dir][fi], ppx - CW / 2, ppy - 51); } });
     list.sort((a, b) => a.b - b.b).forEach(o => o.f());
