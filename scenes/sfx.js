@@ -166,9 +166,18 @@ Object.assign(SND, {
     [[0, 1.25, -.3], [1, 1.0, .45], [2, .8, 0]].forEach(([i, gv, pan]) => {
       const s = c.createBufferSource(), g = c.createGain(), pn = c.createStereoPanner ? c.createStereoPanner() : null; s.buffer = b[i];
       g.gain.setValueAtTime(gv, t0); g.gain.setValueAtTime(gv, t0 + d - .4); g.gain.linearRampToValueAtTime(.0001, t0 + d);
+      s.loop = true; s.playbackRate.setValueAtTime(1.5, t0); s.playbackRate.setValueAtTime(1.5, t0 + 1.9); s.playbackRate.linearRampToValueAtTime(2, t0 + 2.1);   // 1.5배속 → 2배속
       s.connect(g); if (pn) { pn.pan.value = pan; g.connect(pn); pn.connect(this.sfx); } else g.connect(this.sfx);
       s.start(t0); s.stop(t0 + d + .05);
     });
+  },
+  /* 지직거리는 화면 잡음: 넓은 대역 노이즈를 d초 동안 깔고, 가끔 튀는 소리를 섞는다 */
+  staticNoise(d = 4) {
+    if (!this.ctx || !this.on) return; const c = this.ctx, t = c.currentTime, s = c.createBufferSource(), hp = c.createBiquadFilter(), lp = c.createBiquadFilter(), g = c.createGain();
+    s.buffer = this.nbuf; s.loop = true; hp.type = 'highpass'; hp.frequency.value = 700; lp.type = 'lowpass'; lp.frequency.value = 9500;
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.2, t + .1); g.gain.setValueAtTime(.2, t + d - .3); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+    s.connect(hp); hp.connect(lp); lp.connect(g); g.connect(this.sfx); s.start(t); s.stop(t + d + .05);
+    for (let i = 0; i < d * 10; i++) this._n(Math.random() * d, .01 + Math.random() * .04, 2000 + Math.random() * 6000, 1500, .12 + Math.random() * .1, 1.2, 'highpass', Math.random() * 2 - 1);
   },
   /* 모든 소리를 끊는다 (바람·음악) */
   blackout() {
