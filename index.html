@@ -9706,90 +9706,89 @@ const Game = (() => {
       R2(9, 0, 8, BL); R2(10, 0, 7, BL); R2(11, 1, 6, BL); R2(12, 2, 5, BL); R2(13, 3, 3, BL);
       px(x, 2, 2, 12, BLD); for (let y = 4; y <= 10; y++) R2(y, y < 9 ? 8 : 7, 1, '#fff'); R2(3, 5, 1, '#fff');
       px(x, 14, 2, 2, GD); px(x, 16, 2, 5, TASS); px(x + (out > 0 ? 1 : 0), 21, 1, 3, TASS);
-      px(gx, 29 + by, 5, 4, GLV);
+      px(gx, 30 + by, 5, 4, GLV);
     };
     if (dir === 'down') guandao(11, -1, 9, bob); else if (dir === 'up') guandao(32, 1, 29, bob); else guandao(14, -1, 12, bob);
   }
-  /* ---------- 캐릭터: 6등신 사람 비율 — 둥근 두상(달걀형) · 목 · 어깨 · 긴 다리. 플레이어와 모든 NPC가 같은 크기(44×64, 발끝 y=61) ---------- */
+  /* ---------- 캐릭터: 4등신 사람 비율 — 큰 달걀형 두상 · 목 · 어깨 · 다리. 플레이어와 모든 NPC가 같은 크기(44×64, 발끝 y=61) ---------- */
   function drawChibi(g, dir, f, S, o = {}) {
     const px = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
     const bob = f === 1 || f === 3 ? -1 : 0, lf = f === 1 ? 1 : 0, rf = f === 3 ? 1 : 0, sw = f === 1 ? 1 : f === 3 ? -1 : 0, sit = !!o.sit;
-    const hD = S.hairD || S.hair, hL = S.hairL || S.hair, skD = S.skinD && S.skinD.length < 9 ? S.skinD : '#c6a58a', bL = S.bottomL || S.bottom, shL = S.shoeL || S.shoe, iris = S.iris || '#4a3a30', lid = S.lid || '#1a1418', fem = S.style === 'long', top = S.top, topL = S.topL || S.top, topD = S.topD || S.top;
-    const HEAD = [[20, 24], [19, 25], [18, 26], [18, 26], [18, 26], [18, 26], [18, 26], [19, 25], [20, 24], [21, 23]];   // 두상: 위가 둥글고 턱으로 좁아지는 달걀형(y=2~11)
+    const hD = S.hairD || S.hair, hL = S.hairL || S.hair, skD = S.skinD && S.skinD.length < 9 ? S.skinD : '#c6a58a', bL = S.bottomL || S.bottom, shL = S.shoeL || S.shoe, iris = S.iris || '#4a3a30', irisD = S.irisD || '#1c1410', lid = S.lid || '#1a1418', fem = S.style === 'long', top = S.top, topL = S.topL || S.top, topD = S.topD || S.top;
+    const SH = 18, WA = 31, TE = 34, FOOT = 56;
+    const HEAD = [[19, 25], [18, 26], [17, 27], [16, 28], [16, 28], [16, 28], [16, 28], [16, 28], [16, 28], [17, 27], [18, 26], [19, 25], [20, 24], [21, 23]];   // 두상(y=2~15): 위가 둥글고 턱으로 좁아지는 달걀형
     const row = (i, c, dx = 0, x0 = 0, x1 = 0) => { const [a, b] = HEAD[i]; px(a + dx + x0, 2 + i + bob, b - a + 1 + x1 - x0, 1, c); };
     const rows = (from, to, c, dx = 0, x0 = 0, x1 = 0) => { for (let i = from; i <= to; i++) row(i, c, dx, x0, x1); };
     const fur = (x, y, w, h, hem) => { px(x, y, w, h, S.fur); for (let j = 0; j < h; j += 3) for (let i = (j / 3) % 2 ? 2 : 0; i < w; i += 4) px(x + i, y + j + 1, 1, 2, S.furL); px(x, y, 1, h, S.furD); px(x + w - 1, y, 1, h, S.furD); if (hem) for (let i = 0; i < w; i += 2) px(x + i, y + h, 1, 2, S.fur); };
     const legs = (side) => {
-      if (sit) return;
-      if (side) { const a = sw * 3, b = -sw * 3; px(20 + a, 30, 4, 26 - (a > 0 ? 1 : 0), S.bottom); px(21 + b, 30, 4, 26 - (b > 0 ? 1 : 0), S.bottom); px(20 + a, 30, 1, 25, bL); px(18 + a, 55 - (a > 0 ? 1 : 0), 7, 5, S.shoe); px(19 + b, 55 - (b > 0 ? 1 : 0), 7, 5, S.shoe); px(18 + a, 55 - (a > 0 ? 1 : 0), 7, 1, shL); }
-      else { px(18, 30, 4, 26 - lf * 2, S.bottom); px(23, 30, 4, 26 - rf * 2, S.bottom); px(18, 30, 1, 24 - lf * 2, bL); px(23, 30, 1, 24 - rf * 2, bL); px(17, 55 - lf * 2, 5, 5, S.shoe); px(23, 55 - rf * 2, 5, 5, S.shoe); px(17, 55 - lf * 2, 5, 1, shL); px(23, 55 - rf * 2, 5, 1, shL); }
+      if (sit) return; const L = FOOT - TE;
+      if (side) { const a = sw * 3, b = -sw * 3; px(20 + a, TE, 4, L - (a > 0 ? 1 : 0), S.bottom); px(21 + b, TE, 4, L - (b > 0 ? 1 : 0), S.bottom); px(20 + a, TE, 1, L - 1, bL); px(18 + a, FOOT - (a > 0 ? 1 : 0), 7, 5, S.shoe); px(19 + b, FOOT - (b > 0 ? 1 : 0), 7, 5, S.shoe); px(18 + a, FOOT - (a > 0 ? 1 : 0), 7, 1, shL); }
+      else { px(18, TE, 4, L - lf * 2, S.bottom); px(23, TE, 4, L - rf * 2, S.bottom); px(18, TE, 1, L - 2 - lf * 2, bL); px(23, TE, 1, L - 2 - rf * 2, bL); px(17, FOOT - lf * 2, 5, 5, S.shoe); px(23, FOOT - rf * 2, 5, 5, S.shoe); px(17, FOOT - lf * 2, 5, 1, shL); px(23, FOOT - rf * 2, 5, 1, shL); }
     };
     const arm = (x, len, c, hand, fu) => {
-      if (fu) { fur(x - 1, 15 + bob, 5, len, false); } else { px(x, 15 + bob, 3, len, c); px(x, 15 + bob, 1, len, topL); px(x + 2, 15 + bob, 1, len, topD); px(x, 14 + bob + len, 3, 1, topD); }
-      px(x, 15 + bob + len, 3, 3, hand); px(x, 15 + bob + len, 3, 1, S.handL || hand); px(x + 1, 17 + bob + len, 1, 1, S.skinD && S.skinD.length < 9 ? S.skinD : hand);
+      if (fu) { fur(x - 1, SH + 1 + bob, 5, len, false); } else { px(x, SH + 1 + bob, 3, len, c); px(x, SH + 1 + bob, 1, len, topL); px(x + 2, SH + 1 + bob, 1, len, topD); px(x, SH + bob + len, 3, 1, topD); }
+      px(x, SH + 1 + bob + len, 3, 3, hand); px(x, SH + 1 + bob + len, 3, 1, S.handL || hand);
     };
     const suitFront = () => {
-      px(17, 14 + bob, 11, 1, topL); px(15, 15 + bob, 15, 2, top); px(15, 15 + bob, 15, 1, topL); px(17, 17 + bob, 11, 13, top); px(17, 17 + bob, 1, 13, topL); px(27, 17 + bob, 1, 13, topD);
-      px(20, 14 + bob, 5, 2, S.shirt); px(21, 16 + bob, 3, 3, S.shirt); px(22, 19 + bob, 1, 2, S.shirt); px(19, 15 + bob, 2, 6, topL); px(24, 15 + bob, 2, 6, topL);
-      if (S.tie) { px(21, 15 + bob, 3, 2, S.tie); px(21, 17 + bob, 3, 7, S.tie); px(22, 24 + bob, 1, 2, S.tie); if (S.tieP) { px(22, 18 + bob, 1, 1, S.tieP); px(22, 21 + bob, 1, 1, S.tieP); } }
-      px(17, 28 + bob, 11, 2, S.belt || topD); px(21, 28 + bob, 3, 2, S.buckle || '#c9a94c');
+      px(17, SH + bob, 11, 1, topL); px(14, SH + 1 + bob, 17, 2, top); px(14, SH + 1 + bob, 17, 1, topL); px(17, SH + 3 + bob, 11, WA - SH - 3, top); px(17, SH + 3 + bob, 1, WA - SH - 3, topL); px(27, SH + 3 + bob, 1, WA - SH - 3, topD);
+      px(20, SH + bob, 5, 2, S.shirt); px(21, SH + 2 + bob, 3, 3, S.shirt); px(22, SH + 5 + bob, 1, 2, S.shirt); px(19, SH + 1 + bob, 2, 6, topL); px(24, SH + 1 + bob, 2, 6, topL);
+      if (S.tie) { px(21, SH + 1 + bob, 3, 2, S.tie); px(21, SH + 3 + bob, 3, 7, S.tie); px(22, SH + 10 + bob, 1, 2, S.tie); if (S.tieP) { px(22, SH + 4 + bob, 1, 1, S.tieP); px(22, SH + 7 + bob, 1, 1, S.tieP); } }
+      px(17, WA + bob, 11, 2, S.belt || topD); px(21, WA + bob, 3, 2, S.buckle || '#c9a94c');
     };
-    const coatShape = (side) => { for (let y = 14; y <= 50; y++) { const w = y < 16 ? 6 : 6 + Math.floor(Math.max(0, y - 28) / 5), x0 = 22 - w - (side ? 2 : 0), ww = 2 * w + 1 - (side ? 3 : 0); px(x0, y + bob, ww, 1, top); px(x0, y + bob, 1, 1, topL); px(x0 + ww - 1, y + bob, 1, 1, topD); } px(13, 50 + bob, 19, 1, topD); };
-    const hairBackAll = () => {
-      if (fem) { px(17, 3 + bob, 11, 31, S.hair); px(17, 33 + bob, 11, 1, hD); for (let i = 0; i < 9; i += 3) px(18 + i, 14 + bob, 1, 18, hD); px(20, 4 + bob, 4, 1, hL); }
-    };
+    const coatShape = (side) => { for (let y = SH; y <= 47; y++) { const w = y < SH + 2 ? 7 : 7 + Math.floor(Math.max(0, y - 30) / 5), x0 = 22 - w - (side ? 2 : 0), ww = 2 * w + 1 - (side ? 3 : 0); px(x0, y + bob, ww, 1, top); px(x0, y + bob, 1, 1, topL); px(x0 + ww - 1, y + bob, 1, 1, topD); } px(13, 47 + bob, 19, 1, topD); };
+    const hairBackAll = () => { if (fem) { px(15, 3 + bob, 15, 35, S.hair); px(15, 37 + bob, 15, 1, hD); for (let i = 0; i < 12; i += 3) px(16 + i, 16 + bob, 1, 20, hD); px(19, 4 + bob, 6, 1, hL); } };
     if (dir === 'down') {
       hairBackAll(); legs(false);
-      if (S.coat) { coatShape(false); px(21, 17 + bob, 3, 33, S.inner); px(22, 17 + bob, 1, 33, S.innerL); px(16, 15 + bob, 5, 8, topL); px(24, 15 + bob, 5, 8, topL); px(20, 12 + bob, 5, 3, S.inner); px(17, 27 + bob, 11, 2, '#0e0f12'); px(21, 27 + bob, 3, 2, '#c9a94c'); }
-      else if (S.fur) { px(17, 15 + bob, 11, 15, S.jacket); px(17, 15 + bob, 11, 1, '#4466ee'); px(20, 14 + bob, 5, 3, S.shirt); px(21, 17 + bob, 3, 3, S.shirt); px(21, 15 + bob, 3, 2, S.tie); px(21, 17 + bob, 3, 8, S.tie); px(22, 25 + bob, 1, 2, S.tie); [18, 21, 24].forEach(y => px(22, y + bob, 1, 1, S.gold)); px(17, 28 + bob, 11, 2, '#10142a'); fur(14, 14 + bob, 7, 31, true); fur(24, 14 + bob, 7, 31, true); }
+      if (S.coat) { coatShape(false); px(21, SH + 2 + bob, 3, 30, S.inner); px(22, SH + 2 + bob, 1, 30, S.innerL); px(16, SH + bob, 5, 9, topL); px(24, SH + bob, 5, 9, topL); px(20, SH - 3 + bob, 5, 4, S.inner); px(17, WA - 1 + bob, 11, 2, '#0e0f12'); px(21, WA - 1 + bob, 3, 2, '#c9a94c'); }
+      else if (S.fur) { px(17, SH + bob, 11, 15, S.jacket); px(17, SH + bob, 11, 1, '#4466ee'); px(20, SH + bob, 5, 3, S.shirt); px(21, SH + 3 + bob, 3, 3, S.shirt); px(21, SH + 1 + bob, 3, 2, S.tie); px(21, SH + 3 + bob, 3, 8, S.tie); px(22, SH + 11 + bob, 1, 2, S.tie); [SH + 4, SH + 7, SH + 10].forEach(y => px(22, y + bob, 1, 1, S.gold)); px(17, WA + bob, 11, 2, '#10142a'); fur(14, SH - 1 + bob, 7, 28, true); fur(24, SH - 1 + bob, 7, 28, true); }
       else suitFront();
       const armC = S.coat ? top : S.sleeve || top;
-      if (S.fur) { arm(12, 14 + sw, S.fur, S.hand, true); arm(30, 14 - sw, S.fur, S.hand, true); } else { arm(14, 14 + sw, armC, S.hand); arm(28, 14 - sw, armC, S.hand); }
-      px(21, 12 + bob, 3, 3, skD); rows(0, 9, S.skin); rows(6, 9, skD, 0, 0, 0); px(18, 6 + bob, 1, 2, S.skin); px(26, 6 + bob, 1, 2, S.skin);
-      for (let i = 4; i <= 9; i++) { const [a, b] = HEAD[i]; px(b, 2 + i + bob, 1, 1, skD); }
-      px(19, 8 + bob, 1, 1, S.blush || skD); px(25, 8 + bob, 1, 1, S.blush || skD);
-      if (S.fur) { px(15, 13 + bob, 15, 3, S.fur); for (let i = 0; i < 15; i += 2) px(15 + i, 15 + bob, 1, 1, S.furL); }
-      // 머리카락
-      rows(0, 2, S.hair); px(21, 2 + bob, 3, 1, hL); px(19, 3 + bob, 3, 1, hL); px(23, 4 + bob, 2, 1, hD);
-      if (S.style === 'short') { px(18, 5 + bob, 1, 3, S.hair); px(26, 5 + bob, 1, 3, S.hair); px(19, 5 + bob, 7, 1, S.hair); px(19, 5 + bob, 3, 1, hL); }
-      else if (S.style === 'slick') { px(18, 5 + bob, 1, 2, S.hair); px(26, 5 + bob, 1, 2, S.hair); px(20, 3 + bob, 5, 1, hL); px(19, 4 + bob, 7, 1, hL); }
-      else if (S.style === 'long') { px(17, 4 + bob, 2, 29, S.hair); px(26, 4 + bob, 2, 29, S.hair); px(18, 5 + bob, 4, 2, S.hair); px(17, 6 + bob, 1, 22, hL); px(27, 6 + bob, 1, 22, hD); px(19, 4 + bob, 3, 1, hD); }
-      else { px(19, 0 + bob, 2, 3, S.hair); px(22, 0 + bob, 3, 3, S.hair); px(25, 1 + bob, 2, 2, S.hair); px(18, 5 + bob, 1, 4, S.hair); px(26, 5 + bob, 1, 3, S.hair); px(19, 5 + bob, 3, 1, S.hair); px(24, 5 + bob, 2, 1, S.hair); px(22, 0 + bob, 1, 1, hL); }
+      if (S.fur) { arm(12, 11 + sw, S.fur, S.hand, true); arm(30, 11 - sw, S.fur, S.hand, true); } else { arm(14, 11 + sw, armC, S.hand); arm(28, 11 - sw, armC, S.hand); }
+      px(21, 16 + bob, 3, 3, skD); rows(0, 13, S.skin); px(15, 8 + bob, 1, 3, S.skin); px(29, 8 + bob, 1, 3, S.skin); px(15, 9 + bob, 1, 1, skD); px(29, 9 + bob, 1, 1, skD);
+      for (let i = 5; i <= 13; i++) { const [a, b] = HEAD[i]; px(b, 2 + i + bob, 1, 1, skD); }
+      px(18, 12 + bob, 2, 1, S.blush || skD); px(25, 12 + bob, 2, 1, S.blush || skD); px(21, 15 + bob, 3, 1, skD);
+      if (S.fur) { px(15, SH - 2 + bob, 15, 3, S.fur); for (let i = 0; i < 15; i += 2) px(15 + i, SH + bob, 1, 1, S.furL); }
+      rows(0, 4, S.hair); px(21, 2 + bob, 4, 1, hL); px(19, 3 + bob, 3, 1, hL); px(17, 4 + bob, 2, 1, hL); px(24, 6 + bob, 4, 1, hD);
+      if (S.style === 'short') { px(16, 7 + bob, 1, 5, S.hair); px(28, 7 + bob, 1, 5, S.hair); px(17, 7 + bob, 11, 1, S.hair); px(17, 7 + bob, 5, 1, hL); px(18, 8 + bob, 3, 1, S.hair); }
+      else if (S.style === 'slick') { px(16, 7 + bob, 1, 3, S.hair); px(28, 7 + bob, 1, 3, S.hair); px(19, 4 + bob, 9, 1, hL); px(17, 5 + bob, 11, 1, hL); px(17, 6 + bob, 11, 1, hD); }
+      else if (S.style === 'long') { px(15, 7 + bob, 2, 31, S.hair); px(28, 7 + bob, 2, 31, S.hair); px(17, 7 + bob, 5, 2, S.hair); px(15, 9 + bob, 1, 26, hL); px(29, 9 + bob, 1, 26, hD); px(18, 6 + bob, 4, 1, hD); }
+      else { px(17, 0 + bob, 3, 4, S.hair); px(21, 0 + bob, 4, 4, S.hair); px(26, 1 + bob, 3, 3, S.hair); px(16, 7 + bob, 1, 4, S.hair); px(28, 7 + bob, 1, 4, S.hair); px(17, 7 + bob, 4, 2, S.hair); px(23, 7 + bob, 3, 1, S.hair); px(26, 7 + bob, 2, 2, S.hair); px(22, 0 + bob, 1, 1, hL); }
       // 눈 · 눈썹 · 코 (입은 생략)
-      if (S.glasses) { px(18, 5 + bob, 4, 4, S.glasses); px(24, 5 + bob, 4, 4, S.glasses); px(19, 6 + bob, 2, 2, S.skin); px(25, 6 + bob, 2, 2, S.skin); px(22, 6 + bob, 2, 1, S.glasses); px(17, 6 + bob, 1, 1, S.glasses); px(28, 6 + bob, 1, 1, S.glasses); px(19, 7 + bob, 2, 1, iris); px(25, 7 + bob, 2, 1, iris); px(19, 6 + bob, 2, 1, lid); px(25, 6 + bob, 2, 1, lid); }
-      else { px(19, 5 + bob, 3, 1, hD); px(24, 5 + bob, 3, 1, hD); px(19, 6 + bob, 2, 1, lid); px(24, 6 + bob, 2, 1, lid); px(19, 7 + bob, 2, 1, iris); px(24, 7 + bob, 2, 1, iris); if (fem) { px(18, 6 + bob, 1, 1, lid); px(26, 6 + bob, 1, 1, lid); } }
-      px(22, 8 + bob, 1, 1, skD);
-      if (o.carry) { px(10, 27 + bob, 7, 6, '#e8efff'); px(10, 27 + bob, 7, 1, '#fff'); px(11, 29 + bob, 5, 1, '#9fb4e8'); px(11, 31 + bob, 4, 1, '#9fb4e8'); }
+      const eyeF = (x) => { px(x, 9 + bob, 3, 1, lid); px(x, 10 + bob, 3, 1, '#e6e0da'); px(x + (x < 22 ? 1 : 0), 10 + bob, 2, 1, iris); px(x + (x < 22 ? 1 : 1), 10 + bob, 1, 1, irisD); };
+      if (S.glasses) { px(17, 8 + bob, 5, 5, S.glasses); px(23, 8 + bob, 5, 5, S.glasses); px(18, 9 + bob, 3, 3, S.skin); px(24, 9 + bob, 3, 3, S.skin); px(22, 9 + bob, 1, 1, S.glasses); px(16, 9 + bob, 1, 1, S.glasses); px(28, 9 + bob, 1, 1, S.glasses); px(18, 9 + bob, 3, 1, lid); px(24, 9 + bob, 3, 1, lid); px(18, 10 + bob, 3, 1, '#e6e0da'); px(24, 10 + bob, 3, 1, '#e6e0da'); px(19, 10 + bob, 2, 1, iris); px(24, 10 + bob, 2, 1, iris); }
+      else { px(18, 8 + bob, 4, 1, hD); px(24, 8 + bob, 4, 1, hD); eyeF(18); eyeF(24); if (fem) { px(17, 9 + bob, 1, 1, lid); px(27, 9 + bob, 1, 1, lid); } }
+      px(22, 11 + bob, 1, 2, skD);
+      if (o.carry) { px(9, 24 + bob, 7, 6, '#e8efff'); px(9, 24 + bob, 7, 1, '#fff'); px(10, 26 + bob, 5, 1, '#9fb4e8'); px(10, 28 + bob, 4, 1, '#9fb4e8'); }
     } else if (dir === 'up') {
       legs(false);
-      if (S.coat) { coatShape(false); px(22, 17 + bob, 1, 33, topD); px(16, 15 + bob, 13, 4, topL); px(17, 27 + bob, 11, 2, '#0e0f12'); }
-      else if (S.fur) { fur(14, 14 + bob, 17, 31, true); px(22, 18 + bob, 1, 24, S.furD); }
-      else { px(17, 14 + bob, 11, 1, topL); px(15, 15 + bob, 15, 2, top); px(17, 17 + bob, 11, 13, top); px(17, 17 + bob, 1, 13, topL); px(27, 17 + bob, 1, 13, topD); px(22, 17 + bob, 1, 11, topD); px(17, 28 + bob, 11, 2, S.belt || topD); }
+      if (S.coat) { coatShape(false); px(22, SH + 2 + bob, 1, 30, topD); px(16, SH + bob, 13, 4, topL); px(17, WA - 1 + bob, 11, 2, '#0e0f12'); }
+      else if (S.fur) { fur(14, SH - 1 + bob, 17, 28, true); px(22, SH + 3 + bob, 1, 22, S.furD); }
+      else { px(17, SH + bob, 11, 1, topL); px(14, SH + 1 + bob, 17, 2, top); px(17, SH + 3 + bob, 11, WA - SH - 3, top); px(17, SH + 3 + bob, 1, WA - SH - 3, topL); px(27, SH + 3 + bob, 1, WA - SH - 3, topD); px(22, SH + 3 + bob, 1, WA - SH - 5, topD); px(17, WA + bob, 11, 2, S.belt || topD); }
       const armC = S.coat ? top : S.sleeve || top, up = sit ? -4 : 0;
-      if (S.fur) { arm(12, 14 + up + sw, S.fur, S.hand, true); arm(30, 14 + up - sw, S.fur, S.hand, true); } else { arm(14, 14 + up + sw, armC, S.hand); arm(28, 14 + up - sw, armC, S.hand); }
-      px(21, 12 + bob, 3, 3, skD);
-      if (S.fur) px(15, 13 + bob, 15, 3, S.fur);
-      if (fem) { hairBackAll(); px(17, 2 + bob, 11, 12, S.hair); }
-      rows(0, 8, S.hair); px(18, 8 + bob, 9, 1, S.hair); px(20, 4 + bob, 5, 1, hL); px(19, 6 + bob, 7, 1, hD); px(21, 2 + bob, 3, 1, hL);
-      if (S.style === 'messy') { px(19, 0 + bob, 2, 3, S.hair); px(22, 0 + bob, 3, 3, S.hair); px(25, 1 + bob, 2, 2, S.hair); }
-      px(20, 9 + bob, 5, 2, S.hair);
+      if (S.fur) { arm(12, 11 + up + sw, S.fur, S.hand, true); arm(30, 11 + up - sw, S.fur, S.hand, true); } else { arm(14, 11 + up + sw, armC, S.hand); arm(28, 11 + up - sw, armC, S.hand); }
+      px(21, 16 + bob, 3, 3, skD);
+      if (S.fur) px(15, SH - 2 + bob, 15, 3, S.fur);
+      if (fem) { hairBackAll(); px(15, 2 + bob, 15, 15, S.hair); }
+      rows(0, 11, S.hair); px(18, 12 + bob, 9, 1, S.hair); px(20, 6 + bob, 6, 1, hL); px(18, 9 + bob, 9, 1, hD); px(21, 2 + bob, 4, 1, hL);
+      if (S.style === 'messy') { px(17, 0 + bob, 3, 4, S.hair); px(21, 0 + bob, 4, 4, S.hair); px(26, 1 + bob, 3, 3, S.hair); }
+      px(20, 13 + bob, 5, 3, S.hair);
     } else {      // 왼쪽 옆모습
-      if (fem) { px(21, 3 + bob, 7, 31, S.hair); px(21, 33 + bob, 7, 1, hD); }
+      if (fem) { px(20, 3 + bob, 9, 35, S.hair); px(20, 37 + bob, 9, 1, hD); }
       legs(true);
-      if (S.coat) { coatShape(true); px(18, 17 + bob, 3, 33, S.inner); px(19, 15 + bob, 8, 4, topL); px(18, 27 + bob, 9, 2, '#0e0f12'); }
-      else if (S.fur) { px(18, 15 + bob, 9, 15, S.jacket); fur(16, 14 + bob, 12, 31, true); }
-      else { px(18, 14 + bob, 9, 1, topL); px(17, 15 + bob, 11, 2, top); px(18, 17 + bob, 9, 13, top); px(18, 17 + bob, 1, 13, topL); px(26, 17 + bob, 1, 13, topD); px(18, 28 + bob, 9, 2, S.belt || topD); px(18, 16 + bob, 2, 8, S.shirt); if (S.tie) px(18, 18 + bob, 2, 7, S.tie); }
-      if (S.fur) { fur(18, 15 + bob, 5, 14 + sw, false); px(18, 29 + bob + sw, 4, 3, S.hand); } else { px(19, 15 + bob, 3, 14 + sw, S.coat ? top : S.sleeve || top); px(19, 15 + bob, 1, 14 + sw, topL); px(18, 29 + bob + sw, 4, 3, S.hand); px(18, 29 + bob + sw, 4, 1, S.handL || S.hand); }
-      px(20, 12 + bob, 3, 3, skD);
-      for (let i = 0; i <= 9; i++) { const [a, b] = HEAD[i]; px(a - 1, 2 + i + bob, b - a, 1, S.skin); }
-      px(16, 7 + bob, 1, 2, S.skin); px(21, 6 + bob, 1, 2, skD); px(24, 5 + bob, 1, 4, skD);
-      rows(0, 3, S.hair, 0, -1, 0); px(21, 4 + bob, 6, 5, S.hair); px(23, 9 + bob, 3, 1, S.hair); px(19, 2 + bob, 3, 1, hL); px(21, 5 + bob, 4, 1, hD); px(17, 4 + bob, 2, 1, S.hair);
-      if (S.style === 'messy') { px(18, 0 + bob, 2, 3, S.hair); px(21, 0 + bob, 3, 3, S.hair); px(24, 1 + bob, 2, 2, S.hair); }
-      if (S.style === 'long') px(17, 4 + bob, 3, 2, S.hair);
-      if (S.fur) px(16, 13 + bob, 12, 3, S.fur);
-      px(17, 5 + bob, 3, 1, hD); px(18, 6 + bob, 2, 1, lid); px(18, 7 + bob, 2, 1, iris); px(16, 8 + bob, 1, 1, skD);
-      if (S.glasses) { px(17, 5 + bob, 4, 4, S.glasses); px(18, 6 + bob, 2, 2, S.skin); px(18, 6 + bob, 2, 1, lid); px(18, 7 + bob, 2, 1, iris); px(21, 6 + bob, 6, 1, S.glasses); }
-      if (o.carry) { px(11, 27 + bob, 7, 6, '#e8efff'); px(11, 27 + bob, 7, 1, '#fff'); }
+      if (S.coat) { coatShape(true); px(18, SH + 2 + bob, 3, 30, S.inner); px(19, SH + bob, 8, 4, topL); px(18, WA - 1 + bob, 9, 2, '#0e0f12'); }
+      else if (S.fur) { px(18, SH + bob, 9, 15, S.jacket); fur(16, SH - 1 + bob, 12, 28, true); }
+      else { px(18, SH + bob, 9, 1, topL); px(17, SH + 1 + bob, 11, 2, top); px(18, SH + 3 + bob, 9, WA - SH - 3, top); px(18, SH + 3 + bob, 1, WA - SH - 3, topL); px(26, SH + 3 + bob, 1, WA - SH - 3, topD); px(18, WA + bob, 9, 2, S.belt || topD); px(18, SH + 1 + bob, 2, 8, S.shirt); if (S.tie) px(18, SH + 3 + bob, 2, 7, S.tie); }
+      if (S.fur) { fur(18, SH + 1 + bob, 5, 11 + sw, false); px(18, SH + 12 + bob + sw, 4, 3, S.hand); } else { px(19, SH + 1 + bob, 3, 11 + sw, S.coat ? top : S.sleeve || top); px(19, SH + 1 + bob, 1, 11 + sw, topL); px(18, SH + 12 + bob + sw, 4, 3, S.hand); px(18, SH + 12 + bob + sw, 4, 1, S.handL || S.hand); }
+      px(20, 16 + bob, 3, 3, skD);
+      for (let i = 0; i <= 13; i++) { const [a, b] = HEAD[i]; px(a - 1, 2 + i + bob, b - a, 1, S.skin); }
+      px(14, 10 + bob, 1, 3, S.skin); px(21, 9 + bob, 1, 3, skD); px(26, 7 + bob, 1, 6, skD);
+      rows(0, 4, S.hair, 0, -1, 0); px(20, 7 + bob, 7, 7, S.hair); px(22, 14 + bob, 4, 1, S.hair); px(19, 2 + bob, 4, 1, hL); px(21, 8 + bob, 5, 1, hD); px(16, 7 + bob, 3, 1, S.hair); px(18, 8 + bob, 2, 1, S.hair);
+      if (S.style === 'messy') { px(17, 0 + bob, 3, 4, S.hair); px(21, 0 + bob, 4, 4, S.hair); px(26, 1 + bob, 3, 3, S.hair); }
+      if (S.style === 'long') px(16, 7 + bob, 3, 2, S.hair);
+      if (S.fur) px(16, SH - 2 + bob, 12, 3, S.fur);
+      px(16, 8 + bob, 4, 1, hD); px(16, 9 + bob, 3, 1, lid); px(16, 10 + bob, 1, 1, '#e6e0da'); px(17, 10 + bob, 2, 1, iris); px(14, 11 + bob, 1, 1, skD);
+      if (S.glasses) { px(15, 8 + bob, 5, 5, S.glasses); px(16, 9 + bob, 3, 3, S.skin); px(16, 9 + bob, 3, 1, lid); px(17, 10 + bob, 2, 1, iris); px(20, 9 + bob, 7, 1, S.glasses); }
+      if (o.carry) { px(10, 24 + bob, 7, 6, '#e8efff'); px(10, 24 + bob, 7, 1, '#fff'); }
     }
   }
   const outline = c => {        // 윤곽선: 테두리를 어두운 선으로 둘러 작은 그림에서도 형태가 또렷하게
@@ -9915,7 +9914,7 @@ const Game = (() => {
     ctx.drawImage(floorC, sx, sy, sw2, sh2, sx, sy, sw2, sh2);
     const list = objs.filter(o => o.spr && o.ox + o.spr.width > camX && o.ox < camX + viewW && o.oy + o.spr.height > camY && o.oy < camY + viewH).map(o => ({ b: o.base, f: () => ctx.drawImage(o.spr, o.ox, o.oy) }));
     objs.forEach(o => { if (o.anim && o.spr && o.ox + o.spr.width > camX && o.ox < camX + viewW) list.push({ b: o.base + .5, f: () => o.anim(ctx, clock, o) }); });
-    npcs.forEach(n => { const sit = n.kind === 'sit', f = n.moving ? [0, 1, 0, 3][Math.floor(n.t / .15) % 4] : (sit ? (Math.floor(n.t * 3) % 2 ? 1 : 0) : 0), spr = npcSprite(n.pal, n.dir, f, sit, n.carry && !sit); if (n.x + 20 < camX || n.x - 20 > camX + viewW) return; list.push({ b: n.y + (sit ? 2 : 0), f: () => { if (!sit) { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(Math.round(n.x), Math.round(n.y) - 1, 12, 4, 0, 0, 7); ctx.fill(); } ctx.drawImage(spr, Math.round(n.x) - 22, Math.round(n.y) - (sit ? 28 : 61)); } }); });
+    npcs.forEach(n => { const sit = n.kind === 'sit', f = n.moving ? [0, 1, 0, 3][Math.floor(n.t / .15) % 4] : (sit ? (Math.floor(n.t * 3) % 2 ? 1 : 0) : 0), spr = npcSprite(n.pal, n.dir, f, sit, n.carry && !sit); if (n.x + 20 < camX || n.x - 20 > camX + viewW) return; list.push({ b: n.y + (sit ? 2 : 0), f: () => { if (!sit) { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(Math.round(n.x), Math.round(n.y) - 1, 12, 4, 0, 0, 7); ctx.fill(); } ctx.drawImage(spr, Math.round(n.x) - 22, Math.round(n.y) - (sit ? 31 : 61)); } }); });
     const fi = P.moving ? [0, 1, 0, 3][Math.floor(P.t / .12) % 4] : 0;
     list.push({ b: ppy, f: () => { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(ppx, ppy - 1, 12, 4, 0, 0, 7); ctx.fill(); ctx.drawImage(SPR[P.dir][fi], ppx - CW / 2, ppy - 61); } });
     list.sort((a, b) => a.b - b.b).forEach(o => o.f());
