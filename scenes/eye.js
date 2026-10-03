@@ -5,17 +5,28 @@ const Eye = (() => {
   const view = $('#scEye'), cv = $('#eCv'), g = cv.getContext('2d'), eye = $('#eEye'), fig = $('#eFig'), say = $('#eSay'), txt = $('#eTxt'), form = $('#eCode'), inp = $('#eIn'), err = $('#eErr');
   const LINES = ['…드디어 이곳까지 오셨군요, 설립자.', '발신자는 밝히지 않습니다. 이름도 얼굴도, 이곳에서는 필요하지 않으니까요.', '여기는 설립자께서 물으신 적 없는 것들이 모이는 곳입니다. 오래 머무를 곳은 못 됩니다.', '돌아가시려면 오른쪽 아래에 복구 코드를 적으십시오.\n코드는 ‘Re-code’입니다.'];
   let raging = false, locked = false, rageText = 'CALLER ID RESTRICTED  ', ambTimer = 0, rageRaf = 0, crtRaf = 0, rageStop = null;
-  /* 하얀 신화풍의 눈 20개: 위쪽에 빼곡히, 서로 조금씩 떨어져서. 각자 따로 깜빡이고 시선이 포인터를 따라간다 */
+  /* 하얀 신화풍의 눈 20개: 화면 위쪽에 '호(∩)' 모양으로 빼곡히, 서로 조금씩만 떨어져서. 위로 뻗은 뿔과 아래로 떨어지는 줄기, 크고 하얀 동공. 각자 따로 깜빡이고 시선이 포인터를 따라간다 */
   const NEYE = 20, eyes = [];
   for (let i = 0; i < NEYE; i++) {
-    const rays = [-50, -25, 0, 25, 50].map(a => { const r = a * Math.PI / 180, x1 = Math.sin(r) * 74, y1 = -Math.cos(r) * 74 + 4, x2 = Math.sin(r) * (a % 50 === 0 && a ? 84 : 98), y2 = -Math.cos(r) * (a % 50 === 0 && a ? 84 : 98) + 4; return `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`; }).join('');
-    eye.insertAdjacentHTML('beforeend', `<svg viewBox="-160 -104 320 176" style="--k:${i}"><defs><radialGradient id="eIw${i}"><stop offset="0" stop-color="#fff"/><stop offset=".6" stop-color="#f1f1ee"/><stop offset="1" stop-color="#b8b8b2"/></radialGradient><clipPath id="eCl${i}"><path class="cp" d=""/></clipPath></defs><g stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".8">${rays}</g><path class="al" d="" fill="#050505" stroke="#fff" stroke-width="7" stroke-linejoin="round"/><g clip-path="url(#eCl${i})"><g class="ir"><circle r="42" fill="url(#eIw${i})"/><circle r="42" fill="none" stroke="#fff" stroke-width="2.5" stroke-dasharray="4 7"/><circle r="27" fill="none" stroke="#777" stroke-width="1.6" opacity=".7"/><ellipse class="pu" rx="8" ry="32" fill="#000"/><circle cx="-13" cy="-15" r="5.5" fill="#fff"/></g></g></svg>`);
-    const s = eye.lastElementChild; eyes.push({ al: s.querySelector('.al'), cp: s.querySelector('.cp'), ir: s.querySelector('.ir'), pu: s.querySelector('.pu'), open: .02, target: 1, blink: 1.5 + Math.random() * 4 });
+    eye.insertAdjacentHTML('beforeend', `<svg viewBox="-110 -104 220 208" style="--k:${i}"><defs><clipPath id="eCl${i}"><path class="cp" d=""/></clipPath></defs><path d="M-6 -50L0 -102L6 -50Z" fill="#e4e4e4"/><path d="M-11 48C-7 72 -2 90 0 104C2 90 7 72 11 48Z" fill="#d2d2d2"/><path class="al" d="" fill="#0b0b0b" stroke="#e2e2e2" stroke-width="11" stroke-linejoin="round"/><g clip-path="url(#eCl${i})"><g class="ir"><ellipse rx="33" ry="28" fill="#f4f4f4"/></g></g></svg>`);
+    const s = eye.lastElementChild; eyes.push({ s, al: s.querySelector('.al'), cp: s.querySelector('.cp'), ir: s.querySelector('.ir'), open: .02, target: 1, blink: 1.5 + Math.random() * 4 });
+  }
+  function layoutEyes() {
+    const r = view.getBoundingClientRect(), W = r.width, H = r.height, rows = W < 700 ? 2 : 1, per = NEYE / rows, pos = [];
+    let minD = 1e9;
+    for (let row = 0; row < rows; row++) {
+      const rx = rows > 1 ? W * .465 - row * W * .075 : Math.min(W * .44, H * .9), ry = Math.min(H * (rows > 1 ? .09 : .27), 260), apex = (rows > 1 ? 40 : 56) + row * (W * .095), tm = (rows > 1 ? 68 : 62) * Math.PI / 180, p = [];
+      for (let i = 0; i < per; i++) { const th = -tm + (2 * tm) * i / (per - 1); p.push({ x: W / 2 + Math.sin(th) * rx, y: apex + (1 - Math.cos(th)) * ry, th }); }
+      for (let i = 1; i < per; i++) minD = Math.min(minD, Math.hypot(p[i].x - p[i - 1].x, p[i].y - p[i - 1].y));
+      pos.push(...p);
+    }
+    const w = Math.min(minD * 1.12, 120), h = w * 208 / 220;
+    pos.forEach((p, i) => { const s = eyes[i].s.style; s.width = w + 'px'; s.height = h + 'px'; s.left = (p.x - w / 2) + 'px'; s.top = (p.y - h / 2) + 'px'; s.transform = `rotate(${(p.th * 180 / Math.PI).toFixed(1)}deg)`; });
   }
   let raf = 0, on = false, t0 = 0, li = 0, open = 0, target = 1, blinkT = 0, mx = .5, my = .3, W = 0, H = 0, dpr = 1, tm = [];
   const parts = Array.from({ length: 90 }, (_, i) => ({ x: Math.random(), y: Math.random(), v: .04 + Math.random() * .16, l: 30 + Math.random() * 120, a: .05 + Math.random() * .22, m: i % 4 === 0 }));
-  function resize() { dpr = Math.min(2, devicePixelRatio || 1); const r = cv.getBoundingClientRect(); W = r.width; H = r.height; cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
-  function eyePath(o) { const k = Math.max(.02, o), t = -62 * k, b = 62 * k; return `M-150 0C-90 ${t} 90 ${t} 150 0C90 ${b} -90 ${b} -150 0Z`; }
+  function resize() { dpr = Math.min(2, devicePixelRatio || 1); const r = cv.getBoundingClientRect(); W = r.width; H = r.height; cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); layoutEyes(); }
+  function eyePath(o) { const k = Math.max(.02, o), t = -64 * k, b = 64 * k; return `M-100 0C-60 ${t} 60 ${t} 100 0C60 ${b} -60 ${b} -100 0Z`; }
   function frame(ts) {
     raf = requestAnimationFrame(frame); const t = (ts - t0) / 1000; g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
     // 바람: 가로로 흐르는 가는 줄과 먼지
@@ -29,8 +40,7 @@ const Eye = (() => {
       if (t > .6) { e.blink -= .016; if (e.blink < 0) { e.target = e.target > .5 ? .04 : 1; e.blink = e.target < .5 ? .12 : 2.2 + Math.random() * 5; } }
       e.open += (e.target - e.open) * (e.target < .5 ? .5 : .08);
       const d = eyePath(e.open); e.al.setAttribute('d', d); e.cp.setAttribute('d', d);
-      const ix = (mx - (i % 10 + .5) / 10) * 70, iy = (my - .1) * 40; e.ir.setAttribute('transform', `translate(${Math.max(-40, Math.min(40, ix)).toFixed(1)} ${Math.max(-10, Math.min(12, iy)).toFixed(1)})`);
-      e.pu.setAttribute('rx', (8 + Math.sin(t * 1.3 + i) * 1.2).toFixed(1));
+      const ix = (mx - (i % 10 + .5) / 10) * 60, iy = (my - .1) * 30; e.ir.setAttribute('transform', `translate(${Math.max(-26, Math.min(26, ix)).toFixed(1)} ${Math.max(-8, Math.min(10, iy)).toFixed(1)})`);
     });
   }
   function nextLine() {
