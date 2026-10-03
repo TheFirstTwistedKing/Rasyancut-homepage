@@ -1713,6 +1713,9 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
 .et-reboot{position:absolute;z-index:3;left:50%;bottom:max(9%,calc(env(safe-area-inset-bottom,0px) + 40px));translate:-50% 0;display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 26px;color:#fff;background:rgba(0,0,0,.78);border:2px solid #fff;font:700 14px var(--f-mono);letter-spacing:.3em;box-shadow:0 0 30px rgba(0,0,0,.8);animation:rise .6s var(--ease-soft) both}
 .et-reboot svg{width:46px;height:46px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round}
 .et-reboot:hover,.et-reboot:focus-visible{background:#fff;color:#a00}
+
+#eCrack{position:absolute;inset:0;width:100%;height:100%;z-index:8;pointer-events:none}
+#eCrack[hidden]{display:none}
 /* SCENES-CSS:END */
 
 /* ================= 공지 (메인 우측 상단 종 아이콘 + 공지 화면) ================= */
@@ -2255,6 +2258,7 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
     </div>
     <div class="e-say" id="eSay" hidden><b>발신자 표시 제한</b><p id="eTxt"></p></div>
     <canvas id="eRage" hidden></canvas>
+    <canvas id="eCrack" hidden></canvas>
     <div class="e-rage-tx" id="eRageTx" hidden aria-live="assertive"></div>
     <canvas id="eCrt" hidden></canvas>
     <form class="e-only" id="eEnter" hidden autocomplete="off"><input id="eEnterIn" type="text" maxlength="24" spellcheck="false" autocapitalize="off" aria-label="입력"></form>
@@ -8913,6 +8917,21 @@ const Scenes = (() => {
     });
   }
   /* 유리가 깨지며 쏟아짐: (ox,oy) 에서 금이 퍼지고, 조각이 떨어지며 아래의 화면이 드러남 */
+  /* 쿵 하고 화면이 흔들리고 노이즈가 낀다 (점점 잦아듦). 4번째 신호기를 누를 때 */
+  function quake(ms, amp = 1) {
+    ms *= K();
+    return new Promise(res => {
+      const g = glC.getContext('2d'), W = glC.width = Math.ceil(app.clientWidth / 3), H = glC.height = Math.ceil(app.clientHeight / 3); glC.hidden = false; const t0 = performance.now();
+      const step = now => {
+        const p = clamp((now - t0) / ms, 0, 1), a = amp * Math.pow(1 - p, .8); g.clearRect(0, 0, W, H);
+        for (let i = 0, n = 60 + a * 520; i < n; i++) { const v = 140 + (Math.random() * 115 | 0); g.fillStyle = `rgba(${v},${v},${v},${(Math.random() * .55 * a).toFixed(2)})`; g.fillRect(Math.random() * W, Math.random() * H, 1 + Math.random() * 3, 1); }
+        for (let i = 0, n = 2 + a * 10; i < n; i++) { g.fillStyle = `rgba(${Math.random() < .5 ? '255,255,255' : '0,0,0'},${(.15 + Math.random() * .45 * a).toFixed(2)})`; g.fillRect(0, Math.random() * H, W, 1 + Math.random() * 3); }
+        app.style.transform = `translate(${((Math.random() - .5) * 34 * a).toFixed(1)}px,${((Math.random() - .5) * 22 * a).toFixed(1)}px) rotate(${((Math.random() - .5) * 1.4 * a).toFixed(2)}deg)`;
+        if (p < 1) requestAnimationFrame(step); else { glC.hidden = true; app.style.transform = ''; res(); }
+      };
+      requestAnimationFrame(step);
+    });
+  }
   function shatter(ox, oy, mid) {
     return new Promise(res => {
       const dpr = Math.min(2, window.devicePixelRatio || 1), W = app.clientWidth, H = app.clientHeight;
@@ -8977,7 +8996,10 @@ const Scenes = (() => {
   }
   async function s4(from) {                // 마주함: 유리가 깨지며 눈과 존재가 나타남
     const r = from ? from.getBoundingClientRect() : { left: innerWidth / 2, top: innerHeight / 2, width: 0, height: 0 }, ar = app.getBoundingClientRect();
+    SND._n(0, 1.8, 260, 40, .3, .6, 'lowpass'); SND._t(40, 1.6, 'sine', .25, 0, 28);
+    const qk = quake(2400, 1);
     await shatter(r.left + r.width / 2 - ar.left, r.top + r.height / 2 - ar.top, () => { show('eye'); Eye.enter(); });
+    await qk;
   }
   async function leaveEye() {
     if (busy) return; busy = true; black.style.background = '#fff'; black.classList.add('on'); SND.tone(880, .5, 'sine', .05, 0, 1760); await fade(1, 600);
@@ -10002,7 +10024,7 @@ void main(){
   }
   async function startTrap() {
     if (!on || !locked || vaultSeen || trapOn || raging) return;
-    trapOn = true; clearInterval(ambTimer); enterIn.blur(); enterF.hidden = true; vault.hidden = true; crtStop(); view.classList.remove('locked'); view.classList.add('trap');
+    trapOn = true; clearInterval(ambTimer); enterIn.blur(); enterF.hidden = true; vault.hidden = true; crackC.hidden = true; crtStop(); view.classList.remove('locked'); view.classList.add('trap');
     SND.blackout(); SND.laughLoad(); trap.hidden = false; tTx.textContent = '';
     await twait(RM ? 300 : 3000);                                    // 완전한 어둠 3초
     tEye.removeAttribute('hidden'); trapEyeLoop(performance.now());
@@ -10017,20 +10039,47 @@ void main(){
   }
   tReboot.addEventListener('click', () => { SND.click(); Scenes.rebootEye(); });
 
+
+  /* 틀린 코드를 넣을 때마다: 화면 전체가 흔들리고 금이 늘어나며, 30초 제한시간이 줄어든다 */
+  const crackC = $('#eCrack'); let cracks = [], lockStart = 0, lockLimit = 30000;
+  function crackGen() {
+    const r = view.getBoundingClientRect(), W = r.width, H = r.height, edge = Math.random() < .6, out = [];
+    let x = edge ? (Math.random() < .5 ? 0 : W) : Math.random() * W, y = edge ? Math.random() * H : Math.random() * H, a = Math.atan2(H / 2 - y, W / 2 - x) + (Math.random() - .5) * 1.4;
+    const walk = (x, y, a, n, w) => { const pts = [[x, y]]; for (let i = 0; i < n; i++) { a += (Math.random() - .5) * .9; const l = 30 + Math.random() * 90; x += Math.cos(a) * l; y += Math.sin(a) * l; pts.push([x, y]); if (i > 1 && i < n - 1 && Math.random() < .3) out.push({ pts: walkPts(x, y, a + (Math.random() < .5 ? -1 : 1) * (.5 + Math.random() * .7), 3 + (Math.random() * 4 | 0)), w: w * .6 }); } return pts; };
+    const walkPts = (x, y, a, n) => { const pts = [[x, y]]; for (let i = 0; i < n; i++) { a += (Math.random() - .5) * 1; const l = 14 + Math.random() * 40; x += Math.cos(a) * l; y += Math.sin(a) * l; pts.push([x, y]); } return pts; };
+    out.push({ pts: walk(x, y, a, 9 + (Math.random() * 7 | 0), 1), w: 1 }); return out;
+  }
+  function crackDraw() {
+    const r = view.getBoundingClientRect(), k = Math.min(devicePixelRatio || 1, 2); crackC.width = Math.round(r.width * k); crackC.height = Math.round(r.height * k);
+    const g = crackC.getContext('2d'); g.setTransform(k, 0, 0, k, 0, 0); g.lineCap = 'round'; g.lineJoin = 'round';
+    cracks.forEach(cr => { [[ 'rgba(0,0,0,.8)', 5 ], [ 'rgba(255,255,255,.95)', 2 ], [ 'rgba(255,255,255,.35)', 4.5 ]].forEach(([col, lw], idx) => { g.strokeStyle = col; g.lineWidth = lw * cr.w * (idx === 2 ? 1.4 : 1); g.shadowColor = idx === 1 ? 'rgba(255,255,255,.8)' : 'transparent'; g.shadowBlur = idx === 1 ? 6 : 0; g.beginPath(); cr.pts.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.stroke(); }); });
+    g.shadowBlur = 0;
+  }
+  function quakeView() {
+    if (RM || !view.animate) return; const f = []; for (let i = 0; i < 12; i++) { const a = 1 - i / 12; f.push({ transform: `translate(${((Math.random() - .5) * 46 * a).toFixed(1)}px,${((Math.random() - .5) * 30 * a).toFixed(1)}px) rotate(${((Math.random() - .5) * 2.2 * a).toFixed(2)}deg)` }); } f.push({ transform: 'none' });
+    view.animate(f, { duration: 560, easing: 'linear' });
+  }
+  function armTrap(ms) { clearTimeout(lockTimer); lockTimer = setTimeout(startTrap, Math.max(0, ms)); }
+  function wrongCode() {
+    SND.tone(160, .16, 'square', .05); SND.tone(110, .22, 'square', .05, .13); SND.glass && SND.glass();
+    quakeView(); cracks.push(...crackGen()); crackC.hidden = false; crackDraw();
+    if (!vaultSeen && locked) { const el = performance.now() - lockStart; lockLimit -= 6000; if (lockLimit - el < 1500) lockLimit = el + 1500; armTrap(lockLimit - el); }   // 틀릴 때마다 제한시간이 6초씩 줄어든다
+  }
+
   /* 분노 이후: 브라운관 눈보라가 계속 켜져 있고 'Enter-code' 가 화면 가득, 입력창은 하나뿐 */
   const enterF = $('#eEnter'), enterIn = $('#eEnterIn'), vault = $('#eVault');
   function enterLocked() {
     locked = true; view.classList.add('locked'); say.hidden = true; vault.hidden = true; rageTx.hidden = true;
     enterF.hidden = false; enterIn.value = ''; enterIn.disabled = false; try { enterIn.focus({ preventScroll: true }); } catch (e) { /* 무시 */ }
-    vaultSeen = false; clearTimeout(lockTimer); lockTimer = setTimeout(startTrap, RM ? 3000 : 30000);
+    vaultSeen = false; cracks = []; crackC.hidden = true; lockStart = performance.now(); lockLimit = RM ? 3000 : 30000; armTrap(lockLimit);
   }
-  function leaveLocked() { locked = false; clearInterval(ambTimer); clearTimeout(lockTimer); trapReset(); view.classList.remove('trap'); crtStop(); enterF.hidden = true; vault.hidden = true; view.classList.remove('locked'); }
+  function leaveLocked() { locked = false; cracks = []; crackC.hidden = true; clearInterval(ambTimer); clearTimeout(lockTimer); trapReset(); view.classList.remove('trap'); crtStop(); enterF.hidden = true; vault.hidden = true; view.classList.remove('locked'); }
   enterIn.addEventListener('input', () => SND.type());
   enterF.addEventListener('submit', e => {
     e.preventDefault(); const v = enterIn.value.trim().toLowerCase().replace(/[\s_]/g, '');
     if (v === 'enter-code' || v === 'entercode') { enterIn.value = ''; SND.tone(1318, .12, 'sine', .06); SND.tone(1760, .2, 'sine', .05, .08); SND._n(0, .25, 4000, 300, .14, .8); vault.hidden = false; vaultSeen = true; clearTimeout(lockTimer); return; }
     if (v === 're-code' || v === 'recode') { enterIn.blur(); leaveLocked(); Scenes.leaveEye(); return; }
-    enterIn.value = ''; enterF.classList.remove('bad'); void enterF.offsetWidth; enterF.classList.add('bad'); SND.tone(160, .16, 'square', .05); SND.tone(110, .22, 'square', .05, .13);
+    enterIn.value = ''; wrongCode();
   });
   $('#eVaultX').addEventListener('click', () => { SND.click(); vault.hidden = true; try { enterIn.focus({ preventScroll: true }); } catch (e) { /* 무시 */ } });
   form.addEventListener('submit', e => {
@@ -10039,7 +10088,7 @@ void main(){
     if (v === 're-code' || v === 'recode') { err.textContent = ''; SND.tone(1318, .12, 'sine', .06); SND.tone(1760, .2, 'sine', .05, .08); inp.blur(); Scenes.leaveEye(); }
     else { err.textContent = '코드가 일치하지 않습니다.'; form.classList.remove('bad'); void form.offsetWidth; form.classList.add('bad'); SND.tone(160, .16, 'square', .05); SND.tone(110, .22, 'square', .05, .13); inp.select(); }
   });
-  addEventListener('resize', () => { if (on) resize(); });
+  addEventListener('resize', () => { if (on) resize(); if (cracks.length && !crackC.hidden) crackDraw(); });
   addEventListener('orientationchange', () => { if (on) setTimeout(() => { resize(); crtResize(); }, 250); });
   return {
     enter() {

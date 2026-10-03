@@ -185,3 +185,6 @@
 .et-reboot{position:absolute;z-index:3;left:50%;bottom:max(9%,calc(env(safe-area-inset-bottom,0px) + 40px));translate:-50% 0;display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 26px;color:#fff;background:rgba(0,0,0,.78);border:2px solid #fff;font:700 14px var(--f-mono);letter-spacing:.3em;box-shadow:0 0 30px rgba(0,0,0,.8);animation:rise .6s var(--ease-soft) both}
 .et-reboot svg{width:46px;height:46px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round}
 .et-reboot:hover,.et-reboot:focus-visible{background:#fff;color:#a00}
+
+#eCrack{position:absolute;inset:0;width:100%;height:100%;z-index:8;pointer-events:none}
+#eCrack[hidden]{display:none}

@@ -215,7 +215,7 @@ void main(){
   }
   async function startTrap() {
     if (!on || !locked || vaultSeen || trapOn || raging) return;
-    trapOn = true; clearInterval(ambTimer); enterIn.blur(); enterF.hidden = true; vault.hidden = true; crtStop(); view.classList.remove('locked'); view.classList.add('trap');
+    trapOn = true; clearInterval(ambTimer); enterIn.blur(); enterF.hidden = true; vault.hidden = true; crackC.hidden = true; crtStop(); view.classList.remove('locked'); view.classList.add('trap');
     SND.blackout(); SND.laughLoad(); trap.hidden = false; tTx.textContent = '';
     await twait(RM ? 300 : 3000);                                    // 완전한 어둠 3초
     tEye.removeAttribute('hidden'); trapEyeLoop(performance.now());
@@ -230,20 +230,47 @@ void main(){
   }
   tReboot.addEventListener('click', () => { SND.click(); Scenes.rebootEye(); });
 
+
+  /* 틀린 코드를 넣을 때마다: 화면 전체가 흔들리고 금이 늘어나며, 30초 제한시간이 줄어든다 */
+  const crackC = $('#eCrack'); let cracks = [], lockStart = 0, lockLimit = 30000;
+  function crackGen() {
+    const r = view.getBoundingClientRect(), W = r.width, H = r.height, edge = Math.random() < .6, out = [];
+    let x = edge ? (Math.random() < .5 ? 0 : W) : Math.random() * W, y = edge ? Math.random() * H : Math.random() * H, a = Math.atan2(H / 2 - y, W / 2 - x) + (Math.random() - .5) * 1.4;
+    const walk = (x, y, a, n, w) => { const pts = [[x, y]]; for (let i = 0; i < n; i++) { a += (Math.random() - .5) * .9; const l = 30 + Math.random() * 90; x += Math.cos(a) * l; y += Math.sin(a) * l; pts.push([x, y]); if (i > 1 && i < n - 1 && Math.random() < .3) out.push({ pts: walkPts(x, y, a + (Math.random() < .5 ? -1 : 1) * (.5 + Math.random() * .7), 3 + (Math.random() * 4 | 0)), w: w * .6 }); } return pts; };
+    const walkPts = (x, y, a, n) => { const pts = [[x, y]]; for (let i = 0; i < n; i++) { a += (Math.random() - .5) * 1; const l = 14 + Math.random() * 40; x += Math.cos(a) * l; y += Math.sin(a) * l; pts.push([x, y]); } return pts; };
+    out.push({ pts: walk(x, y, a, 9 + (Math.random() * 7 | 0), 1), w: 1 }); return out;
+  }
+  function crackDraw() {
+    const r = view.getBoundingClientRect(), k = Math.min(devicePixelRatio || 1, 2); crackC.width = Math.round(r.width * k); crackC.height = Math.round(r.height * k);
+    const g = crackC.getContext('2d'); g.setTransform(k, 0, 0, k, 0, 0); g.lineCap = 'round'; g.lineJoin = 'round';
+    cracks.forEach(cr => { [[ 'rgba(0,0,0,.8)', 5 ], [ 'rgba(255,255,255,.95)', 2 ], [ 'rgba(255,255,255,.35)', 4.5 ]].forEach(([col, lw], idx) => { g.strokeStyle = col; g.lineWidth = lw * cr.w * (idx === 2 ? 1.4 : 1); g.shadowColor = idx === 1 ? 'rgba(255,255,255,.8)' : 'transparent'; g.shadowBlur = idx === 1 ? 6 : 0; g.beginPath(); cr.pts.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.stroke(); }); });
+    g.shadowBlur = 0;
+  }
+  function quakeView() {
+    if (RM || !view.animate) return; const f = []; for (let i = 0; i < 12; i++) { const a = 1 - i / 12; f.push({ transform: `translate(${((Math.random() - .5) * 46 * a).toFixed(1)}px,${((Math.random() - .5) * 30 * a).toFixed(1)}px) rotate(${((Math.random() - .5) * 2.2 * a).toFixed(2)}deg)` }); } f.push({ transform: 'none' });
+    view.animate(f, { duration: 560, easing: 'linear' });
+  }
+  function armTrap(ms) { clearTimeout(lockTimer); lockTimer = setTimeout(startTrap, Math.max(0, ms)); }
+  function wrongCode() {
+    SND.tone(160, .16, 'square', .05); SND.tone(110, .22, 'square', .05, .13); SND.glass && SND.glass();
+    quakeView(); cracks.push(...crackGen()); crackC.hidden = false; crackDraw();
+    if (!vaultSeen && locked) { const el = performance.now() - lockStart; lockLimit -= 6000; if (lockLimit - el < 1500) lockLimit = el + 1500; armTrap(lockLimit - el); }   // 틀릴 때마다 제한시간이 6초씩 줄어든다
+  }
+
   /* 분노 이후: 브라운관 눈보라가 계속 켜져 있고 'Enter-code' 가 화면 가득, 입력창은 하나뿐 */
   const enterF = $('#eEnter'), enterIn = $('#eEnterIn'), vault = $('#eVault');
   function enterLocked() {
     locked = true; view.classList.add('locked'); say.hidden = true; vault.hidden = true; rageTx.hidden = true;
     enterF.hidden = false; enterIn.value = ''; enterIn.disabled = false; try { enterIn.focus({ preventScroll: true }); } catch (e) { /* 무시 */ }
-    vaultSeen = false; clearTimeout(lockTimer); lockTimer = setTimeout(startTrap, RM ? 3000 : 30000);
+    vaultSeen = false; cracks = []; crackC.hidden = true; lockStart = performance.now(); lockLimit = RM ? 3000 : 30000; armTrap(lockLimit);
   }
-  function leaveLocked() { locked = false; clearInterval(ambTimer); clearTimeout(lockTimer); trapReset(); view.classList.remove('trap'); crtStop(); enterF.hidden = true; vault.hidden = true; view.classList.remove('locked'); }
+  function leaveLocked() { locked = false; cracks = []; crackC.hidden = true; clearInterval(ambTimer); clearTimeout(lockTimer); trapReset(); view.classList.remove('trap'); crtStop(); enterF.hidden = true; vault.hidden = true; view.classList.remove('locked'); }
   enterIn.addEventListener('input', () => SND.type());
   enterF.addEventListener('submit', e => {
     e.preventDefault(); const v = enterIn.value.trim().toLowerCase().replace(/[\s_]/g, '');
     if (v === 'enter-code' || v === 'entercode') { enterIn.value = ''; SND.tone(1318, .12, 'sine', .06); SND.tone(1760, .2, 'sine', .05, .08); SND._n(0, .25, 4000, 300, .14, .8); vault.hidden = false; vaultSeen = true; clearTimeout(lockTimer); return; }
     if (v === 're-code' || v === 'recode') { enterIn.blur(); leaveLocked(); Scenes.leaveEye(); return; }
-    enterIn.value = ''; enterF.classList.remove('bad'); void enterF.offsetWidth; enterF.classList.add('bad'); SND.tone(160, .16, 'square', .05); SND.tone(110, .22, 'square', .05, .13);
+    enterIn.value = ''; wrongCode();
   });
   $('#eVaultX').addEventListener('click', () => { SND.click(); vault.hidden = true; try { enterIn.focus({ preventScroll: true }); } catch (e) { /* 무시 */ } });
   form.addEventListener('submit', e => {
@@ -252,7 +279,7 @@ void main(){
     if (v === 're-code' || v === 'recode') { err.textContent = ''; SND.tone(1318, .12, 'sine', .06); SND.tone(1760, .2, 'sine', .05, .08); inp.blur(); Scenes.leaveEye(); }
     else { err.textContent = '코드가 일치하지 않습니다.'; form.classList.remove('bad'); void form.offsetWidth; form.classList.add('bad'); SND.tone(160, .16, 'square', .05); SND.tone(110, .22, 'square', .05, .13); inp.select(); }
   });
-  addEventListener('resize', () => { if (on) resize(); });
+  addEventListener('resize', () => { if (on) resize(); if (cracks.length && !crackC.hidden) crackDraw(); });
   addEventListener('orientationchange', () => { if (on) setTimeout(() => { resize(); crtResize(); }, 250); });
   return {
     enter() {

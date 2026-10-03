@@ -146,6 +146,21 @@ const Scenes = (() => {
     });
   }
   /* 유리가 깨지며 쏟아짐: (ox,oy) 에서 금이 퍼지고, 조각이 떨어지며 아래의 화면이 드러남 */
+  /* 쿵 하고 화면이 흔들리고 노이즈가 낀다 (점점 잦아듦). 4번째 신호기를 누를 때 */
+  function quake(ms, amp = 1) {
+    ms *= K();
+    return new Promise(res => {
+      const g = glC.getContext('2d'), W = glC.width = Math.ceil(app.clientWidth / 3), H = glC.height = Math.ceil(app.clientHeight / 3); glC.hidden = false; const t0 = performance.now();
+      const step = now => {
+        const p = clamp((now - t0) / ms, 0, 1), a = amp * Math.pow(1 - p, .8); g.clearRect(0, 0, W, H);
+        for (let i = 0, n = 60 + a * 520; i < n; i++) { const v = 140 + (Math.random() * 115 | 0); g.fillStyle = `rgba(${v},${v},${v},${(Math.random() * .55 * a).toFixed(2)})`; g.fillRect(Math.random() * W, Math.random() * H, 1 + Math.random() * 3, 1); }
+        for (let i = 0, n = 2 + a * 10; i < n; i++) { g.fillStyle = `rgba(${Math.random() < .5 ? '255,255,255' : '0,0,0'},${(.15 + Math.random() * .45 * a).toFixed(2)})`; g.fillRect(0, Math.random() * H, W, 1 + Math.random() * 3); }
+        app.style.transform = `translate(${((Math.random() - .5) * 34 * a).toFixed(1)}px,${((Math.random() - .5) * 22 * a).toFixed(1)}px) rotate(${((Math.random() - .5) * 1.4 * a).toFixed(2)}deg)`;
+        if (p < 1) requestAnimationFrame(step); else { glC.hidden = true; app.style.transform = ''; res(); }
+      };
+      requestAnimationFrame(step);
+    });
+  }
   function shatter(ox, oy, mid) {
     return new Promise(res => {
       const dpr = Math.min(2, window.devicePixelRatio || 1), W = app.clientWidth, H = app.clientHeight;
@@ -210,7 +225,10 @@ const Scenes = (() => {
   }
   async function s4(from) {                // 마주함: 유리가 깨지며 눈과 존재가 나타남
     const r = from ? from.getBoundingClientRect() : { left: innerWidth / 2, top: innerHeight / 2, width: 0, height: 0 }, ar = app.getBoundingClientRect();
+    SND._n(0, 1.8, 260, 40, .3, .6, 'lowpass'); SND._t(40, 1.6, 'sine', .25, 0, 28);
+    const qk = quake(2400, 1);
     await shatter(r.left + r.width / 2 - ar.left, r.top + r.height / 2 - ar.top, () => { show('eye'); Eye.enter(); });
+    await qk;
   }
   async function leaveEye() {
     if (busy) return; busy = true; black.style.background = '#fff'; black.classList.add('on'); SND.tone(880, .5, 'sine', .05, 0, 1760); await fade(1, 600);
