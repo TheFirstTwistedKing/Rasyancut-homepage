@@ -6017,6 +6017,17 @@ async function go(name, params = {}, opts = {}) {
   const label = name === 'lorelist' ? loreOf(params.lore).name.replace('\n', ' ') : META[name].ko;
   if (cur && !opts.back && cur !== 'intro') hist.push({ name: cur, params: curParams });
   if (name === 'main' && !opts.back) hist.length = 0;
+  if (opts.glitch && window.RSC.Scenes && window.RSC.Scenes.glitch) {       // 이진수 로딩 대신 지지직 글리치로 화면을 바꾼다 (Reboot)
+    if (from) assign(from);
+    if (SND.glitch) SND.glitch(1.2);
+    await window.RSC.Scenes.glitch(1300, () => {
+      if (from) from.classList.remove('on', 'leave', 'enter');
+      Write.clear(); to.classList.remove('enter', 'leave'); to.classList.add('on', 'pre'); assign(to); Write.hide(to);
+      cur = name; curParams = params; if (SHOW[name]) SHOW[name](params);
+      to.classList.remove('pre'); to.classList.add('enter'); SND.arrive(); Write.play(to); if (ENTER[name]) ENTER[name](params);
+    });
+    await sleep(RM ? 30 : 560 * TS); busy = false; return;
+  }
   SND.swoosh(); SND.digital();
   if (name === 'lorelist') renderLoreList(params.lore);
   if (from) { assign(from); from.classList.add('leave'); }
@@ -8974,7 +8985,7 @@ const Scenes = (() => {
   async function rebootEye() {          // 함정 끝: 인트로 화면으로 돌아간다
     if (busy) return; busy = true; black.style.background = '#000'; black.classList.add('on'); await fade(1, 500);
     Eye.leave(); Object.keys(V).forEach(k => V[k].classList.remove('on')); active = null; Obs.hold(false); black.style.background = ''; root.hidden = true; black.classList.remove('on'); busy = false;
-    if (window.RSC && window.RSC.go) window.RSC.go('intro', { force: true });
+    if (window.RSC && window.RSC.go) window.RSC.go('intro', { force: true }, { glitch: true });
   }
   async function leaveGame() { if (busy) return; busy = true; SND.warp(1.9); await warp(1900, () => { Game.leave(); hide(); }); busy = false; }
   /* 신호기를 눌렀을 때 */
@@ -8990,7 +9001,7 @@ const Scenes = (() => {
     if (!inp) { if (active === 'game' && Game.key(e, true)) { e.preventDefault(); } e.stopImmediatePropagation(); }
   }, true);
   addEventListener('keyup', e => { if (active === 'game') Game.key(e, false); }, true);
-  return { start, show, hide, leaveRss, leaveDesk, leaveEye, rebootEye, leaveGame, active: () => active };
+  return { start, show, hide, glitch, leaveRss, leaveDesk, leaveEye, rebootEye, leaveGame, active: () => active };
 })();
 window.RSC.Scenes = Scenes;
 
