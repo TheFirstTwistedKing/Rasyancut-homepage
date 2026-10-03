@@ -1668,6 +1668,19 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
 #scGame.touch .g-msg{bottom:calc(max(18px,env(safe-area-inset-bottom,0px)) + 168px);min-height:110px;padding:14px 18px 18px}
 #scGame.touch .g-choice{bottom:calc(max(18px,env(safe-area-inset-bottom,0px)) + 292px);right:16px}
 @media (max-width:560px){.r-logo span{letter-spacing:.16em;font-size:9px}.r-top{gap:10px;padding:10px 12px}}
+
+/* ---------- 4-b. 'No-code' 분노 연출 + 브라운관 지지직 ---------- */
+#eRage,#eCrt{position:absolute;inset:0;width:100%;height:100%;z-index:4;pointer-events:none}
+#eRage[hidden],#eCrt[hidden],.e-rage-tx[hidden]{display:none}
+#eCrt{z-index:6;background:#000;image-rendering:pixelated}
+#scEye.crt-on::after{content:"";position:absolute;inset:0;z-index:7;pointer-events:none;background:repeating-linear-gradient(to bottom,rgba(0,0,0,.28) 0 1px,transparent 1px 3px),radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.75) 100%);box-shadow:inset 0 0 120px 40px rgba(0,0,0,.85);border-radius:3% / 4%}
+.e-rage-tx{position:absolute;left:50%;top:52%;translate:-50% -50%;z-index:5;width:min(900px,calc(100% - 32px));text-align:center;font-weight:800;font-size:clamp(26px,5.4vw,68px);line-height:1.3;color:#fff;word-break:keep-all;text-shadow:3px 0 #ff1a1a,-3px 0 #00e5ff,0 0 24px rgba(255,30,30,.9);animation:eShk .09s steps(2) infinite;pointer-events:none}
+@keyframes eShk{0%{transform:translate(0,0)}25%{transform:translate(-5px,3px) skewX(-2deg)}50%{transform:translate(4px,-3px)}75%{transform:translate(-3px,-4px) skewX(2deg)}100%{transform:translate(5px,2px)}}
+#scEye.rage .e-eye{filter:hue-rotate(-38deg) saturate(2.6) drop-shadow(0 0 28px rgba(255,30,30,.8));animation:eShk .12s steps(2) infinite}
+#scEye.rage .e-fig{animation:eShk .1s steps(2) infinite;opacity:1}
+#scEye.rage .e-code,#scEye.rage .e-say{opacity:.25}
+#scEye.rage{animation:eFlash 1.1s steps(1) infinite}
+@keyframes eFlash{0%,100%{background:#000}50%{background:#1a0000}}
 /* SCENES-CSS:END */
 </style>
 <div id="app">
@@ -2139,6 +2152,9 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
       <span class="e-tag mono">CALLER ID RESTRICTED</span>
     </div>
     <div class="e-say" id="eSay" hidden><b>발신자 표시 제한</b><p id="eTxt"></p></div>
+    <canvas id="eRage" hidden></canvas>
+    <div class="e-rage-tx" id="eRageTx" hidden aria-live="assertive"></div>
+    <canvas id="eCrt" hidden></canvas>
     <form class="e-code" id="eCode" autocomplete="off">
       <label for="eIn" class="mono">RECOVERY CODE</label>
       <div class="e-hint">복구 코드 : <b>Re-code</b></div>
@@ -8901,6 +8917,68 @@ Object.assign(SND, {
     for (let i = 0; i < 46; i++) { const at = .5 + Math.random() * 1.2, pan = Math.random() * 2 - 1, f = 2400 + Math.random() * 5200; this._t(f, .05 + Math.random() * .16, 'sine', .01 + Math.random() * .026, at, null, 0, pan, .45); this._t(f * 1.51, .03 + Math.random() * .08, 'sine', .006 + Math.random() * .012, at + .004, null, 0, pan, .35); if (i % 2) this._n(at + .02, .02, 2600, 1800, .03, 1.2, 'bandpass', pan, .2); }
   },
 });
+
+/* ---------- 'No-code' 분노 연출용 소리: 경보 · 디지털 깨짐 · 분노의 으르렁 · 삐 · 브라운관 ---------- */
+Object.assign(SND, {
+  _dist(k = 120) {
+    if (this._ws || !this.ctx) return this._ws;
+    const c = this.ctx, ws = c.createWaveShaper(), n = 1024, cur = new Float32Array(n); for (let i = 0; i < n; i++) { const x = i / (n / 2) - 1; cur[i] = (1 + k) * x / (1 + k * Math.abs(x)); }
+    ws.curve = cur; ws.oversample = '2x'; const g = c.createGain(); g.gain.value = .55; ws.connect(g); g.connect(this.sfx); this._ws = ws; return ws;
+  },
+  /* 분노한 목소리 대신: 낮은 으르렁(톱니파 + 강한 왜곡 + 포먼트 이동 + 떨림) */
+  growl(len = 1.2, at = 0) {
+    if (!this.ctx || !this.on) return;
+    const c = this.ctx, t = c.currentTime + at, o = c.createOscillator(), o2 = c.createOscillator(), bp = c.createBiquadFilter(), g = c.createGain(), tr = c.createOscillator(), tg = c.createGain();
+    o.type = 'sawtooth'; o.frequency.setValueAtTime(78, t); o.frequency.linearRampToValueAtTime(52, t + len); o2.type = 'square'; o2.frequency.setValueAtTime(39, t); o2.frequency.linearRampToValueAtTime(26, t + len);
+    bp.type = 'bandpass'; bp.Q.value = 3; bp.frequency.setValueAtTime(420, t); bp.frequency.linearRampToValueAtTime(900, t + len * .4); bp.frequency.linearRampToValueAtTime(300, t + len);
+    tr.frequency.value = 28; tg.gain.value = .5; tr.connect(tg); const am = c.createGain(); am.gain.value = .6; tg.connect(am.gain);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.34, t + .05); g.gain.setValueAtTime(.34, t + len * .7); g.gain.exponentialRampToValueAtTime(.0001, t + len);
+    o.connect(bp); o2.connect(bp); bp.connect(am); am.connect(this._dist(60)); am.connect(g); g.connect(this.sfx);
+    [o, o2, tr].forEach(n => { n.start(t); n.stop(t + len + .05); });
+    this._n(at, len * .8, 700, 2400, .08, .8, 'bandpass', 0, .1);
+  },
+  /* 모뎀 같은 디지털 비명 + 끊기는 잡음(글리치) */
+  screech(at = 0) {
+    for (let i = 0; i < 14; i++) this._t(700 + Math.random() * 3600, .02 + Math.random() * .05, i % 3 ? 'square' : 'sawtooth', .03, at + i * .045, null, .1, Math.random() * 2 - 1);
+    this._n(at, .3, 6000, 900, .12, .6, 'highpass');
+  },
+  /* 경보: 실제 경보기처럼 두 음을 번갈아 울리고(960/770Hz), 그 위에 사이렌 훑는 소리와 깊은 진동 + 불규칙한 글리치. 반환값 stop() 으로 끈다 */
+  rageStart(d = 10) {
+    if (!this.ctx || !this.on) return () => {};
+    const c = this.ctx, t0 = c.currentTime, grp = c.createGain(), lp = c.createBiquadFilter(), nodes = [];
+    grp.gain.setValueAtTime(.0001, t0); grp.gain.exponentialRampToValueAtTime(1, t0 + .06); lp.type = 'lowpass'; lp.frequency.value = 5200; lp.connect(grp); grp.connect(this.sfx);
+    const al = c.createOscillator(), ag = c.createGain(); al.type = 'square'; ag.gain.value = .05; al.connect(ag); ag.connect(lp);
+    for (let k = 0, tt = 0; tt < d + .4; k++, tt += .28) al.frequency.setValueAtTime(k % 2 ? 770 : 960, t0 + tt);
+    al.start(t0); al.stop(t0 + d + .6); nodes.push(al);
+    const sr = c.createOscillator(), sg = c.createGain(); sr.type = 'sawtooth'; sg.gain.value = .028; sr.connect(sg); sg.connect(lp);
+    for (let tt = 1.2, up = true; tt < d; tt += .55, up = !up) { sr.frequency.setValueAtTime(up ? 480 : 1500, t0 + tt); sr.frequency.linearRampToValueAtTime(up ? 1500 : 480, t0 + tt + .55); } sr.start(t0 + 1.2); sr.stop(t0 + d + .6); nodes.push(sr);
+    const sub = c.createOscillator(), sbg = c.createGain(), lf = c.createOscillator(), lg = c.createGain(); sub.type = 'sine'; sub.frequency.value = 46; sbg.gain.value = .14; lf.frequency.value = 4.2; lg.gain.value = .09; lf.connect(lg); lg.connect(sbg.gain); sub.connect(sbg); sbg.connect(grp);
+    sub.start(t0); lf.start(t0); sub.stop(t0 + d + .6); lf.stop(t0 + d + .6); nodes.push(sub, lf);
+    for (let tt = .1; tt < d - .3; tt += .25 + Math.random() * .7) {
+      const r = Math.random(); if (r < .35) this.screech(tt); else if (r < .7) this._n(tt, .04 + Math.random() * .12, 800 + Math.random() * 4000, 2500 + Math.random() * 5000, .12 + Math.random() * .1, .5, Math.random() < .5 ? 'highpass' : 'bandpass', Math.random() * 2 - 1);
+      else for (let j = 0; j < 4; j++) this._t(1000, .025, 'square', .05, tt + j * .06, null, 0, 0);
+    }
+    [.1, 2.3, 4.5, 6.6, 8.4].forEach((a, i) => this.growl(1.2 + (i % 2) * .5, a));
+    return () => { const t = c.currentTime; grp.gain.cancelScheduledValues(t); grp.gain.setTargetAtTime(0, t, .03); nodes.forEach(n => { try { n.stop(t + .2); } catch (e) { /* 이미 멈춤 */ } }); };
+  },
+  beep(d = 1.7) {         // 방송 시험 신호처럼 길게 이어지는 '삐'
+    if (!this.ctx || !this.on) return;
+    this._t(1000, d, 'sine', .085, 0, null, 0, 0, .1); this._t(2000, d, 'sine', .012, 0); this._n(0, .02, 3000, 3000, .06, 3);
+  },
+  /* 브라운관 눈보라 화면: 넓은 대역 잡음 + 지글거리는 틱 + 전원 낮은 웅웅거림 */
+  crt(d = 4.2) {
+    if (!this.ctx || !this.on) return;
+    const c = this.ctx, t = c.currentTime, s = c.createBufferSource(), hp = c.createBiquadFilter(), lp = c.createBiquadFilter(), g = c.createGain();
+    s.buffer = this.nbuf; s.loop = true; hp.type = 'highpass'; hp.frequency.value = 500; lp.type = 'lowpass'; lp.frequency.value = 9000; g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.12, t + .08); g.gain.setValueAtTime(.12, t + d - .15); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+    s.connect(hp); hp.connect(lp); lp.connect(g); g.connect(this.sfx); s.start(t); s.stop(t + d + .05);
+    this._t(50, d, 'sine', .05, 0); this._t(100, d, 'sine', .018, 0);
+    for (let i = 0; i < d * 9; i++) this._n(Math.random() * d, .006 + Math.random() * .02, 3000 + Math.random() * 6000, 2000, .07 + Math.random() * .06, 1.2, 'highpass', Math.random() * 2 - 1);
+    this._t(90, .45, 'sine', .22, 0, 40); this._n(0, .25, 1200, 150, .12, .7);          // 전원이 켜질 때 '퉁'
+  },
+  crtOff() {              // 브라운관이 꺼질 때: 높은 소리가 떨어지며 사라지고 '퍽'
+    this._t(4200, .38, 'sine', .05, 0, 70); this._t(60, .3, 'sine', .22, .32, 30); this._n(.3, .06, 3000, 800, .1, .8); this._n(.3, .4, 400, 60, .06, .6, 'lowpass');
+  },
+});
 window.RSC.SND = SND;
 
 /* ==========================================================================
@@ -9467,6 +9545,7 @@ const Desk = (() => {
 const Eye = (() => {
   const view = $('#scEye'), cv = $('#eCv'), g = cv.getContext('2d'), eye = $('#eEye'), fig = $('#eFig'), say = $('#eSay'), txt = $('#eTxt'), form = $('#eCode'), inp = $('#eIn'), err = $('#eErr');
   const LINES = ['…드디어 이곳까지 오셨군요, 설립자.', '발신자는 밝히지 않습니다. 이름도 얼굴도, 이곳에서는 필요하지 않으니까요.', '여기는 설립자께서 물으신 적 없는 것들이 모이는 곳입니다. 오래 머무를 곳은 못 됩니다.', '돌아가시려면 오른쪽 아래에 복구 코드를 적으십시오.\n코드는 ‘Re-code’입니다.'];
+  let raging = false, rageRaf = 0, crtRaf = 0, rageStop = null;
   let raf = 0, on = false, t0 = 0, li = 0, open = 0, target = 1, blinkT = 0, mx = .5, my = .3, W = 0, H = 0, dpr = 1, tm = [];
   const parts = Array.from({ length: 90 }, (_, i) => ({ x: Math.random(), y: Math.random(), v: .04 + Math.random() * .16, l: 30 + Math.random() * 120, a: .05 + Math.random() * .22, m: i % 4 === 0 }));
   function resize() { dpr = Math.min(2, devicePixelRatio || 1); const r = cv.getBoundingClientRect(); W = r.width; H = r.height; cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
@@ -9492,8 +9571,58 @@ const Eye = (() => {
   }
   say.addEventListener('click', () => { if (!Typer.done) { Typer.finish(); return; } li++; SND.tick(); nextLine(); });
   view.addEventListener('pointermove', e => { const r = view.getBoundingClientRect(); mx = (e.clientX - r.left) / r.width; my = (e.clientY - r.top) / r.height; });
+
+  /* ---------- 'No-code' 를 적으면: 영어 글자가 화면을 가득 채우고 경보 · 글리치 · 분노 → 10초 뒤 '삐' + 브라운관 지지직 ---------- */
+  const RAGE_LINES = ['…지금 무슨 말을 적은 겁니까.', 'NO-CODE?!\n그런 코드는 존재하지 않습니다!!', '여기서 장난을 치면\n어떻게 되는지 아십니까?!', '멈추십시오!!\n당장 멈추라고 했습니다!!', '…돌아가고 싶다면 ‘Re-code’.\n그 외에는 전부 소음일 뿐입니다.'];
+  const rageC = $('#eRage'), rageTx = $('#eRageTx'), crtC = $('#eCrt');
+  const rageT = [];
+  const later = (fn, ms) => { const id = setTimeout(fn, ms); rageT.push(id); return id; };
+  function drawRage(ts) {
+    rageRaf = requestAnimationFrame(drawRage); const W = rageC.width, H = rageC.height, g = rageC.getContext('2d'), t = (ts - rageT0) / 1000;
+    g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = `rgb(${18 + (Math.sin(t * 9) > 0 ? 14 : 0)},0,0)`; g.fillRect(0, 0, W, H);
+    const sz = Math.max(46, Math.round(H / 6.5)), txt = 'CALLER ID RESTRICTED  ', lines = Math.ceil(H / (sz * .92)) + 1;
+    g.font = `800 ${sz}px "Share Tech Mono", "Courier New", monospace`; g.textBaseline = 'top'; const tw = g.measureText(txt).width || 1;
+    const amp = 1 + Math.min(1, t / 8);       // 시간이 갈수록 떨림이 커진다
+    for (let i = 0; i < lines; i++) {
+      const y = i * sz * .92 + (Math.random() - .5) * 5 * amp, off = ((i % 2 ? 1 : -1) * t * (90 + i * 22)) % tw;
+      for (let x = -tw + off; x < W; x += tw) {
+        g.fillStyle = 'rgba(0,255,255,.55)'; g.fillText(txt, x + 5 * amp, y); g.fillStyle = i % 3 === 0 ? 'rgba(255,255,255,.92)' : 'rgba(255,32,20,.92)'; g.fillText(txt, x - 3 * amp, y);
+      }
+    }
+    for (let k = 0, n = 3 + Math.floor(Math.random() * 5 * amp); k < n; k++) { const y = Math.random() * H, h = 4 + Math.random() * 46, dx = (Math.random() - .5) * 140 * amp; g.drawImage(rageC, 0, y, W, h, dx, y, W, h); }   // 가로로 찢어지는 글리치
+    g.fillStyle = 'rgba(0,0,0,.2)'; for (let y = 0; y < H; y += 3) g.fillRect(0, y, W, 1);
+    if (Math.random() < .06 * (RM ? 0 : 1)) { g.fillStyle = 'rgba(255,255,255,.10)'; g.fillRect(0, 0, W, H); }        // 번쩍임은 약하고 드물게
+    const vg = g.createRadialGradient(W / 2, H / 2, H * .2, W / 2, H / 2, H); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.7)'); g.fillStyle = vg; g.fillRect(0, 0, W, H);
+  }
+  let rageT0 = 0;
+  function showRageLine(i) {
+    const line = RAGE_LINES[i]; rageTx.hidden = false; rageTx.textContent = ''; let n = 0;
+    const id = setInterval(() => { n++; rageTx.textContent = line.slice(0, n); if (n % 2 === 0) SND._t(900 + Math.random() * 400, .02, 'square', .02); if (n >= line.length) clearInterval(id); }, RM ? 1 : 26); rageT.push(id);
+  }
+  function drawCrt(ts) {
+    crtRaf = requestAnimationFrame(drawCrt); const g = crtC.getContext('2d'), w = crtC.width, h = crtC.height, im = g.createImageData(w, h), d = new Uint32Array(im.data.buffer), t = ts / 1000;
+    const roll = ((t * .35) % 1.3) * h - h * .15;
+    for (let y = 0; y < h; y++) { const band = Math.abs(y - roll) < h * .06 ? 1.5 : 1, tear = (y * 7 + Math.floor(t * 30)) % 53 === 0 ? 40 : 0; for (let x = 0; x < w; x++) { let v = Math.random() * 255 * band; if (tear && (x + tear) % 11 < 6) v = 255 - v * .3; v = Math.min(255, v); d[y * w + x] = 0xff000000 | (v << 16) | (v << 8) | v; } }
+    g.putImageData(im, 0, 0);
+  }
+  async function rage() {
+    if (raging) return; raging = true; inp.disabled = true; inp.blur(); err.textContent = ''; Typer.stop(); say.hidden = true; tm.forEach(clearTimeout); tm = [];
+    const dpr = 1, r = view.getBoundingClientRect(); rageC.width = Math.round(r.width * dpr); rageC.height = Math.round(r.height * dpr);
+    view.classList.add('rage'); rageC.hidden = false; rageT0 = performance.now(); cancelAnimationFrame(rageRaf); rageRaf = requestAnimationFrame(drawRage);
+    rageStop = SND.rageStart(10); [0.2, 2.3, 4.5, 6.6, 8.4].forEach((a, i) => later(() => showRageLine(i), a * 1000 * (RM ? .1 : 1)));
+    await new Promise(res => later(res, RM ? 1200 : 10000));
+    // 10초 뒤: '삐' + 브라운관
+    if (rageStop) rageStop(); rageStop = null; cancelAnimationFrame(rageRaf); rageC.hidden = true; rageTx.hidden = true; view.classList.remove('rage');
+    crtC.width = 320; crtC.height = 180; crtC.hidden = false; crtC.style.opacity = '1'; crtC.style.transform = ''; view.classList.add('crt-on'); SND.beep(1.7); SND.crt(4.2); cancelAnimationFrame(crtRaf); crtRaf = requestAnimationFrame(drawCrt);
+    await new Promise(res => later(res, RM ? 600 : 4200));
+    SND.crtOff(); cancelAnimationFrame(crtRaf);
+    if (crtC.animate) { const a = crtC.animate([{ transform: 'scale(1,1)', filter: 'brightness(1)' }, { transform: 'scale(1,.012)', filter: 'brightness(3)', offset: .55 }, { transform: 'scale(.003,.012)', filter: 'brightness(4)', opacity: 1, offset: .85 }, { transform: 'scale(0,0)', opacity: 0 }], { duration: RM ? 50 : 620, easing: 'ease-in', fill: 'forwards' }); await a.finished.catch(() => {}); } 
+    crtC.hidden = true; view.classList.remove('crt-on'); crtC.getAnimations && crtC.getAnimations().forEach(a => a.cancel());
+    raging = false; inp.disabled = false; li = LINES.length - 1; say.hidden = false; Typer.say(txt, '…이번 한 번만 못 본 것으로 하겠습니다.\n코드는 ‘Re-code’입니다.', () => { try { inp.focus({ preventScroll: true }); } catch (e) { /* 무시 */ } }); inp.value = '';
+  }
   form.addEventListener('submit', e => {
-    e.preventDefault(); const v = inp.value.trim().toLowerCase().replace(/[\s_]/g, '');
+    e.preventDefault(); if (raging) return; const v = inp.value.trim().toLowerCase().replace(/[\s_]/g, '');
+    if (v === 'no-code' || v === 'nocode') { rage(); return; }
     if (v === 're-code' || v === 'recode') { err.textContent = ''; SND.tone(1318, .12, 'sine', .06); SND.tone(1760, .2, 'sine', .05, .08); inp.blur(); Scenes.leaveEye(); }
     else { err.textContent = '코드가 일치하지 않습니다.'; form.classList.remove('bad'); void form.offsetWidth; form.classList.add('bad'); SND.tone(160, .16, 'square', .05); SND.tone(110, .22, 'square', .05, .13); inp.select(); }
   });
@@ -9505,7 +9634,7 @@ const Eye = (() => {
       t0 = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(frame);
       tm.push(setTimeout(() => eye.classList.add('show'), 500 * (RM ? .1 : 1)), setTimeout(() => fig.classList.add('show'), 2200 * (RM ? .1 : 1)), setTimeout(nextLine, 4200 * (RM ? .1 : 1)));
     },
-    leave() { on = false; cancelAnimationFrame(raf); raf = 0; tm.forEach(clearTimeout); tm = []; Typer.stop(); SND.windStop(); SND.musicTo(.95, 2.5); },
+    leave() { raging = false; rageT.forEach(id => { clearTimeout(id); clearInterval(id); }); rageT.length = 0; if (rageStop) { rageStop(); rageStop = null; } cancelAnimationFrame(rageRaf); cancelAnimationFrame(crtRaf); rageC.hidden = true; crtC.hidden = true; rageTx.hidden = true; view.classList.remove('rage', 'crt-on'); inp.disabled = false; on = false; cancelAnimationFrame(raf); raf = 0; tm.forEach(clearTimeout); tm = []; Typer.stop(); SND.windStop(); SND.musicTo(.95, 2.5); },
   };
 })();
 /* SCENES-JS:END */

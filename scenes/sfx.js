@@ -83,4 +83,66 @@ Object.assign(SND, {
     for (let i = 0; i < 46; i++) { const at = .5 + Math.random() * 1.2, pan = Math.random() * 2 - 1, f = 2400 + Math.random() * 5200; this._t(f, .05 + Math.random() * .16, 'sine', .01 + Math.random() * .026, at, null, 0, pan, .45); this._t(f * 1.51, .03 + Math.random() * .08, 'sine', .006 + Math.random() * .012, at + .004, null, 0, pan, .35); if (i % 2) this._n(at + .02, .02, 2600, 1800, .03, 1.2, 'bandpass', pan, .2); }
   },
 });
+
+/* ---------- 'No-code' 분노 연출용 소리: 경보 · 디지털 깨짐 · 분노의 으르렁 · 삐 · 브라운관 ---------- */
+Object.assign(SND, {
+  _dist(k = 120) {
+    if (this._ws || !this.ctx) return this._ws;
+    const c = this.ctx, ws = c.createWaveShaper(), n = 1024, cur = new Float32Array(n); for (let i = 0; i < n; i++) { const x = i / (n / 2) - 1; cur[i] = (1 + k) * x / (1 + k * Math.abs(x)); }
+    ws.curve = cur; ws.oversample = '2x'; const g = c.createGain(); g.gain.value = .55; ws.connect(g); g.connect(this.sfx); this._ws = ws; return ws;
+  },
+  /* 분노한 목소리 대신: 낮은 으르렁(톱니파 + 강한 왜곡 + 포먼트 이동 + 떨림) */
+  growl(len = 1.2, at = 0) {
+    if (!this.ctx || !this.on) return;
+    const c = this.ctx, t = c.currentTime + at, o = c.createOscillator(), o2 = c.createOscillator(), bp = c.createBiquadFilter(), g = c.createGain(), tr = c.createOscillator(), tg = c.createGain();
+    o.type = 'sawtooth'; o.frequency.setValueAtTime(78, t); o.frequency.linearRampToValueAtTime(52, t + len); o2.type = 'square'; o2.frequency.setValueAtTime(39, t); o2.frequency.linearRampToValueAtTime(26, t + len);
+    bp.type = 'bandpass'; bp.Q.value = 3; bp.frequency.setValueAtTime(420, t); bp.frequency.linearRampToValueAtTime(900, t + len * .4); bp.frequency.linearRampToValueAtTime(300, t + len);
+    tr.frequency.value = 28; tg.gain.value = .5; tr.connect(tg); const am = c.createGain(); am.gain.value = .6; tg.connect(am.gain);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.34, t + .05); g.gain.setValueAtTime(.34, t + len * .7); g.gain.exponentialRampToValueAtTime(.0001, t + len);
+    o.connect(bp); o2.connect(bp); bp.connect(am); am.connect(this._dist(60)); am.connect(g); g.connect(this.sfx);
+    [o, o2, tr].forEach(n => { n.start(t); n.stop(t + len + .05); });
+    this._n(at, len * .8, 700, 2400, .08, .8, 'bandpass', 0, .1);
+  },
+  /* 모뎀 같은 디지털 비명 + 끊기는 잡음(글리치) */
+  screech(at = 0) {
+    for (let i = 0; i < 14; i++) this._t(700 + Math.random() * 3600, .02 + Math.random() * .05, i % 3 ? 'square' : 'sawtooth', .03, at + i * .045, null, .1, Math.random() * 2 - 1);
+    this._n(at, .3, 6000, 900, .12, .6, 'highpass');
+  },
+  /* 경보: 실제 경보기처럼 두 음을 번갈아 울리고(960/770Hz), 그 위에 사이렌 훑는 소리와 깊은 진동 + 불규칙한 글리치. 반환값 stop() 으로 끈다 */
+  rageStart(d = 10) {
+    if (!this.ctx || !this.on) return () => {};
+    const c = this.ctx, t0 = c.currentTime, grp = c.createGain(), lp = c.createBiquadFilter(), nodes = [];
+    grp.gain.setValueAtTime(.0001, t0); grp.gain.exponentialRampToValueAtTime(1, t0 + .06); lp.type = 'lowpass'; lp.frequency.value = 5200; lp.connect(grp); grp.connect(this.sfx);
+    const al = c.createOscillator(), ag = c.createGain(); al.type = 'square'; ag.gain.value = .05; al.connect(ag); ag.connect(lp);
+    for (let k = 0, tt = 0; tt < d + .4; k++, tt += .28) al.frequency.setValueAtTime(k % 2 ? 770 : 960, t0 + tt);
+    al.start(t0); al.stop(t0 + d + .6); nodes.push(al);
+    const sr = c.createOscillator(), sg = c.createGain(); sr.type = 'sawtooth'; sg.gain.value = .028; sr.connect(sg); sg.connect(lp);
+    for (let tt = 1.2, up = true; tt < d; tt += .55, up = !up) { sr.frequency.setValueAtTime(up ? 480 : 1500, t0 + tt); sr.frequency.linearRampToValueAtTime(up ? 1500 : 480, t0 + tt + .55); } sr.start(t0 + 1.2); sr.stop(t0 + d + .6); nodes.push(sr);
+    const sub = c.createOscillator(), sbg = c.createGain(), lf = c.createOscillator(), lg = c.createGain(); sub.type = 'sine'; sub.frequency.value = 46; sbg.gain.value = .14; lf.frequency.value = 4.2; lg.gain.value = .09; lf.connect(lg); lg.connect(sbg.gain); sub.connect(sbg); sbg.connect(grp);
+    sub.start(t0); lf.start(t0); sub.stop(t0 + d + .6); lf.stop(t0 + d + .6); nodes.push(sub, lf);
+    for (let tt = .1; tt < d - .3; tt += .25 + Math.random() * .7) {
+      const r = Math.random(); if (r < .35) this.screech(tt); else if (r < .7) this._n(tt, .04 + Math.random() * .12, 800 + Math.random() * 4000, 2500 + Math.random() * 5000, .12 + Math.random() * .1, .5, Math.random() < .5 ? 'highpass' : 'bandpass', Math.random() * 2 - 1);
+      else for (let j = 0; j < 4; j++) this._t(1000, .025, 'square', .05, tt + j * .06, null, 0, 0);
+    }
+    [.1, 2.3, 4.5, 6.6, 8.4].forEach((a, i) => this.growl(1.2 + (i % 2) * .5, a));
+    return () => { const t = c.currentTime; grp.gain.cancelScheduledValues(t); grp.gain.setTargetAtTime(0, t, .03); nodes.forEach(n => { try { n.stop(t + .2); } catch (e) { /* 이미 멈춤 */ } }); };
+  },
+  beep(d = 1.7) {         // 방송 시험 신호처럼 길게 이어지는 '삐'
+    if (!this.ctx || !this.on) return;
+    this._t(1000, d, 'sine', .085, 0, null, 0, 0, .1); this._t(2000, d, 'sine', .012, 0); this._n(0, .02, 3000, 3000, .06, 3);
+  },
+  /* 브라운관 눈보라 화면: 넓은 대역 잡음 + 지글거리는 틱 + 전원 낮은 웅웅거림 */
+  crt(d = 4.2) {
+    if (!this.ctx || !this.on) return;
+    const c = this.ctx, t = c.currentTime, s = c.createBufferSource(), hp = c.createBiquadFilter(), lp = c.createBiquadFilter(), g = c.createGain();
+    s.buffer = this.nbuf; s.loop = true; hp.type = 'highpass'; hp.frequency.value = 500; lp.type = 'lowpass'; lp.frequency.value = 9000; g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.12, t + .08); g.gain.setValueAtTime(.12, t + d - .15); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+    s.connect(hp); hp.connect(lp); lp.connect(g); g.connect(this.sfx); s.start(t); s.stop(t + d + .05);
+    this._t(50, d, 'sine', .05, 0); this._t(100, d, 'sine', .018, 0);
+    for (let i = 0; i < d * 9; i++) this._n(Math.random() * d, .006 + Math.random() * .02, 3000 + Math.random() * 6000, 2000, .07 + Math.random() * .06, 1.2, 'highpass', Math.random() * 2 - 1);
+    this._t(90, .45, 'sine', .22, 0, 40); this._n(0, .25, 1200, 150, .12, .7);          // 전원이 켜질 때 '퉁'
+  },
+  crtOff() {              // 브라운관이 꺼질 때: 높은 소리가 떨어지며 사라지고 '퍽'
+    this._t(4200, .38, 'sine', .05, 0, 70); this._t(60, .3, 'sine', .22, .32, 30); this._n(.3, .06, 3000, 800, .1, .8); this._n(.3, .4, 400, 60, .06, .6, 'lowpass');
+  },
+});
 window.RSC.SND = SND;
