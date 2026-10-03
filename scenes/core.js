@@ -147,12 +147,12 @@ const Scenes = (() => {
   }
   /* 유리가 깨지며 쏟아짐: (ox,oy) 에서 금이 퍼지고, 조각이 떨어지며 아래의 화면이 드러남 */
   /* 쿵 하고 화면이 흔들리고 노이즈가 낀다 (점점 잦아듦). 4번째 신호기를 누를 때 */
-  function quake(ms, amp = 1) {
-    ms *= K();
+  function quake(ms, amp = 1, peak = 0) {          // peak: 가장 크게 흔들리는 시점(ms). 그 전에는 잔떨림이 점점 커지고, 그 뒤로 잦아든다
+    ms *= K(); peak *= K();
     return new Promise(res => {
       const g = glC.getContext('2d'), W = glC.width = Math.ceil(app.clientWidth / 3), H = glC.height = Math.ceil(app.clientHeight / 3); glC.hidden = false; const t0 = performance.now();
       const step = now => {
-        const p = clamp((now - t0) / ms, 0, 1), a = amp * Math.pow(1 - p, .8); g.clearRect(0, 0, W, H);
+        const el = now - t0, p = clamp(el / ms, 0, 1), a = amp * (peak && el < peak ? .12 + .38 * Math.pow(el / peak, 2) : Math.pow(1 - clamp((el - peak) / Math.max(1, ms - peak), 0, 1), 1.15)); g.clearRect(0, 0, W, H);
         for (let i = 0, n = 60 + a * 520; i < n; i++) { const v = 140 + (Math.random() * 115 | 0); g.fillStyle = `rgba(${v},${v},${v},${(Math.random() * .55 * a).toFixed(2)})`; g.fillRect(Math.random() * W, Math.random() * H, 1 + Math.random() * 3, 1); }
         for (let i = 0, n = 2 + a * 10; i < n; i++) { g.fillStyle = `rgba(${Math.random() < .5 ? '255,255,255' : '0,0,0'},${(.15 + Math.random() * .45 * a).toFixed(2)})`; g.fillRect(0, Math.random() * H, W, 1 + Math.random() * 3); }
         app.style.transform = `translate(${((Math.random() - .5) * 34 * a).toFixed(1)}px,${((Math.random() - .5) * 22 * a).toFixed(1)}px) rotate(${((Math.random() - .5) * 1.4 * a).toFixed(2)}deg)`;
@@ -225,8 +225,8 @@ const Scenes = (() => {
   }
   async function s4(from) {                // 마주함: 유리가 깨지며 눈과 존재가 나타남
     const r = from ? from.getBoundingClientRect() : { left: innerWidth / 2, top: innerHeight / 2, width: 0, height: 0 }, ar = app.getBoundingClientRect();
-    SND._n(0, 1.8, 260, 40, .3, .6, 'lowpass'); SND._t(40, 1.6, 'sine', .25, 0, 28);
-    const qk = quake(2400, 1);
+    const qk = quake(1900, 1, 480);                                    // 유리가 깨지는 순간(0.48초)에 가장 크게
+    setTimeout(() => { SND._n(0, 1.6, 300, 40, .32, .6, 'lowpass'); SND._t(46, 1.4, 'sine', .28, 0, 26); SND._n(0, .12, 3000, 400, .2, .8); }, 480 * K());
     await shatter(r.left + r.width / 2 - ar.left, r.top + r.height / 2 - ar.top, () => { show('eye'); Eye.enter(); });
     await qk;
   }
