@@ -171,33 +171,63 @@ void main(){
   }
 
 
-  /* ---------- 30초가 지나도 비밀 기록 보관소를 열지 않으면: 검은 화면 → 붉은 눈 → 글자 → 웃음 + 'Iditot' → 이진수 레드스크린 ---------- */
-  const trap = $('#eTrap'), tEye = $('#eTrapEye'), tTx = $('#eTrapTx'), tIdiot = $('#eIdiot'), tBin = $('#eBin'), tReboot = $('#eReboot');
-  const TRAP_TEXT = '들어오지 말았어야지, 멍청한 놈.', IDIOT_WORD = 'Iditot';
+  /* ---------- 30초가 지나도 비밀 기록 보관소를 열지 않으면: 검은 화면 → 설립자를 겨냥한 검은 리볼버(클릭 = 한 발, 6발) → 느와르 문장 → 효과 없이 아주 큰 '삐' + 이진수 레드스크린 ---------- */
+  const trap = $('#eTrap'), tBin = $('#eBin'), tReboot = $('#eReboot'), gunEl = $('#eGun'), gFx = $('#eGunFx'), gCr = $('#eGunCr'), gNz = $('#eGunNz'), gFlash = $('#eFlash'), gNoir = $('#eNoir'), gXh = $('#eXh'), gPips = $('#ePips'), gHint = $('#eGunHint');
+  const SHOTS = 6, NOIR_TEXT = '당신이 당신을 죽인겁니다.\n설립자.';
   let trapOn = false, trapT = [], trapRaf = 0, lockTimer = 0, vaultSeen = false;
+  let gunOn = false, gunReady = false, shots = 0, gunCracks = [], drips = [], noiseUntil = 0, noiseDur = 1, gunDone = null;
   const twait = ms => new Promise(res => trapT.push(setTimeout(res, ms)));
-  function trapEyeLoop(t0) {
-    const al = $('#etAl'), al2 = $('#etAl2'), cp = $('#etClP'), ir = $('#etIr'), pu = $('#etPu');
-    const f = ts => { trapRaf = requestAnimationFrame(f); const t = (ts - t0) / 1000, o = Math.min(1, t / 1.3), k = Math.max(.02, 1 - Math.pow(1 - o, 3)) * (t > 3 && Math.sin(t * 1.7) > .985 ? .3 : 1), tp = -95 * k, bt = 95 * k, d = `M-180 0C-110 ${tp} 110 ${tp} 180 0C110 ${bt} -110 ${bt} -180 0Z`; al.setAttribute('d', d); al2.setAttribute('d', d); al2.setAttribute('transform', 'scale(.93 .9)'); cp.setAttribute('d', d); ir.setAttribute('transform', `translate(${(Math.sin(t * .9) * 4).toFixed(1)} ${(Math.sin(t * 1.3) * 2).toFixed(1)})`); pu.setAttribute('rx', (54 + Math.sin(t * 2.2) * 2.5).toFixed(1)); };
-    trapRaf = requestAnimationFrame(f);
+  function splat(g, W, H) {                   // 피: 중심에서 사방으로 튄 방울 + 가운데 큰 얼룩, 일부는 아래로 흘러내린다
+    const m = Math.min(W, H), cx = W * (.32 + Math.random() * .36), cy = H * (.28 + Math.random() * .34);
+    g.fillStyle = '#5c0000'; for (let i = 0; i < 6; i++) { g.beginPath(); g.arc(cx + (Math.random() - .5) * m * .1, cy + (Math.random() - .5) * m * .1, m * (.03 + Math.random() * .045), 0, 6.283); g.fill(); }
+    for (let i = 0; i < 34; i++) {
+      const a = Math.random() * 6.283, k = Math.pow(Math.random(), 1.5), d = k * m * .46, x = cx + Math.cos(a) * d, y = cy + Math.sin(a) * d, r = 2 + Math.random() * (15 - k * 10);
+      g.fillStyle = Math.random() < .5 ? '#8a0000' : '#b30a0a'; g.beginPath(); g.arc(x, y, r, 0, 6.283); g.fill();
+      if (Math.random() < .3) drips.push({ x, y, len: 0, max: 40 + Math.random() * 190, v: 26 + Math.random() * 80, w: 2 + Math.random() * 4 });
+    }
   }
-  function idiotLoop() {          // 흑백만. 글자는 가로로 가지런히 한 줄씩 아래로 흘러내리고(1.5배속 → 2배속), 화면 전체에 노이즈가 낀다
-    const r = view.getBoundingClientRect(), W = tIdiot.width = Math.round(r.width), H = tIdiot.height = Math.round(r.height), g = tIdiot.getContext('2d');
-    g.font = '900 100px "Share Tech Mono","Courier New",monospace'; const w100 = g.measureText(IDIOT_WORD).width || 600, sz = Math.min(W * .9 / w100 * 100, H / 5), rowH = sz * 1.12;
-    g.font = `900 ${sz}px "Share Tech Mono","Courier New",monospace`; g.textBaseline = 'middle'; g.textAlign = 'center'; let scroll = 0, last = performance.now(); const t0 = last;
-    const nc = document.createElement('canvas'), nw = nc.width = Math.ceil(W / 3), nh = nc.height = Math.ceil(H / 3), ng = nc.getContext('2d'), im = ng.createImageData(nw, nh), nd = new Uint32Array(im.data.buffer);
+  function gunLoop() {
+    const nz = gNz.getContext('2d'), W = gNz.width, H = gNz.height, nc = document.createElement('canvas'), nw = nc.width = Math.ceil(W / 3), nh = nc.height = Math.ceil(H / 3), ng = nc.getContext('2d'), im = ng.createImageData(nw, nh), nd = new Uint32Array(im.data.buffer), fx = gFx.getContext('2d');
+    let last = performance.now();
     const f = ts => {
-      trapRaf = requestAnimationFrame(f); const dt = Math.min(.05, (ts - last) / 1000); last = ts; const t = (ts - t0) / 1000, m = t < 1.9 ? 1.5 : t < 2.1 ? 1.5 + (t - 1.9) / .2 * .5 : 2;
-      scroll += (520 + t * 380) * m * dt;
-      g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
-      const base = Math.floor(scroll / rowH), off = scroll % rowH;
-      for (let k = -1; k * rowH - rowH < H; k++) { const row = base - k; g.fillStyle = ((row % 2) + 2) % 2 ? '#ffffff' : '#8c8c8c'; g.fillText(IDIOT_WORD, W / 2, k * rowH + off + rowH / 2); }
-      for (let i = 0; i < nd.length; i++) { const v = (Math.random() * 255) | 0, a = 40 + ((Math.random() * 90) | 0); nd[i] = (a << 24) | (v << 16) | (v << 8) | v; }       // 흑백 노이즈
-      ng.putImageData(im, 0, 0); g.imageSmoothingEnabled = false; g.drawImage(nc, 0, 0, nw, nh, 0, 0, W, H);
-      for (let k = 0, n = 2 + (Math.random() * 4 | 0); k < n; k++) { g.fillStyle = Math.random() < .5 ? 'rgba(255,255,255,.55)' : 'rgba(0,0,0,.7)'; g.fillRect(0, Math.random() * H, W, 1 + Math.random() * 3); }   // 가로 줄 잡음
-      if (Math.random() < .08) { g.fillStyle = 'rgba(255,255,255,.12)'; g.fillRect(0, 0, W, H); }
+      trapRaf = requestAnimationFrame(f); const dt = Math.min(.05, (ts - last) / 1000); last = ts;
+      drips.forEach(d => { if (d.len < d.max) { const n = Math.min(d.max - d.len, d.v * dt); fx.strokeStyle = '#6e0000'; fx.lineWidth = d.w; fx.lineCap = 'round'; fx.beginPath(); fx.moveTo(d.x, d.y + d.len); fx.lineTo(d.x, d.y + d.len + n); fx.stroke(); d.len += n; d.v *= .995; } });
+      const left = noiseUntil - ts, k = left > 0 ? Math.min(1, left / noiseDur) : 0, base = shots / SHOTS * .07;
+      nz.clearRect(0, 0, W, H);
+      if (k > 0 || base > 0) {
+        const al = Math.min(.9, base + k * .85);
+        for (let i = 0; i < nd.length; i++) { const v = (Math.random() * 255) | 0; nd[i] = ((al * 255 * (.4 + Math.random() * .6) | 0) << 24) | (v << 16) | (v << 8) | v; }
+        ng.putImageData(im, 0, 0); nz.imageSmoothingEnabled = false; nz.drawImage(nc, 0, 0, nw, nh, 0, 0, W, H);
+        for (let q = 0, n = Math.floor(k * 9); q < n; q++) { nz.fillStyle = Math.random() < .5 ? 'rgba(255,255,255,.5)' : 'rgba(0,0,0,.7)'; nz.fillRect(0, Math.random() * H, W, 1 + Math.random() * 5); }
+        if (k > 0) { const gr = nz.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .2, W / 2, H / 2, Math.max(W, H) * .75); gr.addColorStop(0, 'rgba(120,0,0,0)'); gr.addColorStop(1, `rgba(150,0,0,${(.55 * k).toFixed(2)})`); nz.fillStyle = gr; nz.fillRect(0, 0, W, H); }
+      }
     };
     trapRaf = requestAnimationFrame(f);
+  }
+  function fire() {
+    if (!gunOn || !gunReady || shots >= SHOTS) return; shots++; gunReady = false; gHint.hidden = true;
+    SND.gunshot();
+    gunEl.classList.remove('kick'); void gunEl.offsetWidth; gunEl.classList.add('kick');
+    gFlash.classList.remove('on'); void gFlash.offsetWidth; gFlash.classList.add('on');
+    quakeView(); splat(gFx.getContext('2d'), gFx.width, gFx.height);
+    gunCracks.push(...crackGen()); if (shots > 2) gunCracks.push(...crackGen()); crackDrawTo(gCr, gunCracks);   // 화면이 점점 깨진다
+    noiseDur = RM ? 150 : 750; noiseUntil = performance.now() + noiseDur;
+    [...gPips.children].forEach((p, i) => p.classList.toggle('spent', i < shots));
+    if (shots < SHOTS) setTimeout(() => { gunReady = true; }, RM ? 80 : 420);
+    else setTimeout(() => { gunOn = false; if (gunDone) gunDone(); }, RM ? 300 : 2000);
+  }
+  const gunKey = e => { if (gunOn && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); fire(); } };
+  trap.addEventListener('pointerdown', e => { if (gunOn && !e.target.closest('#eReboot')) { e.preventDefault(); fire(); } });
+  addEventListener('keydown', gunKey);
+  function gunScene() {
+    const r = view.getBoundingClientRect(); [gFx, gCr, gNz].forEach(c => { c.width = Math.round(r.width); c.height = Math.round(r.height); c.hidden = false; c.getContext('2d').clearRect(0, 0, c.width, c.height); });
+    shots = 0; gunCracks = []; drips = []; noiseUntil = 0; [...gPips.children].forEach(p => p.classList.remove('spent'));
+    gunEl.hidden = false; gPips.hidden = false; gXh.hidden = false; void gunEl.offsetWidth; gunEl.classList.add('up'); SND.gunCock(); gunLoop();
+    return new Promise(res => { gunDone = res; trapT.push(setTimeout(() => { gunOn = true; gunReady = true; gHint.hidden = false; }, RM ? 100 : 1100)); });
+  }
+  function trapReset() {
+    trapOn = false; gunOn = false; gunDone = null; trapT.forEach(clearTimeout); trapT = []; cancelAnimationFrame(trapRaf); trapRaf = 0; trap.hidden = true; trap.classList.remove('noir');
+    [gFx, gCr, gNz, tBin, gunEl, gPips, gXh, gHint, gNoir, tReboot].forEach(x => { x.hidden = true; }); gunEl.classList.remove('up', 'kick'); gNoir.textContent = '';
   }
   function binaryLoop() {
     const r = view.getBoundingClientRect(), W = tBin.width = Math.round(r.width), H = tBin.height = Math.round(r.height), g = tBin.getContext('2d'), cs = W < 700 ? 15 : 20, cols = Math.ceil(W / cs), rows = Math.ceil(H / cs); let last = 0;
@@ -210,23 +240,19 @@ void main(){
     };
     trapRaf = requestAnimationFrame(f);
   }
-  function trapReset() {
-    trapOn = false; trapT.forEach(clearTimeout); trapT = []; cancelAnimationFrame(trapRaf); trapRaf = 0; trap.hidden = true; tEye.setAttribute('hidden', ''); tIdiot.hidden = true; tBin.hidden = true; tReboot.hidden = true; tTx.textContent = '';
-  }
   async function startTrap() {
     if (!on || !locked || vaultSeen || trapOn || raging) return;
     trapOn = true; clearInterval(ambTimer); enterIn.blur(); enterF.hidden = true; vault.hidden = true; crackC.hidden = true; crtStop(); view.classList.remove('locked'); view.classList.add('trap');
-    SND.blackout(); SND.laughLoad(); trap.hidden = false; tTx.textContent = '';
-    await twait(RM ? 300 : 3000);                                    // 완전한 어둠 3초
-    tEye.removeAttribute('hidden'); trapEyeLoop(performance.now());
-    await twait(RM ? 200 : 1600);
-    for (const ch of TRAP_TEXT) { tTx.textContent += ch; if (ch !== ' ') SND.knock(); await twait(RM ? 15 : 230); }
-    await twait(RM ? 300 : 2000);
-    SND.laughSample(RM ? .6 : 4.1); SND.staticNoise(RM ? .6 : 4.1);   // 웃음 샘플 3종(기본 + 변형 2개)을 동시에
-    cancelAnimationFrame(trapRaf); tEye.setAttribute('hidden', ''); tTx.textContent = ''; tIdiot.hidden = false; idiotLoop();
-    await twait(RM ? 600 : 4000);
-    cancelAnimationFrame(trapRaf); tIdiot.hidden = true; tBin.hidden = false; SND.beep(1.5); binaryLoop();
-    await twait(RM ? 100 : 1200); tReboot.hidden = false; try { tReboot.focus({ preventScroll: true }); } catch (e) { /* 무시 */ }
+    SND.blackout(); trap.hidden = false; gNoir.textContent = '';
+    await twait(RM ? 300 : 2500);                                   // 완전한 어둠
+    await gunScene();                                               // 클릭할 때마다 한 발, 6발
+    cancelAnimationFrame(trapRaf); gunEl.hidden = true; gPips.hidden = true; gXh.hidden = true; gNz.hidden = true;
+    trap.classList.add('noir'); gNoir.hidden = false;               // 느와르 문장: 기울어진 굵은 글씨가 한 자씩 찍힌다
+    for (const ch of NOIR_TEXT) { gNoir.textContent += ch; if (!/\s/.test(ch)) SND.knock(); await twait(RM ? 15 : 150); }
+    await twait(RM ? 300 : 3600);
+    gNoir.hidden = true; gFx.hidden = true; gCr.hidden = true; trap.classList.remove('noir');   // 아무 효과 없이: 곧바로 아주 큰 '삐' + 레드스크린
+    tBin.hidden = false; SND.loudBeep(RM ? .6 : 3.4); binaryLoop();
+    await twait(RM ? 100 : 1500); tReboot.hidden = false; try { tReboot.focus({ preventScroll: true }); } catch (e) { /* 무시 */ }
   }
   tReboot.addEventListener('click', () => { SND.click(); Scenes.rebootEye(); });
 
@@ -240,12 +266,13 @@ void main(){
     const walkPts = (x, y, a, n) => { const pts = [[x, y]]; for (let i = 0; i < n; i++) { a += (Math.random() - .5) * 1; const l = 14 + Math.random() * 40; x += Math.cos(a) * l; y += Math.sin(a) * l; pts.push([x, y]); } return pts; };
     out.push({ pts: walk(x, y, a, 9 + (Math.random() * 7 | 0), 1), w: 1 }); return out;
   }
-  function crackDraw() {
-    const r = view.getBoundingClientRect(), k = Math.min(devicePixelRatio || 1, 2); crackC.width = Math.round(r.width * k); crackC.height = Math.round(r.height * k);
-    const g = crackC.getContext('2d'); g.setTransform(k, 0, 0, k, 0, 0); g.lineCap = 'round'; g.lineJoin = 'round';
-    cracks.forEach(cr => { [[ 'rgba(0,0,0,.8)', 5 ], [ 'rgba(255,255,255,.95)', 2 ], [ 'rgba(255,255,255,.35)', 4.5 ]].forEach(([col, lw], idx) => { g.strokeStyle = col; g.lineWidth = lw * cr.w * (idx === 2 ? 1.4 : 1); g.shadowColor = idx === 1 ? 'rgba(255,255,255,.8)' : 'transparent'; g.shadowBlur = idx === 1 ? 6 : 0; g.beginPath(); cr.pts.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.stroke(); }); });
+  function crackDrawTo(cv, list) {
+    const r = view.getBoundingClientRect(), k = Math.min(devicePixelRatio || 1, 2); cv.width = Math.round(r.width * k); cv.height = Math.round(r.height * k);
+    const g = cv.getContext('2d'); g.setTransform(k, 0, 0, k, 0, 0); g.lineCap = 'round'; g.lineJoin = 'round';
+    list.forEach(cr => { [[ 'rgba(0,0,0,.8)', 5 ], [ 'rgba(255,255,255,.95)', 2 ], [ 'rgba(255,255,255,.35)', 4.5 ]].forEach(([col, lw], idx) => { g.strokeStyle = col; g.lineWidth = lw * cr.w * (idx === 2 ? 1.4 : 1); g.shadowColor = idx === 1 ? 'rgba(255,255,255,.8)' : 'transparent'; g.shadowBlur = idx === 1 ? 6 : 0; g.beginPath(); cr.pts.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.stroke(); }); });
     g.shadowBlur = 0;
   }
+  function crackDraw() { crackDrawTo(crackC, cracks); }
   function quakeView() {
     if (RM || !view.animate) return; const f = []; for (let i = 0; i < 12; i++) { const a = 1 - i / 12; f.push({ transform: `translate(${((Math.random() - .5) * 46 * a).toFixed(1)}px,${((Math.random() - .5) * 30 * a).toFixed(1)}px) rotate(${((Math.random() - .5) * 2.2 * a).toFixed(2)}deg)` }); } f.push({ transform: 'none' });
     view.animate(f, { duration: 560, easing: 'linear' });

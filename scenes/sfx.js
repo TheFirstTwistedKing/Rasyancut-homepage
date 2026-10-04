@@ -187,6 +187,22 @@ Object.assign(SND, {
     this.sfx = this.ctx.createGain(); this.sfx.connect(this.master); this._vb = null; this._eb = null; this._ws = null;                  // 새 버스로 갈아탄다
   },
   unblackout() { if (this.ctx && this.bus) { const t = this.ctx.currentTime; this.bus.gain.cancelScheduledValues(t); this.bus.gain.setTargetAtTime(.55, t, .4); } },
+  /* 리볼버 장전·공이치기 소리: 철컥, 철컥 */
+  gunCock() { this._n(0, .02, 3200, 2200, .25, 2.4); this._t(1100, .03, 'square', .07, 0); this._n(.1, .025, 2800, 1800, .28, 2.4); this._t(800, .04, 'square', .08, .1); },
+  /* 리볼버 한 발: 갈라지는 폭음 + 낮은 울림 + 방 울림 + 귀울림 */
+  gunshot() {
+    if (!this.ctx || !this.on) return;
+    this._n(0, .06, 9000, 1500, .8, .5, 'highpass', 0, .5); this._n(0, .22, 3200, 300, .7, .7, 'bandpass', 0, .8);
+    this._t(160, .45, 'sine', .85, 0, 38, 0, 0, .6); this._t(90, .6, 'sine', .6, 0, 30); this._n(.01, .5, 900, 120, .4, .8, 'lowpass', 0, 1);
+    this._t(3800, 1.2, 'sine', .016, .06);
+  },
+  /* 아주 큰 '삐': 끊김 없이 이어지는 시험 신호 */
+  loudBeep(d = 3.4) {
+    if (!this.ctx || !this.on) return; const c = this.ctx, t = c.currentTime, o = c.createOscillator(), o2 = c.createOscillator(), g = c.createGain(), g2 = c.createGain();
+    o.type = 'sine'; o.frequency.value = 1000; o2.type = 'sine'; o2.frequency.value = 2000; g2.gain.value = .25;
+    g.gain.setValueAtTime(.0001, t); g.gain.linearRampToValueAtTime(.7, t + .01); g.gain.setValueAtTime(.7, t + d - .2); g.gain.linearRampToValueAtTime(.0001, t + d);
+    o.connect(g); o2.connect(g2); g2.connect(g); g.connect(this.sfx); o.start(t); o2.start(t); o.stop(t + d + .05); o2.stop(t + d + .05);
+  },
   /* 글자가 한 자씩 찍힐 때: 딱딱한 '탁' */
   knock() {
     const v = .85 + Math.random() * .3;

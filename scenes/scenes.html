@@ -73,16 +73,14 @@
     <form class="e-only" id="eEnter" hidden autocomplete="off"><input id="eEnterIn" type="text" maxlength="24" spellcheck="false" autocapitalize="off" aria-label="입력"></form>
     <div class="e-vault" id="eVault" hidden role="dialog" aria-label="비밀 기록 보관소"><div class="evt"><span>비밀 기록 보관소</span><button type="button" id="eVaultX" aria-label="닫기">✕</button></div><div class="evb"></div></div>
     <div class="e-trap" id="eTrap" hidden>
-      <canvas id="eIdiot" hidden></canvas><canvas id="eBin" hidden></canvas>
-      <svg class="et-eye" id="eTrapEye" viewBox="-200 -176 400 372" hidden aria-hidden="true">
-        <defs><clipPath id="etCl"><path id="etClP" d=""/></clipPath></defs>
-        <path d="M-10 -66L0 -172L10 -66Z" fill="#e5281a"/>
-        <path d="M-18 64C-14 100 -5 142 0 192C5 142 14 100 18 64Z" fill="#e5281a"/>
-        <path id="etAl" d="" fill="#0a0000" stroke="#e5281a" stroke-width="13" stroke-linejoin="round"/>
-        <path id="etAl2" d="" fill="none" stroke="#ff9a8a" stroke-width="3" stroke-linejoin="round" opacity=".7"/>
-        <g clip-path="url(#etCl)"><g id="etIr"><ellipse id="etPu" rx="54" ry="46" fill="#ff3a28"/><ellipse rx="54" ry="46" fill="none" stroke="#ffc2b8" stroke-width="3" opacity=".6"/></g></g>
-      </svg>
-      <p class="et-tx" id="eTrapTx" aria-live="polite"></p>
+      <canvas id="eGunFx" hidden></canvas><canvas id="eGunCr" hidden></canvas><canvas id="eBin" hidden></canvas>
+      <i class="et-xh" id="eXh" hidden aria-hidden="true"></i>
+      <div class="et-gun" id="eGun" hidden><svg viewBox="0 0 520 300" aria-hidden="true"><g fill="#050505" stroke="#fff" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"><path d="M18 92L30 84H226V122H30L18 114Z"/><path d="M70 122H226V144H78Q70 144 70 136Z"/><path d="M30 84V70H48L54 84Z"/><rect x="226" y="72" width="104" height="82" rx="10"/><path d="M326 78H388Q404 78 408 94V150H326Z"/><path d="M384 78L404 48L424 52L412 92Z"/><path d="M340 150H410L452 268Q458 288 438 290L400 292Q380 292 374 274Z"/><path d="M312 152Q312 206 352 206L362 196" fill="none"/><path d="M334 152L342 186" fill="none"/></g><g fill="none" stroke="#b9b9b9" stroke-width="2" stroke-linecap="round"><path d="M252 80V146M278 80V146M304 80V146"/><path d="M40 100H218"/><path d="M386 196L424 206M392 222L430 232M398 248L436 258"/></g></svg></div>
+      <div class="et-pips" id="ePips" hidden aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <span class="et-hint mono" id="eGunHint" hidden>CLICK</span>
+      <canvas id="eGunNz" hidden></canvas>
+      <div class="et-flash" id="eFlash" aria-hidden="true"></div>
+      <p class="et-noir" id="eNoir" hidden aria-live="assertive"></p>
       <button class="et-reboot" id="eReboot" type="button" hidden aria-label="Reboot"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 4v13" /><path d="M11 9.5A14 14 0 1 0 29 9.5"/></svg><span>REBOOT</span></button>
     </div>
     <form class="e-code" id="eCode" autocomplete="off">
