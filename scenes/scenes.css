@@ -184,7 +184,7 @@
 .et-xh{position:absolute;z-index:3;left:50%;top:44%;width:34px;height:34px;translate:-50% -50%;border:2px solid rgba(255,255,255,.75);border-radius:50%;pointer-events:none}
 .et-xh::before,.et-xh::after{content:"";position:absolute;left:50%;top:50%;background:rgba(255,255,255,.75);translate:-50% -50%}
 .et-xh::before{width:2px;height:12px}.et-xh::after{width:12px;height:2px}
-.et-gun{--gw:min(86vw,600px);position:absolute;z-index:3;left:50%;top:calc(44% - var(--gw)*.0667);width:var(--gw);translate:-50% 0;transform-origin:50% 8%;transform:translateY(55%);opacity:0;transition:transform .9s cubic-bezier(.2,.8,.2,1),opacity .6s;pointer-events:none}
+.et-gun{--gw:min(88vw,620px);position:absolute;z-index:3;left:50%;top:calc(44% - var(--gw)*.2433);width:var(--gw);translate:-50% 0;transform-origin:50% 8%;transform:translateY(55%);opacity:0;transition:transform .9s cubic-bezier(.2,.8,.2,1),opacity .6s;pointer-events:none}
 .et-gun.up{transform:none;opacity:1}
 .et-gun svg{display:block;width:100%;height:auto;filter:drop-shadow(0 0 1px #fff) drop-shadow(0 0 7px rgba(255,255,255,.4))}
 .et-gun.up svg{animation:gunSway 5s ease-in-out infinite}
