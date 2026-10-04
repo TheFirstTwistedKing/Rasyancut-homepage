@@ -211,7 +211,7 @@ local function bubble(who, str, mine, animate)
 	local t = text(b, "", 16, mine and LEMON or PALE, { Size = UDim2.new(0, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.XY })
 	mk("UISizeConstraint", { MaxSize = Vector2.new(480, 9999) }, t)
 	if animate then
-		typeInto(t, str, 0.018, chatToken)
+		typeInto(t, str, 0.008, chatToken)
 	else
 		t.Text = str
 	end
@@ -386,7 +386,7 @@ local function typeLine()
 	typing = true
 	mNext.Visible = false
 	task.spawn(function()
-		typeInto(mTxt, lines[li], 0.03, tok)
+		typeInto(mTxt, lines[li], 0.014, tok)
 		if not tok.stop then
 			typing = false
 			mNext.Visible = true

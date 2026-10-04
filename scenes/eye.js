@@ -80,7 +80,7 @@ const Eye = (() => {
   let rageT0 = 0;
   function showRageLine(i) {
     const line = RAGE_LINES[i]; rageTx.hidden = false; rageTx.textContent = ''; let n = 0;
-    const id = setInterval(() => { n++; rageTx.textContent = line.slice(0, n); if (n % 2 === 0) SND._t(900 + Math.random() * 400, .02, 'square', .02); if (n >= line.length) clearInterval(id); }, RM ? 1 : 26); rageT.push(id);
+    const id = setInterval(() => { n++; rageTx.textContent = line.slice(0, n); if (n % 2 === 0) SND._t(900 + Math.random() * 400, .02, 'square', .02); if (n >= line.length) clearInterval(id); }, RM ? 1 : 14); rageT.push(id);
   }
   /* ---------- 브라운관: WebGL 로 화면 가득 눈보라(치지직). 가장자리로 갈수록 휘어져 유리가 볼록하게 튀어나온 느낌 ---------- */
   const VS = 'attribute vec2 p;varying vec2 v;void main(){v=p*.5+.5;gl_Position=vec4(p,0.,1.);}';

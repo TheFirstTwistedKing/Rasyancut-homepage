@@ -5979,7 +5979,7 @@ function syncSound() {
    · 글자마다 위에서 아래로 살짝 기운 붓질(clip-path)로 그려지고, 잉크 발광이 사라짐
    · 대사에는 펜촉(pen)이 글자 끝을 따라다님
    ========================================================================== */
-const SPEEDS = { slow: 5, normal: 10, fast: 22 };
+const SPEEDS = { slow: 11, normal: 26, fast: 55 };
 let speedKey = store.get('speed', 'normal');
 const WS = /^\s+$/;
 /* 문자열/노드 → 단어 단위로 묶은 글자 span들. 단어는 줄바꿈되지 않게 묶고 글자마다 .wc */
@@ -6054,7 +6054,7 @@ const Write = {
       const chars = this.prep(el), tk = el.closest('[data-wtrack]'), key = tk ? tk.dataset.wtrack : '_', host = el.closest('[data-wspeed],[data-wfollow]');
       const sp = host && host.dataset.wspeed ? +host.dataset.wspeed : 1, fol = host && host.dataset.wfollow ? +host.dataset.wfollow : 0;
       let t = tr[key] == null ? base : tr[key];
-      let per = (+el.dataset.write || 42) * TS * sp; if (chars.length) per = Math.min(per, 5200 / chars.length); const dur = wcDur(per); if (el.dataset.wdelay) t = Math.max(t, +el.dataset.wdelay * TS);
+      let per = (+el.dataset.write || 42) * TS * sp * .45; if (chars.length) per = Math.min(per, 2800 / chars.length); const dur = wcDur(per); if (el.dataset.wdelay) t = Math.max(t, +el.dataset.wdelay * TS);
       el.style.setProperty('--wd', dur + 'ms');
       chars.forEach((c, i) => {
         if (RM) { c.className = 'wc done'; return; }
@@ -7275,6 +7275,7 @@ function buildCodex() {
    body: 문자열 = 문단, 배열 = 점 목록
    ========================================================================== */
 const NOTICES = [
+  { id: "p4-7-5", tag: "FIX", date: "2026.10.04", title: "Patch v-4.7.5 · 글자 나오는 속도 빨라짐", body: ["글자가 나타나는 속도를 전체적으로 빠르게 했어요.",["대사, 통신 대화, 설정집·화면 글자가 더 빨리 나와요.","설정의 글자 속도는 그대로 고를 수 있고, 모든 단계가 이전보다 빨라졌어요."]] },
   { id: "p4-7-4", tag: "FIX", date: "2026.10.04", title: "Patch v-4.7.4 · 신호기 4번 시간 제한 삭제", body: ["신호기 4번에서 일정 시간이 지나면 나오던 연출을 없앴어요.",["이제 시간 제한 없이 천천히 둘러볼 수 있어요."]] },
   { id: "p4-7-3", tag: "FIX", date: "2026.10.04", title: "Patch v-4.7.3 · 신호기 4번 양손 조준", body: ["신호기 4번 연출에서 총을 양손으로 쥐고 조준하는 모습으로 바꿨어요."] },
   { id: "p4-7-2", tag: "FIX", date: "2026.10.04", title: "Patch v-4.7.2 · 신호기 4번 조준 모습 수정", body: ["신호기 4번 연출에서 총이 놓인 위치와 조준 모습을 고쳤어요."] },
@@ -10767,7 +10768,7 @@ const Eye = (() => {
   let rageT0 = 0;
   function showRageLine(i) {
     const line = RAGE_LINES[i]; rageTx.hidden = false; rageTx.textContent = ''; let n = 0;
-    const id = setInterval(() => { n++; rageTx.textContent = line.slice(0, n); if (n % 2 === 0) SND._t(900 + Math.random() * 400, .02, 'square', .02); if (n >= line.length) clearInterval(id); }, RM ? 1 : 26); rageT.push(id);
+    const id = setInterval(() => { n++; rageTx.textContent = line.slice(0, n); if (n % 2 === 0) SND._t(900 + Math.random() * 400, .02, 'square', .02); if (n >= line.length) clearInterval(id); }, RM ? 1 : 14); rageT.push(id);
   }
   /* ---------- 브라운관: WebGL 로 화면 가득 눈보라(치지직). 가장자리로 갈수록 휘어져 유리가 볼록하게 튀어나온 느낌 ---------- */
   const VS = 'attribute vec2 p;varying vec2 v;void main(){v=p*.5+.5;gl_Position=vec4(p,0.,1.);}';
