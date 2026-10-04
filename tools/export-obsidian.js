@@ -6,10 +6,14 @@ const root = path.join(__dirname, '..'), html = fs.readFileSync(path.join(root, 
 const grab = (a, b) => { const i = html.indexOf(a); if (i < 0) throw new Error('못 찾음: ' + a); return html.slice(i + a.length, html.indexOf(b, i + a.length)); };
 const CODEX = vm.runInNewContext('[' + grab('const CODEX = [', '\n];') + ']');
 const WORLD = JSON.parse(grab('const WORLD = ', ';\n'));
-const out = path.join(root, 'obsidian', '라시안컷 세계관');
+const ASCII = process.argv.includes('--ascii');   // 파일 이름을 영문으로(윈도우 압축 풀기에서 한글 이름이 안 보일 때)
+const out = path.join(root, 'obsidian', ASCII ? 'worldbuilding' : '라시안컷 세계관');
 fs.rmSync(out, { recursive: true, force: true }); fs.mkdirSync(out, { recursive: true });
 
-const fname = c => `${String(CODEX.indexOf(c) + 1).padStart(2, '0')} ${c.ko}`;
+const NN = c => String(CODEX.indexOf(c) + 1).padStart(2, '0');
+const fname = c => ASCII ? `${NN(c)}-${c.id}` : `${NN(c)} ${c.ko}`;
+const HUB = ASCII ? '00-hub' : '00 세계관 허브', MAPN = ASCII ? 'map-places' : '지도 지명 목록';
+const lk = c => ASCII ? `[[${fname(c)}|${c.ko}]]` : `[[${fname(c)}]]`;
 const byId = Object.fromEntries(CODEX.map(c => [c.id, c]));
 const q = s => String(s).replace(/\n/g, ' ');
 function block(b) {
@@ -44,7 +48,7 @@ CODEX.forEach((c, i) => {
     s += e.b.map(block).join('\n') + '\n';
   });
   const prev = CODEX[i - 1], next = CODEX[i + 1];
-  s += '---\n' + [prev && `이전: [[${fname(prev)}]]`, next && `다음: [[${fname(next)}]]`, '[[00 세계관 허브|허브로]]'].filter(Boolean).join(' · ') + '\n';
+  s += '---\n' + [prev && `이전: ${lk(prev)}`, next && `다음: ${lk(next)}`, `[[${HUB}|허브로]]`].filter(Boolean).join(' · ') + '\n';
   w(fname(c), s);
 });
 
@@ -55,11 +59,11 @@ let m = fm({ title: '지도 지명 목록', tags: ['라시안컷', '세계관', 
 Object.entries(nats).sort((a, b) => b[1].length - a[1].length).forEach(([n, list]) => {
   m += `## ${n}\n\n| 이름 | 종류 | 격자 | 설명 |\n|---|---|---|---|\n` + list.map(it => `| ${it.n}${it.en ? ` (${it.en})` : ''}${it.cap ? ' ★수도' : ''} | ${kindKo[it.k] || it.k} | ${it.g || ''} | ${q(it.d || '').slice(0, 160)} |`).join('\n') + '\n\n';
 });
-w('지도 지명 목록', m);
+w(MAPN, m);
 
 // 허브
 let hub = fm({ title: '라시안컷 세계관 허브', tags: ['라시안컷', '세계관', '허브'] }) + '# 라시안컷 세계관\n\n사이트의 세계관 기록(CODEX)을 옵시디언용으로 옮긴 노트입니다. 장마다 한 파일입니다.\n\n## 장\n\n';
-CODEX.forEach(c => { hub += `- [[${fname(c)}]] — ${c.blurb || ''}\n`; });
-hub += '\n## 함께 보기\n\n- [[지도 지명 목록]]\n';
-w('00 세계관 허브', hub);
+CODEX.forEach(c => { hub += `- ${lk(c)} — ${c.blurb || ''}\n`; });
+hub += `\n## 함께 보기\n\n- [[${MAPN}|지도 지명 목록]]\n`;
+w(HUB, hub);
 console.log('옵시디언 노트 생성:', path.relative(root, out), '— 장', CODEX.length, '+ 허브 + 지도 지명 목록');
