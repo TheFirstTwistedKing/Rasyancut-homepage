@@ -1,7 +1,7 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>라시안컷 소설 모음집</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=IM+Fell+English:ital@0;1&family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Serif+KR:wght@900&family=Share+Tech+Mono&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=IM+Fell+English:ital@0;1&family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Serif+KR:wght@300&family=Share+Tech+Mono&display=swap">
 <style>
 /* Layout concept: one full-viewport hologram console. Screens stack; a downward curtain covers every change.
    Palette is black + gold + pale (연노랑) + yellow; white is kept for reading text. */
@@ -1734,22 +1734,25 @@ html[data-boost] #alertFx.flash .fl{background:rgba(255,255,255,.5)}
 .et-xh{position:absolute;z-index:3;left:50%;top:44%;width:34px;height:34px;translate:-50% -50%;border:2px solid rgba(255,255,255,.75);border-radius:50%;pointer-events:none}
 .et-xh::before,.et-xh::after{content:"";position:absolute;left:50%;top:50%;background:rgba(255,255,255,.75);translate:-50% -50%}
 .et-xh::before{width:2px;height:12px}.et-xh::after{width:12px;height:2px}
-.et-gun{position:absolute;z-index:3;right:max(1vw,6px);bottom:-5%;width:min(92vw,640px);transform-origin:88% 96%;transform:translateY(46%) rotate(9deg);opacity:0;transition:transform .9s cubic-bezier(.2,.8,.2,1),opacity .6s;pointer-events:none}
-.et-gun.up{transform:translateY(0) rotate(9deg);opacity:1}
+.et-gun{--gw:min(86vw,600px);position:absolute;z-index:3;left:50%;top:calc(44% - var(--gw)*.0667);width:var(--gw);translate:-50% 0;transform-origin:50% 8%;transform:translateY(55%);opacity:0;transition:transform .9s cubic-bezier(.2,.8,.2,1),opacity .6s;pointer-events:none}
+.et-gun.up{transform:none;opacity:1}
 .et-gun svg{display:block;width:100%;height:auto;filter:drop-shadow(0 0 1px #fff) drop-shadow(0 0 7px rgba(255,255,255,.4))}
-.et-gun.up svg{animation:gunSway 4.4s ease-in-out infinite}
-@keyframes gunSway{0%,100%{transform:translate(0,0)}50%{transform:translate(-3px,-5px)}}
-.et-gun.kick{animation:gunKick .36s cubic-bezier(.1,.8,.3,1)}
-@keyframes gunKick{0%{transform:translate(0,0) rotate(9deg)}16%{transform:translate(30px,42px) rotate(24deg)}100%{transform:translate(0,0) rotate(9deg)}}
+.et-gun.up svg{animation:gunSway 5s ease-in-out infinite}
+@keyframes gunSway{0%,100%{transform:translate(0,0)}30%{transform:translate(2px,-3px)}60%{transform:translate(-2px,2px)}}
+.et-gun.kick{animation:gunKick .38s cubic-bezier(.1,.8,.3,1)}
+@keyframes gunKick{0%{transform:none}14%{transform:translateY(54px) rotate(-1.6deg) scale(1.035)}100%{transform:none}}
+.et-muz{position:absolute;z-index:3;left:50%;top:44%;width:150px;height:150px;translate:-50% -50%;border-radius:50%;background:radial-gradient(closest-side,#fff,rgba(255,255,255,.55) 35%,transparent 70%);opacity:0;pointer-events:none}
+.et-muz.on{animation:etMuz .2s ease-out}
+@keyframes etMuz{0%{opacity:1;scale:.6}100%{opacity:0;scale:1.7}}
 .et-pips{position:absolute;z-index:3;left:max(22px,3vw);bottom:max(26px,env(safe-area-inset-bottom,0px) + 18px);display:flex;gap:10px}
 .et-pips i{width:16px;height:16px;border-radius:50%;border:2px solid #fff;background:#fff;box-shadow:0 0 8px rgba(255,255,255,.5);transition:background .2s,border-color .2s,box-shadow .2s}
 .et-pips i.spent{background:transparent;border-color:#555;box-shadow:none}
-.et-hint{position:absolute;z-index:3;left:50%;bottom:max(14%,60px);translate:-50% 0;font-size:12px;letter-spacing:.4em;color:rgba(255,255,255,.55);animation:etHint 1.6s ease-in-out infinite;pointer-events:none}
+.et-hint{position:absolute;z-index:3;left:50%;top:24%;translate:-50% 0;font-size:12px;letter-spacing:.4em;color:rgba(255,255,255,.55);animation:etHint 1.6s ease-in-out infinite;pointer-events:none}
 @keyframes etHint{50%{opacity:.15}}
 .et-flash{position:absolute;inset:0;z-index:5;background:#fff;opacity:0;pointer-events:none}
 .et-flash.on{animation:etFlash .24s ease-out}
 @keyframes etFlash{0%{opacity:.95}100%{opacity:0}}
-.et-noir{position:relative;z-index:6;margin:0;max-width:92vw;text-align:center;white-space:pre-line;font:900 clamp(26px,5.6vw,76px)/1.5 'Noto Serif KR','Nanum Myeongjo','Batang',serif;letter-spacing:.03em;color:#f4f4f4;transform:rotate(-6deg) skewX(-9deg);text-shadow:4px 4px 0 #000,-1px -1px 0 #000,0 0 22px rgba(255,255,255,.18);word-break:keep-all}
+.et-noir{position:relative;z-index:6;margin:0;max-width:92vw;text-align:center;white-space:pre-line;font:300 clamp(26px,5.4vw,72px)/1.55 'Noto Serif KR','Nanum Myeongjo','Batang',serif;letter-spacing:.07em;color:#ededed;transform:rotate(-6deg) skewX(-9deg);text-shadow:2px 2px 0 #000,0 0 18px rgba(255,255,255,.14);word-break:keep-all}
 .e-trap.noir::after{content:"";position:absolute;inset:-10%;z-index:5;pointer-events:none;background:repeating-linear-gradient(-16deg,rgba(255,255,255,.08) 0 24px,transparent 24px 66px)}
 .e-trap.noir #eGunFx,.e-trap.noir #eGunCr{opacity:.55}
 .et-reboot{position:absolute;z-index:3;left:50%;bottom:max(9%,calc(env(safe-area-inset-bottom,0px) + 40px));translate:-50% 0;display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 26px;color:#fff;background:rgba(0,0,0,.78);border:2px solid #fff;font:700 14px var(--f-mono);letter-spacing:.3em;box-shadow:0 0 30px rgba(0,0,0,.8);animation:rise .6s var(--ease-soft) both}
@@ -2427,8 +2430,8 @@ html[data-boost] #scGame,html[data-boost] #scRss,html[data-boost] #scEye{filter:
     <div class="e-vault" id="eVault" hidden role="dialog" aria-label="비밀 기록 보관소"><div class="evt"><span>비밀 기록 보관소</span><button type="button" id="eVaultX" aria-label="닫기">✕</button></div><div class="evb"></div></div>
     <div class="e-trap" id="eTrap" hidden>
       <canvas id="eGunFx" hidden></canvas><canvas id="eGunCr" hidden></canvas><canvas id="eBin" hidden></canvas>
-      <i class="et-xh" id="eXh" hidden aria-hidden="true"></i>
-      <div class="et-gun" id="eGun" hidden><svg viewBox="0 0 520 300" aria-hidden="true"><g fill="#050505" stroke="#fff" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"><path d="M18 92L30 84H226V122H30L18 114Z"/><path d="M70 122H226V144H78Q70 144 70 136Z"/><path d="M30 84V70H48L54 84Z"/><rect x="226" y="72" width="104" height="82" rx="10"/><path d="M326 78H388Q404 78 408 94V150H326Z"/><path d="M384 78L404 48L424 52L412 92Z"/><path d="M340 150H410L452 268Q458 288 438 290L400 292Q380 292 374 274Z"/><path d="M312 152Q312 206 352 206L362 196" fill="none"/><path d="M334 152L342 186" fill="none"/></g><g fill="none" stroke="#b9b9b9" stroke-width="2" stroke-linecap="round"><path d="M252 80V146M278 80V146M304 80V146"/><path d="M40 100H218"/><path d="M386 196L424 206M392 222L430 232M398 248L436 258"/></g></svg></div>
+      <i class="et-xh" id="eXh" hidden aria-hidden="true"></i><i class="et-muz" id="eMuz" aria-hidden="true"></i>
+      <div class="et-gun" id="eGun" hidden><svg viewBox="0 0 600 520" aria-hidden="true"><g fill="#050505" stroke="#fff" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"><rect x="120" y="360" width="360" height="170" rx="26"/><path d="M170 300H430V366H170Z"/><path d="M214 300L292 44H308L386 300Z"/><path d="M292 46L294 22H306L308 46Z"/><path d="M188 286H272V334H188Z"/><path d="M328 286H412V334H328Z"/><path d="M278 520V420Q278 392 300 392Q322 392 322 420V520Z"/></g><g fill="none" stroke="#b9b9b9" stroke-width="2" stroke-linecap="round"><path d="M300 58V296"/><path d="M262 398L262 520M338 398L338 520M196 380V520M404 380V520"/><path d="M286 410H314M286 428H314M286 446H314"/><path d="M226 340H374"/></g></svg></div>
       <div class="et-pips" id="ePips" hidden aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
       <span class="et-hint mono" id="eGunHint" hidden>CLICK</span>
       <canvas id="eGunNz" hidden></canvas>
@@ -7272,6 +7275,7 @@ function buildCodex() {
    body: 문자열 = 문단, 배열 = 점 목록
    ========================================================================== */
 const NOTICES = [
+  { id: "p4-7-1", tag: "FIX", date: "2026.10.04", title: "Patch v-4.7.1 · 신호기 4번 연출 다듬기", body: ["신호기 4번의 새 연출을 다듬었어요.",["조준 모습과 글씨체가 바뀌었어요."]] },
   { id: "p4-7-0", tag: "UPDATE", date: "2026.10.04", title: "Patch v-4.7.0 · 신호기 4번 새 연출", body: ["신호기 4번에서 일정 시간이 지나면 나오던 연출이 새로운 연출로 바뀌었어요.",["새 연출이 생겼어요. 직접 확인해 보세요."]] },
   { id: "p4-6-3", tag: "FIX", date: "2026.10.03", title: "Patch v-4.6.3 · 국가 스토리 버튼", body: ["수도 상세 지도 오른쪽 위에 국가 스토리 버튼이 생겼어요.",["눌러서 그 국가의 이야기를 한 번에 읽을 수 있어요.","스토리가 아직 없는 국가는 준비 중이라고 나와요."]] },
   { id: "p4-6-2", tag: "FIX", date: "2026.10.03", title: "Patch v-4.6.2 · 수도 상세 지도 표시 수정", body: ["수도 상세 지도가 화면에 보이지 않던 문제를 고쳤어요."] },
@@ -10852,7 +10856,7 @@ void main(){
 
 
   /* ---------- 30초가 지나도 비밀 기록 보관소를 열지 않으면: 검은 화면 → 설립자를 겨냥한 검은 리볼버(클릭 = 한 발, 6발) → 느와르 문장 → 효과 없이 아주 큰 '삐' + 이진수 레드스크린 ---------- */
-  const trap = $('#eTrap'), tBin = $('#eBin'), tReboot = $('#eReboot'), gunEl = $('#eGun'), gFx = $('#eGunFx'), gCr = $('#eGunCr'), gNz = $('#eGunNz'), gFlash = $('#eFlash'), gNoir = $('#eNoir'), gXh = $('#eXh'), gPips = $('#ePips'), gHint = $('#eGunHint');
+  const trap = $('#eTrap'), tBin = $('#eBin'), tReboot = $('#eReboot'), gunEl = $('#eGun'), gFx = $('#eGunFx'), gCr = $('#eGunCr'), gNz = $('#eGunNz'), gFlash = $('#eFlash'), gNoir = $('#eNoir'), gXh = $('#eXh'), gMuz = $('#eMuz'), gPips = $('#ePips'), gHint = $('#eGunHint');
   const SHOTS = 6, NOIR_TEXT = '당신이 당신을 죽인겁니다.\n설립자.';
   let trapOn = false, trapT = [], trapRaf = 0, lockTimer = 0, vaultSeen = false;
   let gunOn = false, gunReady = false, shots = 0, gunCracks = [], drips = [], noiseUntil = 0, noiseDur = 1, gunDone = null;
@@ -10888,7 +10892,7 @@ void main(){
     if (!gunOn || !gunReady || shots >= SHOTS) return; shots++; gunReady = false; gHint.hidden = true;
     SND.gunshot();
     gunEl.classList.remove('kick'); void gunEl.offsetWidth; gunEl.classList.add('kick');
-    gFlash.classList.remove('on'); void gFlash.offsetWidth; gFlash.classList.add('on');
+    gFlash.classList.remove('on'); void gFlash.offsetWidth; gFlash.classList.add('on'); gMuz.classList.remove('on'); void gMuz.offsetWidth; gMuz.classList.add('on');
     quakeView(); splat(gFx.getContext('2d'), gFx.width, gFx.height);
     gunCracks.push(...crackGen()); if (shots > 2) gunCracks.push(...crackGen()); crackDrawTo(gCr, gunCracks);   // 화면이 점점 깨진다
     noiseDur = RM ? 150 : 750; noiseUntil = performance.now() + noiseDur;
@@ -10902,7 +10906,7 @@ void main(){
   function gunScene() {
     const r = view.getBoundingClientRect(); [gFx, gCr, gNz].forEach(c => { c.width = Math.round(r.width); c.height = Math.round(r.height); c.hidden = false; c.getContext('2d').clearRect(0, 0, c.width, c.height); });
     shots = 0; gunCracks = []; drips = []; noiseUntil = 0; [...gPips.children].forEach(p => p.classList.remove('spent'));
-    gunEl.hidden = false; gPips.hidden = false; gXh.hidden = false; void gunEl.offsetWidth; gunEl.classList.add('up'); SND.gunCock(); gunLoop();
+    gunEl.hidden = false; gPips.hidden = false; void gunEl.offsetWidth; gunEl.classList.add('up'); SND.gunCock(); gunLoop();
     return new Promise(res => { gunDone = res; trapT.push(setTimeout(() => { gunOn = true; gunReady = true; gHint.hidden = false; }, RM ? 100 : 1100)); });
   }
   function trapReset() {

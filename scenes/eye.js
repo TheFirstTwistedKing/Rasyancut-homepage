@@ -172,7 +172,7 @@ void main(){
 
 
   /* ---------- 30초가 지나도 비밀 기록 보관소를 열지 않으면: 검은 화면 → 설립자를 겨냥한 검은 리볼버(클릭 = 한 발, 6발) → 느와르 문장 → 효과 없이 아주 큰 '삐' + 이진수 레드스크린 ---------- */
-  const trap = $('#eTrap'), tBin = $('#eBin'), tReboot = $('#eReboot'), gunEl = $('#eGun'), gFx = $('#eGunFx'), gCr = $('#eGunCr'), gNz = $('#eGunNz'), gFlash = $('#eFlash'), gNoir = $('#eNoir'), gXh = $('#eXh'), gPips = $('#ePips'), gHint = $('#eGunHint');
+  const trap = $('#eTrap'), tBin = $('#eBin'), tReboot = $('#eReboot'), gunEl = $('#eGun'), gFx = $('#eGunFx'), gCr = $('#eGunCr'), gNz = $('#eGunNz'), gFlash = $('#eFlash'), gNoir = $('#eNoir'), gXh = $('#eXh'), gMuz = $('#eMuz'), gPips = $('#ePips'), gHint = $('#eGunHint');
   const SHOTS = 6, NOIR_TEXT = '당신이 당신을 죽인겁니다.\n설립자.';
   let trapOn = false, trapT = [], trapRaf = 0, lockTimer = 0, vaultSeen = false;
   let gunOn = false, gunReady = false, shots = 0, gunCracks = [], drips = [], noiseUntil = 0, noiseDur = 1, gunDone = null;
@@ -208,7 +208,7 @@ void main(){
     if (!gunOn || !gunReady || shots >= SHOTS) return; shots++; gunReady = false; gHint.hidden = true;
     SND.gunshot();
     gunEl.classList.remove('kick'); void gunEl.offsetWidth; gunEl.classList.add('kick');
-    gFlash.classList.remove('on'); void gFlash.offsetWidth; gFlash.classList.add('on');
+    gFlash.classList.remove('on'); void gFlash.offsetWidth; gFlash.classList.add('on'); gMuz.classList.remove('on'); void gMuz.offsetWidth; gMuz.classList.add('on');
     quakeView(); splat(gFx.getContext('2d'), gFx.width, gFx.height);
     gunCracks.push(...crackGen()); if (shots > 2) gunCracks.push(...crackGen()); crackDrawTo(gCr, gunCracks);   // 화면이 점점 깨진다
     noiseDur = RM ? 150 : 750; noiseUntil = performance.now() + noiseDur;
@@ -222,7 +222,7 @@ void main(){
   function gunScene() {
     const r = view.getBoundingClientRect(); [gFx, gCr, gNz].forEach(c => { c.width = Math.round(r.width); c.height = Math.round(r.height); c.hidden = false; c.getContext('2d').clearRect(0, 0, c.width, c.height); });
     shots = 0; gunCracks = []; drips = []; noiseUntil = 0; [...gPips.children].forEach(p => p.classList.remove('spent'));
-    gunEl.hidden = false; gPips.hidden = false; gXh.hidden = false; void gunEl.offsetWidth; gunEl.classList.add('up'); SND.gunCock(); gunLoop();
+    gunEl.hidden = false; gPips.hidden = false; void gunEl.offsetWidth; gunEl.classList.add('up'); SND.gunCock(); gunLoop();
     return new Promise(res => { gunDone = res; trapT.push(setTimeout(() => { gunOn = true; gunReady = true; gHint.hidden = false; }, RM ? 100 : 1100)); });
   }
   function trapReset() {
