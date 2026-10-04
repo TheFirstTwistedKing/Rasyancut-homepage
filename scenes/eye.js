@@ -171,7 +171,7 @@ void main(){
   }
 
 
-  /* ---------- 30초가 지나도 비밀 기록 보관소를 열지 않으면: 검은 화면 → 설립자를 겨냥한 검은 리볼버(클릭 = 한 발, 6발) → 느와르 문장 → 효과 없이 아주 큰 '삐' + 이진수 레드스크린 ---------- */
+  /* ---------- (지금은 호출하지 않음 — 30초 제한시간은 없앴다. startTrap() 을 부르면 아래 연출이 나온다) 비밀 기록 보관소를 열지 않으면: 검은 화면 → 설립자를 겨냥한 검은 리볼버(클릭 = 한 발, 6발) → 느와르 문장 → 효과 없이 아주 큰 '삐' + 이진수 레드스크린 ---------- */
   const trap = $('#eTrap'), tBin = $('#eBin'), tReboot = $('#eReboot'), gunEl = $('#eGun'), gFx = $('#eGunFx'), gCr = $('#eGunCr'), gNz = $('#eGunNz'), gFlash = $('#eFlash'), gNoir = $('#eNoir'), gXh = $('#eXh'), gMuz = $('#eMuz'), gPips = $('#ePips'), gHint = $('#eGunHint');
   const SHOTS = 6, NOIR_TEXT = '당신이 당신을 죽인겁니다.\n설립자.';
   let trapOn = false, trapT = [], trapRaf = 0, lockTimer = 0, vaultSeen = false;
@@ -257,8 +257,8 @@ void main(){
   tReboot.addEventListener('click', () => { SND.click(); Scenes.rebootEye(); });
 
 
-  /* 틀린 코드를 넣을 때마다: 화면 전체가 흔들리고 금이 늘어나며, 30초 제한시간이 줄어든다 */
-  const crackC = $('#eCrack'); let cracks = [], lockStart = 0, lockLimit = 30000;
+  /* 틀린 코드를 넣을 때마다: 화면 전체가 흔들리고 금이 늘어난다 (제한시간은 없다) */
+  const crackC = $('#eCrack'); let cracks = [];
   function crackGen() {
     const r = view.getBoundingClientRect(), W = r.width, H = r.height, edge = Math.random() < .6, out = [];
     let x = edge ? (Math.random() < .5 ? 0 : W) : Math.random() * W, y = edge ? Math.random() * H : Math.random() * H, a = Math.atan2(H / 2 - y, W / 2 - x) + (Math.random() - .5) * 1.4;
@@ -277,11 +277,9 @@ void main(){
     if (RM || !view.animate) return; const f = []; for (let i = 0; i < 12; i++) { const a = 1 - i / 12; f.push({ transform: `translate(${((Math.random() - .5) * 46 * a).toFixed(1)}px,${((Math.random() - .5) * 30 * a).toFixed(1)}px) rotate(${((Math.random() - .5) * 2.2 * a).toFixed(2)}deg)` }); } f.push({ transform: 'none' });
     view.animate(f, { duration: 560, easing: 'linear' });
   }
-  function armTrap(ms) { clearTimeout(lockTimer); lockTimer = setTimeout(startTrap, Math.max(0, ms)); }
   function wrongCode() {
     SND.tone(160, .16, 'square', .05); SND.tone(110, .22, 'square', .05, .13); SND.glass && SND.glass();
     quakeView(); cracks.push(...crackGen()); crackC.hidden = false; crackDraw();
-    if (!vaultSeen && locked) { const el = performance.now() - lockStart; lockLimit -= 6000; if (lockLimit - el < 1500) lockLimit = el + 1500; armTrap(lockLimit - el); }   // 틀릴 때마다 제한시간이 6초씩 줄어든다
   }
 
   /* 분노 이후: 브라운관 눈보라가 계속 켜져 있고 'Enter-code' 가 화면 가득, 입력창은 하나뿐 */
@@ -289,7 +287,7 @@ void main(){
   function enterLocked() {
     locked = true; view.classList.add('locked'); say.hidden = true; vault.hidden = true; rageTx.hidden = true;
     enterF.hidden = false; enterIn.value = ''; enterIn.disabled = false; try { enterIn.focus({ preventScroll: true }); } catch (e) { /* 무시 */ }
-    vaultSeen = false; cracks = []; crackC.hidden = true; lockStart = performance.now(); lockLimit = RM ? 3000 : 30000; armTrap(lockLimit);
+    vaultSeen = false; cracks = []; crackC.hidden = true; 
   }
   function leaveLocked() { locked = false; cracks = []; crackC.hidden = true; clearInterval(ambTimer); clearTimeout(lockTimer); trapReset(); view.classList.remove('trap'); crtStop(); enterF.hidden = true; vault.hidden = true; view.classList.remove('locked'); }
   enterIn.addEventListener('input', () => SND.type());
