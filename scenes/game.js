@@ -606,8 +606,7 @@ const Game = (() => {
     og.putImageData(out, 0, 0); return o;
   };
   function buildSprites() {
-    ['down', 'up', 'left'].forEach(d => { SPR[d] = [0, 1, 2, 3].map(f => outline(mk(CW, CH, g => drawChar(g, d, f)))); });
-    SPR.right = SPR.left.map(c => mk(CW, CH, g => { g.translate(CW, 0); g.scale(-1, 1); g.drawImage(c, 0, 0); }));
+    const S = HERO.build(); ['down', 'up', 'left', 'right'].forEach(d => { SPR[d] = S[d]; });      // 주인공 도트(scenes/hero.js)
   }
 
   /* ---------- 메시지 창 · 선택지 ---------- */
@@ -720,7 +719,7 @@ const Game = (() => {
     objs.forEach(o => { if (o.anim && o.spr && o.ox + o.spr.width > camX && o.ox < camX + viewW) list.push({ b: o.base + .5, f: () => o.anim(ctx, clock, o) }); });
     npcs.forEach(n => { const sit = n.kind === 'sit', f = n.moving ? [0, 1, 0, 3][Math.floor(n.t / .15) % 4] : (sit ? (Math.floor(n.t * 3) % 2 ? 1 : 0) : 0), spr = npcSprite(n.pal, n.dir, f, sit, n.carry && !sit); if (n.x + 20 < camX || n.x - 20 > camX + viewW) return; list.push({ b: n.y + (sit ? 2 : 0), f: () => { if (!sit) { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(Math.round(n.x), Math.round(n.y) - 1, 12, 4, 0, 0, 7); ctx.fill(); } ctx.drawImage(spr, Math.round(n.x) - 22, Math.round(n.y) - (sit ? 31 : 61)); } }); });
     const fi = P.moving ? [0, 1, 0, 3][Math.floor(P.t / .12) % 4] : 0;
-    list.push({ b: ppy, f: () => { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(ppx, ppy - 1, 12, 4, 0, 0, 7); ctx.fill(); ctx.drawImage(SPR[P.dir][fi], ppx - CW / 2, ppy - 61); } });
+    list.push({ b: ppy, f: () => { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(ppx, ppy - 1, 12, 4, 0, 0, 7); ctx.fill(); ctx.drawImage(SPR[P.dir][fi], ppx - HERO.PW / 2, ppy - 61); } });
     list.sort((a, b) => a.b - b.b).forEach(o => o.f());
     if (curMap === 'f95') { const tx = Math.round(clock * 14 % 128), ty = Math.round(clock * 8 % 128); ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = .17; ctx.fillStyle = causticPat(); ctx.translate(tx, ty); ctx.fillRect(camX - tx, camY - ty, viewW + 1, viewH + 1); ctx.restore(); }
     ctx.globalCompositeOperation = 'lighter';

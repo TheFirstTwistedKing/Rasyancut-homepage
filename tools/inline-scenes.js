@@ -11,6 +11,6 @@ function put(b, e, body) {
 }
 put('<!-- SCENES-HTML:BEGIN -->', '<!-- SCENES-HTML:END -->', rd('scenes.html'));
 put('/* SCENES-CSS:BEGIN */', '/* SCENES-CSS:END */', rd('scenes.css'));
-put('/* SCENES-JS:BEGIN */', '/* SCENES-JS:END */', ['core.js', 'laugh-data.js', 'sfx.js', 'game.js', 'rss.js', 'desk.js', 'eye.js'].map(rd).join('\n\n'));
+put('/* SCENES-JS:BEGIN */', '/* SCENES-JS:END */', ['core.js', 'laugh-data.js', 'sfx.js', 'hero.js', 'game.js', 'rss.js', 'desk.js', 'eye.js'].map(rd).join('\n\n'));
 fs.writeFileSync(htmlPath, html);
 console.log('index.html 에 신호기 연출을 넣었습니다');
