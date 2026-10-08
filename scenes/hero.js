@@ -31,9 +31,10 @@ const HERO = (() => {
   // 그래서 같은 자세(창이 같은 쪽에 있고 같은 방향을 보는) 걷기 한 장 + 서 있는 그림을 번갈아 쓰고, 서 있는 쪽은 1칸 위로 띄워 걸음의 오르내림을 만든다.
   const walk = (w, i) => [mk(w), mk(i, -1), mk(w), mk(i, -1)];
   const dirs = {
-    down: { idle: mk('down.idle'), walk: walk('down.w0', 'down.idle'), run: [mk('down.run'), mk('down.run', -2)] },
-    left: { idle: mk('left.idle'), walk: walk('left.w2', 'left.idle'), run: [mk('left.run'), mk('left.run', -2)] },
-    right: { idle: mk('right.idle'), walk: walk('right.w0', 'right.idle'), run: [mk('right.run'), mk('right.run', -2)] },
+    down: { idle: mk('down.idle'), walk: walk('down.w0', 'down.idle'), run: null },
+    // 시트의 LEFT/RIGHT 는 캐릭터 기준이라 화면에서는 반대로 보인다(LEFT 그림은 오른쪽을 본다) → 서로 바꿔 쓴다
+    right: { idle: mk('left.idle'), walk: walk('left.w2', 'left.idle'), run: [mk('left.run'), mk('left.run', -2)] },
+    left: { idle: mk('right.idle'), walk: walk('right.w0', 'right.idle'), run: [mk('right.run'), mk('right.run', -2)] },
     up: { idle: mk('up.idle'), walk: walk('up.w0', 'up.idle'), run: null },
   };
   return { PW, PH, build: () => dirs };
