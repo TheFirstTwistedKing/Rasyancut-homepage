@@ -1,7 +1,7 @@
 /* ==========================================================================
    주인공 도트 스프라이트 (참고 스프라이트 시트: 초록 머리 · 연두·흰 도포에 금 테두리 · 언월도)
    · 앞(down)·왼쪽(left)·오른쪽(right)·뒤(up) 4방향. 서 있기 · 걷기 · 달리기(Shift) 그림을 시트에서 잘라 72×64 도트로 줄여 넣었다.
-   · 뒤쪽은 시트에 서 있기·걷기 한 장씩이라 둘을 번갈아 쓴다. 달리기는 앞·옆만 있고, 뒤는 걷기를 빠르게 쓴다.
+   · 걷기는 같은 자세의 걷기 한 장과 서 있는 그림을 번갈아 쓴다(시트의 나머지 걷기 그림은 방향이 제각각이라 뺐다). 달리기는 앞·옆만 있고, 뒤는 걷기를 빠르게 쓴다.
    · 캔버스 72×64, 머리 중심 x=36, 발끝 y=63.
    ========================================================================== */
 const HERO = (() => {
@@ -27,11 +27,14 @@ const HERO = (() => {
   };
   const mk = (key, dy = 0) => { const c = document.createElement('canvas'); c.width = PW; c.height = PH; const im = new Image(); im.onload = () => { const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(im, 0, dy); }; im.src = DATA[key]; return c; };
   const FR = {};      // 불러오자마자 미리 만들어 둔다(진입 전에 이미 그려져 있음)
+  // 시트의 걷기 중간 그림은 방향·창 위치가 제각각이라 번갈아 쓰면 몸이 휙휙 돌아 보인다.
+  // 그래서 같은 자세(창이 같은 쪽에 있고 같은 방향을 보는) 걷기 한 장 + 서 있는 그림을 번갈아 쓰고, 서 있는 쪽은 1칸 위로 띄워 걸음의 오르내림을 만든다.
+  const walk = (w, i) => [mk(w), mk(i, -1), mk(w), mk(i, -1)];
   const dirs = {
-    down: { idle: mk('down.idle'), walk: ['down.w0', 'down.w1', 'down.w2', 'down.w1'].map(k => mk(k)), run: [mk('down.run'), mk('down.run', -2)] },
-    left: { idle: mk('left.idle'), walk: ['left.w0', 'left.w1', 'left.w2', 'left.w1'].map(k => mk(k)), run: [mk('left.run'), mk('left.run', -2)] },
-    right: { idle: mk('right.idle'), walk: ['right.w0', 'right.w1', 'right.w2', 'right.w1'].map(k => mk(k)), run: [mk('right.run'), mk('right.run', -2)] },
-    up: { idle: mk('up.idle'), walk: [mk('up.w0'), mk('up.idle'), mk('up.w0', -1), mk('up.idle')], run: null },
+    down: { idle: mk('down.idle'), walk: walk('down.w0', 'down.idle'), run: [mk('down.run'), mk('down.run', -2)] },
+    left: { idle: mk('left.idle'), walk: walk('left.w2', 'left.idle'), run: [mk('left.run'), mk('left.run', -2)] },
+    right: { idle: mk('right.idle'), walk: walk('right.w0', 'right.idle'), run: [mk('right.run'), mk('right.run', -2)] },
+    up: { idle: mk('up.idle'), walk: walk('up.w0', 'up.idle'), run: null },
   };
   return { PW, PH, build: () => dirs };
 })();
