@@ -13,14 +13,17 @@ const CFG = JSON.parse(fs.readFileSync(path.join(root, 'data/map/map-config.json
 /* ---------- 이미지 읽기 ---------- */
 const ppm = cp.execFileSync('convert', [path.join(root, 'data/map/world-map.webp'), '-depth', '8', 'ppm:-'], { maxBuffer: 1 << 28 });
 let p = 0; const tok = []; while (tok.length < 4) { let s = ''; while (ppm[p] > 32) s += String.fromCharCode(ppm[p++]); p++; tok.push(s); }
-const W0 = +tok[1], H = +tok[2], raw = Buffer.from(ppm.subarray(p));
+const W0 = +tok[1], H0 = +tok[2], raw = Buffer.from(ppm.subarray(p));
 /* 범례(좌상단 글씨·견본)는 바다색으로 지운다. */
 for (const [x0, x1, y0, y1] of CFG.legend) for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { const i = (y * W0 + x) * 3; raw[i] = 176; raw[i + 1] = 177; raw[i + 2] = 195; }
 /* 이 지도는 좌우로 이어진다(양쪽 가장자리의 대륙·혈해가 서로 맞물림). 원반이 그림보다 넓으니 좌우에 PAD 만큼 맞은편 그림을 덧붙여서 처리한다. 좌표는 마지막에 PAD 를 빼 그림 기준으로 돌려놓는다. */
-const PAD = CFG.pad || 0, W = W0 + 2 * PAD, N = W * H, d = Buffer.alloc(N * 3);
-for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const sx = ((x - PAD) % W0 + W0) % W0, j = (y * W0 + sx) * 3, i = (y * W + x) * 3; d[i] = raw[j]; d[i + 1] = raw[j + 1]; d[i + 2] = raw[j + 2]; }
+/* 위·아래는 그림이 끝난 곳에서 잘려 있으니, 원반(반지름 DISK) 끝까지 캔버스를 늘리고(OY = 위로 늘린 줄 수) 그 자리는 아래 extendWorld() 가 지형을 이어 그린다. */
+const PAD = CFG.pad || 0, EXT = CFG.ext || { top: 0, bottom: 0 }, OY = EXT.top, W = W0 + 2 * PAD, H = H0 + EXT.top + EXT.bottom, N = W * H, d = Buffer.alloc(N * 3);
+for (let i = 0; i < N; i++) { d[i * 3] = 176; d[i * 3 + 1] = 177; d[i * 3 + 2] = 195; }           // 늘린 곳은 바다색
+for (let y = 0; y < H0; y++) for (let x = 0; x < W; x++) { const sx = ((x - PAD) % W0 + W0) % W0, j = (y * W0 + sx) * 3, i = ((y + OY) * W + x) * 3; d[i] = raw[j]; d[i + 1] = raw[j + 1]; d[i + 2] = raw[j + 2]; }
 const SHIFT = [0, -W0, W0];                       // 같은 상자를 맞은편 덧붙임에도 적용
-const boxAll = (m, [x0, x1, y0, y1], v) => { for (const o of SHIFT) box(m, x0 + o + PAD, x1 + o + PAD, y0, y1, v); };
+const boxAll = (m, [x0, x1, y0, y1], v) => { for (const o of SHIFT) box(m, x0 + o + PAD, x1 + o + PAD, y0 + OY, y1 + OY, v); };
+const DISK = CFG.disk || 1100, CX = PAD + W0 / 2, CY = OY + (CFG.cy || H0 / 2);   // 원반 중심(캔버스 좌표)
 const U8 = () => new Uint8Array(N);
 
 /* ---------- 마스크 도구 ---------- */
@@ -58,6 +61,58 @@ const dropSmall = (m, min, conn = 4) => { const { lab, info } = comps(m, conn); 
 const flood = (seed, pass) => { const o = U8(), st = []; for (let i = 0; i < N; i++) if (seed[i] && pass[i]) { o[i] = 1; st.push(i); } while (st.length) { const i = st.pop(), x = i % W, y = (i / W) | 0; for (const j of [x > 0 ? i - 1 : -1, x < W - 1 ? i + 1 : -1, y > 0 ? i - W : -1, y < H - 1 ? i + W : -1]) if (j >= 0 && pass[j] && !o[j]) { o[j] = 1; st.push(j); } } return o; };
 const box = (m, x0, x1, y0, y1, v) => { for (let y = Math.max(0, y0); y <= Math.min(H - 1, y1); y++) for (let x = Math.max(0, x0); x <= Math.min(W - 1, x1); x++) m[y * W + x] = v; };
 
+/* ---------- 잘린 곳 잇기 · 원반 모양에 맞추기 ----------
+   손그림은 가로 2000 × 세로 1120 의 직사각형이고 원반은 지름 2200 이라, 그림 위·아래로 원반이 비어 있고 그림 가장자리에서 땅·혈해가 직선으로 잘려 있다.
+   - 남쪽: 아래쪽에서 잘린 글라시카에룰리아(얼음 대륙)를 그 해안선 기울기대로 이어 원반 가장자리까지 넓힌다. 바다에는 얼음 섬 몇 개.
+   - 북쪽: 위쪽 가장자리에 걸쳐 잘린 혈해 고리를 닫고, 원반 북쪽 가장자리에 이름 없는 극지 땅('?' 구역 46번)과 섬을 그린다.
+   - 마지막에 원반 밖(반지름 + 60)은 지운다. 모양은 고정 시드라 몇 번을 돌려도 같다. */
+const extSeeds = {};
+function extendWorld() {
+  if (!EXT.top && !EXT.bottom) return;
+  let sd = 20261011; const rnd = () => { sd |= 0; sd = sd + 0x6D2B79F5 | 0; let t = Math.imul(sd ^ sd >>> 15, 1 | sd); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const curve = A => { const ph = [rnd() * 6.3, rnd() * 6.3, rnd() * 6.3, rnd() * 6.3]; return u => A * (Math.sin(u / 110 + ph[0]) * .45 + Math.sin(u / 47 + ph[1]) * .3 + Math.sin(u / 21 + ph[2]) * .17 + Math.sin(u / 9 + ph[3]) * .08); };
+  const blobAt = (id, cx, cy, rx, ry) => {       // 그림 좌표(cx, cy)에 울퉁불퉁한 섬. 씨앗도 함께 남긴다.
+    const ph = rnd() * 6.3, X = cx + PAD, Y = cy + OY;
+    for (let y = Math.floor(Y - ry * 1.5); y <= Y + ry * 1.5; y++) for (let x = Math.floor(X - rx * 1.5); x <= X + rx * 1.5; x++) {
+      if (x < 0 || y < 0 || x >= W || y >= H) continue; const a = Math.atan2((y - Y) / ry, (x - X) / rx), r = Math.hypot((x - X) / rx, (y - Y) / ry);
+      if (r < 1 + .24 * Math.sin(3 * a + ph) + .13 * Math.sin(5 * a + ph * 2) + .06 * Math.sin(9 * a + ph * 3)) land[y * W + x] = 1;
+    }
+    (extSeeds[id] = extSeeds[id] || []).push([cx, cy]);
+  };
+  const smooth01 = t => { t = Math.max(0, Math.min(1, t)); return t * t * (3 - 2 * t); };
+
+  /* 남쪽: 잘린 줄(그림 맨 아래에서 5줄 위)에서 가장 긴 땅 구간을 찾아 그 양쪽 해안선을 아래로 이어 간다 */
+  if (EXT.bottom) {
+    const yS = OY + H0 - 5; let L0 = -1, R0 = -1, bl = 0, run = -1;
+    for (let x = 0; x < W; x++) { if (land[yS * W + x]) { if (run < 0) run = x; if (x - run + 1 > bl) { bl = x - run + 1; L0 = run; R0 = x; } } else run = -1; }
+    if (bl > 200) {
+      const fl = curve(46), fr = curve(60);
+      for (let y = yS + 1; y < H; y++) { const t = y - yS, k = Math.min(1, t / 60), l = Math.round(L0 - .7 * t + k * fl(t)), r = Math.round(R0 + 1.2 * t + k * fr(t)); for (let x = Math.max(0, l); x <= Math.min(W - 1, r); x++) land[y * W + x] = 1; }
+      (extSeeds[25] = extSeeds[25] || []).push([Math.round((L0 + R0) / 2) - PAD, H0 + 160]);
+      for (const [cx, cy, rx, ry] of (CFG.southIslands || [])) blobAt(25, cx, cy, rx, ry);
+    } else console.warn('남쪽 잇기: 잘린 땅을 못 찾음');
+  }
+
+  /* 북쪽 */
+  if (EXT.top) {
+    // (1) 위쪽 가장자리에 걸친 혈해 고리를 위로 이어 닫는다
+    const yz = OY + 2; let zl = -1, zr = -1, run = -1, bl = 0, pick = null;
+    for (let x = 0; x < W; x++) { if (Z[yz * W + x]) { if (run < 0) run = x; if (!pick || x - run + 1 > bl) { bl = x - run + 1; zl = run; zr = x; } } else run = -1; }
+    if (bl > 100) {
+      const T = 125, fz = curve(9), zre = Math.min(zr, PAD + W0 + 40);
+      for (let t = 1; t <= T; t++) { const q = Math.sqrt(1 - (t / T) ** 2), xl = Math.round(zl + (zre - zl) * (1 - q) + (t > 8 ? fz(t) : 0)), y = yz - t; if (y < 0) break; for (let x = Math.max(0, xl); x < W; x++) Z[y * W + x] = 1; }
+    }
+    // (2) 북쪽 가장자리의 극지 땅: 원반 위쪽 둘레를 따라 두껍게, 양끝은 가늘어진다
+    const gN = curve(55); (extSeeds[46] = extSeeds[46] || []);
+    for (let x = 0; x < W; x++) { const xo = x - PAD, lim = Math.round(OY + (CFG.northY || -300) + gN(xo) - 120 * smooth01((xo - 1250) / 300)); for (let y = 0; y < lim && y < H; y++) land[y * W + x] = 1; }
+    for (const sx of [700, 1000, 1300]) extSeeds[46].push([sx, (CFG.northY || -300) - 110]);
+    for (const [cx, cy, rx, ry] of (CFG.northIslands || [])) blobAt(46, cx, cy, rx, ry);
+  }
+
+  /* 원반 밖은 지운다(가장자리는 원반 테두리가 가려 준다) */
+  const lim = (DISK + 60) ** 2; for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if ((x - CX) ** 2 + (y - CY) ** 2 > lim) { const i = y * W + x; land[i] = 0; Z[i] = 0; Gz[i] = 0; }
+}
+
 /* ---------- 색 분류 ---------- */
 const O = U8(), K = U8(), Gr = U8(), R = U8(), Gn = U8();
 for (let i = 0; i < N; i++) {
@@ -80,6 +135,7 @@ let land = U8(); for (let i = 0; i < N; i++) land[i] = !oc[i] && !Z[i] ? 1 : 0;
 for (const b of CFG.noLand) boxAll(land, b, 0);
 land = dropSmall(land, 40);
 for (let i = 0; i < N; i++) if (Gz[i] && !land[i]) Gz[i] = 0;     // 블러드러스트는 땅 위에만
+extendWorld();
 
 /* ---------- 국경선 ---------- */
 const nearK = dilate(K, 4);
@@ -90,12 +146,13 @@ B = dilate(B, 1);
 
 /* 세선화 → 끝점 → 해안까지 연장(그림에서 끊긴 국경선을 닫는다) */
 function thin(m) {
+  let ya = H, yb = 0; for (let i = 0; i < N; i++) if (m[i]) { const y = (i / W) | 0; if (y < ya) ya = y; if (y > yb) yb = y; } ya = Math.max(1, ya - 2); yb = Math.min(H - 2, yb + 2);      // 국경선이 있는 줄만 훑는다
   const g = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? 0 : m[y * W + x]; let ch = true, it = 0;
   while (ch && it < 60) {
     ch = false; it++;
     for (let pass = 0; pass < 2; pass++) {
       const del = [];
-      for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
+      for (let y = ya; y <= yb; y++) for (let x = 1; x < W - 1; x++) {
         if (!m[y * W + x]) continue;
         const p2 = g(x, y - 1), p3 = g(x + 1, y - 1), p4 = g(x + 1, y), p5 = g(x + 1, y + 1), p6 = g(x, y + 1), p7 = g(x - 1, y + 1), p8 = g(x - 1, y), p9 = g(x - 1, y - 1);
         const A = (!p2 && p3) + (!p3 && p4) + (!p4 && p5) + (!p5 && p6) + (!p6 && p7) + (!p7 && p8) + (!p8 && p9) + (!p9 && p2), Bn = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
@@ -123,10 +180,10 @@ const wall = U8(); for (let i = 0; i < N; i++) wall[i] = B[i];
     for (let s = 1; s <= 90; s++) { const xx = Math.round(x + vx * s), yy = Math.round(y + vy * s); if (xx < 1 || yy < 1 || xx >= W - 1 || yy >= H - 1 || !land[yy * W + xx]) break; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) wall[(yy + dy) * W + xx + dx] = 1; }
   }
 }
-for (const w of CFG.walls) for (let k = 0; k + 1 < w.length; k++) { const [x0, y0] = [w[k][0] + PAD, w[k][1]], [x1, y1] = [w[k + 1][0] + PAD, w[k + 1][1]], n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)); for (let t = 0; t <= n; t++) { const x = Math.round(x0 + (x1 - x0) * t / n), y = Math.round(y0 + (y1 - y0) * t / n); for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) wall[(y + dy) * W + x + dx] = 1; } }
+for (const w of CFG.walls) for (let k = 0; k + 1 < w.length; k++) { const [x0, y0] = [w[k][0] + PAD, w[k][1] + OY], [x1, y1] = [w[k + 1][0] + PAD, w[k + 1][1] + OY], n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)); for (let t = 0; t <= n; t++) { const x = Math.round(x0 + (x1 - x0) * t / n), y = Math.round(y0 + (y1 - y0) * t / n); for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) wall[(y + dy) * W + x + dx] = 1; } }
 
 /* ---------- 소버린 아일랜드: 타원형 장막 안의 섬 ---------- */
-const [ox, oy] = [CFG.oval[0] + PAD, CFG.oval[1]];                                          // 타원 안쪽의 한 점
+const [ox, oy] = [CFG.oval[0] + PAD, CFG.oval[1] + OY];                                          // 타원 안쪽의 한 점
 const blob = (() => { const c = comps(land, 4); const id = c.lab[oy * W + ox]; const o = U8(); for (let i = 0; i < N; i++) if (c.lab[i] === id) o[i] = 1; return o; })();
 for (let i = 0; i < N; i++) if (blob[i]) land[i] = 0;
 const wh = U8(); for (let i = 0; i < N; i++) wh[i] = blob[i] && d[i * 3] >= 225 && d[i * 3 + 1] >= 225 && d[i * 3 + 2] >= 225 ? 1 : 0;
@@ -137,12 +194,13 @@ const seaSeed = U8(); for (let i = 0; i < N; i++) seaSeed[i] = inner[i] && bd5[i
 const sea = flood(seaSeed, wh);
 let isl = U8(); for (let i = 0; i < N; i++) isl[i] = inner[i] && !sea[i] ? 1 : 0;
 isl = dilate(erode(isl, 3), 3);
-{ const c = comps(isl, 4); isl = U8(); for (let i = 0; i < N; i++) { const q = c.info[c.lab[i]]; if (q && q.a >= 150 && q.x1 - q.x0 < 250 && q.y1 < CFG.oval[2]) isl[i] = 1; } }
+{ const c = comps(isl, 4); isl = U8(); for (let i = 0; i < N; i++) { const q = c.info[c.lab[i]]; if (q && q.a >= 150 && q.x1 - q.x0 < 250 && q.y1 < CFG.oval[2] + OY) isl[i] = 1; } }
 const ring = U8(); for (let i = 0; i < N; i++) ring[i] = blob[i] && !inner[i] ? 1 : 0;
 
 /* ---------- 구역(나라) 나누기: 씨앗에서 국경선(벽)을 넘지 않고 번지기 ---------- */
 const lab = new Int16Array(N), q = [];
-for (const [id, ps] of Object.entries(CFG.seeds)) for (const [x0, y] of ps) { const x = x0 + PAD;
+const SEEDS = Object.assign({}, CFG.seeds); for (const [id, ps] of Object.entries(extSeeds)) SEEDS[id] = (SEEDS[id] || []).concat(ps);
+for (const [id, ps] of Object.entries(SEEDS)) for (const [x0, y0] of ps) { const x = x0 + PAD, y = y0 + OY;
   let best = -1, bd = 1e9; for (let dy = -25; dy <= 25; dy++) for (let dx = -25; dx <= 25; dx++) { const j = (y + dy) * W + x + dx; if (land[j] && !wall[j]) { const dd = dx * dx + dy * dy; if (dd < bd) { bd = dd; best = j; } } }
   if (best < 0) { console.warn('씨앗이 땅에 없음', id, x, y); continue; } if (!lab[best]) { lab[best] = +id; q.push(best); }
 }
@@ -187,7 +245,7 @@ function dp(pt, eps) {
   const A = half(0, b), Bp = half(b, pt.length - 1).concat([pt[0]]); return A.slice(0, -1).concat(Bp.slice(0, -1));
 }
 const r1 = v => Math.round(v * 10) / 10, DY = CFG.dy || 0;
-const smooth = pts => { pts = pts.map(q => [q[0] - PAD, q[1]]); const n = pts.length; if (n < 3) return ''; const m = i => { const a = pts[i % n], b = pts[(i + 1) % n]; return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2 + DY]; }; let s = 'M' + r1(m(n - 1)[0]) + ' ' + r1(m(n - 1)[1]); for (let i = 0; i < n; i++) { const c = pts[i], mm = m(i); s += 'Q' + r1(c[0]) + ' ' + r1(c[1] + DY) + ' ' + r1(mm[0]) + ' ' + r1(mm[1]); } return s + 'Z'; };
+const smooth = pts => { pts = pts.map(q => [q[0] - PAD, q[1] - OY]); const n = pts.length; if (n < 3) return ''; const m = i => { const a = pts[i % n], b = pts[(i + 1) % n]; return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2 + DY]; }; let s = 'M' + r1(m(n - 1)[0]) + ' ' + r1(m(n - 1)[1]); for (let i = 0; i < n; i++) { const c = pts[i], mm = m(i); s += 'Q' + r1(c[0]) + ' ' + r1(c[1] + DY) + ' ' + r1(mm[0]) + ' ' + r1(mm[1]); } return s + 'Z'; };
 const area = pt => { let s = 0; for (let i = 0; i < pt.length; i++) { const a = pt[i], b = pt[(i + 1) % pt.length]; s += a[0] * b[1] - b[0] * a[1]; } return Math.abs(s / 2); };
 const svg = (mask, eps = 1, minA = 16) => { let s = ''; for (const l of loops(mask)) { if (area(l) < minA) continue; const t = dp(l, eps); if (t.length < 3) continue; s += smooth(t); } return s; };
 
@@ -201,9 +259,9 @@ function dt(mask) {
 const regions = []; const ids = [...new Set(Array.from(lab).filter(Boolean))].sort((a, b) => a - b);
 for (const id of ids) {
   const m = U8(); let a = 0; for (let i = 0; i < N; i++) if (lab[i] === id && allLand[i]) { m[i] = 1; a++; }
-  const D = dt(m); let bi = 0, bv = 0; for (let i = 0; i < N; i++) if (D[i] > bv) { bv = D[i]; bi = i; }       // 가장 안쪽 점 = 이름표 자리
-  const lc = comps(m, 8); if (lc.info.length > 2) { const big = lc.info.slice(1).sort((a, b) => b.a - a.a)[0]; bv = 0; for (let i = 0; i < N; i++) if (lc.lab[i] === big.id && D[i] > bv) { bv = D[i]; bi = i; } }   // 땅이 여러 덩어리면 가장 큰 덩어리에서
-  const o = CFG.labelAt && CFG.labelAt[id]; const px = o ? o[0] : bi % W - PAD, py = (o ? o[1] : (bi / W) | 0) + DY;
+  const D = dt(m), inD = i => Math.hypot(i % W - CX, ((i / W) | 0) - CY) < DISK - 45; let bi = 0, bv = 0; for (let i = 0; i < N; i++) if (D[i] > bv && inD(i)) { bv = D[i]; bi = i; }       // 가장 안쪽 점 = 이름표 자리
+  const lc = comps(m, 8); if (lc.info.length > 2) { const big = lc.info.slice(1).sort((a, b) => b.a - a.a)[0]; bv = 0; for (let i = 0; i < N; i++) if (lc.lab[i] === big.id && D[i] > bv && inD(i)) { bv = D[i]; bi = i; } }   // 땅이 여러 덩어리면 가장 큰 덩어리에서
+  const o = CFG.labelAt && CFG.labelAt[id]; const px = o ? o[0] : bi % W - PAD, py = (o ? o[1] : ((bi / W) | 0) - OY) + DY;
   regions.push({ id, d: svg(m), px: Math.round(px), py: Math.round(py), area: a, r: Math.round(bv) });
 }
 
@@ -216,13 +274,13 @@ const topo = [14, 30, 54, 84, 120].map(r => svg(erode(allLand, r), 1.3, 60)).fil
 
 function hazLabels(mask, k, minA) {         // 혈해·블러드러스트 덩어리마다 이름표 자리
   const c = comps(mask, 8), out = [], D = dt(mask);
-  for (const q of c.info.slice(1)) { if (q.a < minA) continue; let bi = 0, bv = 0; for (let y = q.y0; y <= q.y1; y++) for (let x = q.x0; x <= q.x1; x++) { const i = y * W + x; if (c.lab[i] === q.id && D[i] > bv) { bv = D[i]; bi = i; } } out.push({ k, px: bi % W - PAD, py: ((bi / W) | 0) + DY, r: Math.round(bv), a: q.a }); }
+  for (const q of c.info.slice(1)) { if (q.a < minA) continue; let bi = 0, bv = 0; for (let y = q.y0; y <= q.y1; y++) for (let x = q.x0; x <= q.x1; x++) { const i = y * W + x; if (c.lab[i] === q.id && D[i] > bv) { bv = D[i]; bi = i; } } out.push({ k, px: bi % W - PAD, py: ((bi / W) | 0) - OY + DY, r: Math.round(bv), a: q.a }); }
   return out.sort((a, b) => b.a - a.a);
 }
 const MAP = {
   regions, coasts, isl: [], shelf, topo, rivers: [], peaks: '',
   blood: svg(Z, 1.2, 60), rust: svg(Gz, 1.2, 60), ring: svg(ring, 1, 60), hz: hazLabels(Z, 'b', 3000).concat(hazLabels(Gz, 'r', 3000)),
-  w: W0, h: H, pad: PAD,
+  w: W0, h: H0, pad: PAD, oy: OY, gh: H, disk: DISK,
 };
 /* 픽셀별 구역 번호(+혈해/블러드러스트/장막 비트) — 항목 배치 도구(place-world.js)가 읽는다. 하위 8비트 = 구역 id, 256 = 혈해, 512 = 블러드러스트, 1024 = 장막 */
 { const g = new Uint16Array(N); for (let i = 0; i < N; i++) g[i] = lab[i] | (Z[i] ? 256 : 0) | (Gz[i] ? 512 : 0) | (blob[i] && !isl[i] ? 1024 : 0);
