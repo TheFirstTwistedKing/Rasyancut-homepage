@@ -1,0 +1,712 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>라시안컷 캐릭터 시트</title>
+<style>
+:root{
+  --bg:#050507; --panel:#0c0c10; --panel2:#111117; --line:#2a2412;
+  --gold:#d4af37; --gold2:#f5d77a; --gold3:#8a6d1b; --text:#e9e4d3; --dim:#8d8671;
+  --pos:#e8c458; --neu:#aeb6c4; --neg:#c4503f; --ok:#6fd39a;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.5}
+body{min-height:100vh;background:
+  radial-gradient(900px 500px at 80% -10%,rgba(212,175,55,.10),transparent 60%),
+  linear-gradient(rgba(212,175,55,.035) 1px,transparent 1px) 0 0/40px 40px,
+  linear-gradient(90deg,rgba(212,175,55,.035) 1px,transparent 1px) 0 0/40px 40px,var(--bg);}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;
+  background:repeating-linear-gradient(0deg,rgba(255,220,120,.025) 0 1px,transparent 1px 4px)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+
+/* header */
+header{position:sticky;top:0;z-index:20;background:rgba(5,5,7,.92);backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--gold3);padding:10px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.logo{display:flex;flex-direction:column;line-height:1.1;margin-right:auto}
+.logo b{font-family:var(--mono);letter-spacing:.32em;font-size:15px;
+  background:linear-gradient(90deg,var(--gold3),var(--gold2),var(--gold3),var(--gold2));background-size:300% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;animation:shim 6s linear infinite}
+.logo small{font-family:var(--mono);color:var(--dim);font-size:10px;letter-spacing:.2em;margin-top:3px}
+@keyframes shim{to{background-position:300% 0}}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:7px;background:transparent;border:1px solid var(--gold3);color:var(--gold2);
+  padding:8px 14px;font-size:13px;letter-spacing:.04em;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);
+  transition:background .2s,color .2s,border-color .2s}
+.btn svg{width:16px;height:16px}
+.btn:hover,.btn:focus-visible{background:var(--gold);color:#120e00;border-color:var(--gold);outline:0}
+.btn.solid{background:var(--gold);color:#120e00;border-color:var(--gold)}
+.btn.solid:hover{background:var(--gold2)}
+.btn.danger{border-color:#6b2a22;color:#e07a68}
+.btn.danger:hover{background:#c4503f;color:#fff;border-color:#c4503f}
+
+/* layout */
+main{max-width:1180px;margin:0 auto;padding:18px 16px 60px;display:grid;grid-template-columns:300px 1fr;gap:18px;align-items:start}
+.panel{position:relative;background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);padding:16px}
+.panel::before,.panel::after{content:"";position:absolute;width:14px;height:14px;border:2px solid var(--gold);pointer-events:none}
+.panel::before{top:-1px;left:-1px;border-right:0;border-bottom:0}
+.panel::after{bottom:-1px;right:-1px;border-left:0;border-top:0}
+.cap{font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--gold);margin:0 0 12px;display:flex;align-items:center;gap:8px}
+.cap::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--gold3),transparent)}
+
+/* profile */
+.photo{position:relative;aspect-ratio:4/5;background:#08080b;border:1px solid var(--gold3);overflow:hidden;cursor:pointer;
+  display:flex;align-items:center;justify-content:center}
+.photo img{width:100%;height:100%;object-fit:cover;display:none}
+.photo.has img{display:block}
+.photo .ph{font-family:var(--mono);color:var(--dim);font-size:12px;letter-spacing:.2em;text-align:center}
+.photo.has .ph{display:none}
+.photo::after{content:"";position:absolute;left:0;right:0;height:40%;top:-40%;pointer-events:none;
+  background:linear-gradient(180deg,transparent,rgba(245,215,122,.22),transparent);animation:scan 4s linear infinite}
+@keyframes scan{to{top:110%}}
+.prow{display:flex;gap:8px;margin-top:10px}
+.prow .btn{flex:1;justify-content:center;padding:8px 6px}
+.sum{margin-top:14px;font-family:var(--mono);font-size:12px;color:var(--dim);display:grid;gap:4px}
+.sum b{color:var(--gold2);font-weight:600}
+
+/* tabs */
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tab{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 10px;background:var(--panel);
+  border:1px solid var(--line);color:var(--dim);letter-spacing:.06em;transition:.2s}
+.tab svg{width:18px;height:18px}
+.tab.on{color:#120e00;background:var(--gold);border-color:var(--gold);font-weight:700}
+.tab:not(.on):hover{color:var(--gold2);border-color:var(--gold3)}
+.page{display:none}
+.page.on{display:block;animation:pin .45s ease both}
+@keyframes pin{from{opacity:0;transform:translateY(10px);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}
+
+/* form */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.f{display:flex;flex-direction:column;gap:6px;min-width:0}
+.f.full{grid-column:1/-1}
+label,.lab{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--gold)}
+input[type=text],input[type=number],select,textarea{width:100%;background:#08080b;border:1px solid var(--line);
+  padding:10px 12px;outline:0;border-radius:0;transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold3),0 0 14px rgba(212,175,55,.18)}
+textarea{min-height:92px;resize:vertical}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50%),linear-gradient(135deg,var(--gold) 50%,transparent 50%);
+  background-position:calc(100% - 18px) 50%,calc(100% - 12px) 50%;background-size:6px 6px;background-repeat:no-repeat;padding-right:32px}
+option{background:#111;color:var(--text)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{flex:1 1 auto;min-width:64px;padding:9px 12px;background:#08080b;border:1px solid var(--line);color:var(--dim);transition:.15s}
+.seg button:hover{color:var(--gold2);border-color:var(--gold3)}
+.seg button.on{background:rgba(212,175,55,.16);border-color:var(--gold);color:var(--gold2);box-shadow:inset 0 0 12px rgba(212,175,55,.2)}
+.unit{position:relative}
+.unit input{padding-right:46px}
+.unit span{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--dim);font-family:var(--mono);font-size:12px}
+
+.wbox{border:1px dashed var(--gold3);padding:12px;display:grid;gap:8px;background:rgba(212,175,55,.04)}
+.wbig{font-family:var(--mono);font-size:26px;color:var(--gold2);letter-spacing:.04em}
+.wbig small{font-size:13px;color:var(--dim)}
+.wrow{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.tog{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text);letter-spacing:0;font-family:var(--sans)}
+.tog input{accent-color:var(--gold);width:18px;height:18px}
+.hint{color:var(--dim);font-size:12px}
+
+/* keywords */
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.filters button{padding:7px 14px;background:#08080b;border:1px solid var(--line);color:var(--dim);font-size:13px}
+.filters button.on{border-color:var(--gold);color:#120e00;background:var(--gold);font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:7px;max-height:300px;overflow:auto;padding:2px 4px 2px 0}
+.chip{padding:6px 12px;border:1px solid var(--line);background:#08080b;color:var(--dim);font-size:13px;transition:.15s;border-radius:0}
+.chip[data-c=pos]{--cc:var(--pos)} .chip[data-c=neu]{--cc:var(--neu)} .chip[data-c=neg]{--cc:var(--neg)}
+.chip:hover{color:var(--cc);border-color:var(--cc)}
+.chip.on{color:#0a0a0a;background:var(--cc);border-color:var(--cc);font-weight:600}
+.selbox{margin-top:12px;font-size:13px;color:var(--dim)}
+.selbox b{color:var(--gold2)}
+
+/* modal */
+.modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.78);display:none;align-items:center;justify-content:center;padding:14px}
+.modal.on{display:flex;animation:fade .25s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.box{width:min(960px,100%);max-height:94vh;overflow:auto;position:relative;background:var(--panel);border:1px solid var(--gold3);padding:18px}
+.box h3{margin:0 0 14px;font-family:var(--mono);letter-spacing:.2em;font-size:14px;color:var(--gold2)}
+.x{position:absolute;right:10px;top:10px;background:transparent;border:1px solid var(--line);color:var(--dim);width:34px;height:34px}
+.x:hover{color:var(--gold2);border-color:var(--gold)}
+.exgrid{display:grid;grid-template-columns:1fr 280px;gap:16px}
+.exgrid canvas{width:100%;height:auto;border:1px solid var(--line);background:#000;max-height:70vh;object-fit:contain}
+.exctl{display:grid;gap:12px;align-content:start}
+.slot{display:flex;gap:8px;align-items:center;border:1px solid var(--line);padding:8px 10px;margin-bottom:8px;background:#08080b}
+.slot .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slot small{color:var(--dim);display:block;font-family:var(--mono);font-size:11px}
+.slot .btn{padding:6px 10px;font-size:12px}
+.empty{color:var(--dim);padding:14px;border:1px dashed var(--line);text-align:center}
+
+/* transition overlay */
+#tr{position:fixed;inset:0;z-index:100;pointer-events:none;display:flex;align-items:center;justify-content:center;visibility:hidden}
+#tr.run{visibility:visible;animation:trbg .62s ease both}
+#tr .bar{position:absolute;left:0;right:0;height:3px;background:var(--gold2);box-shadow:0 0 22px 6px rgba(245,215,122,.6);top:0}
+#tr.run .bar{animation:bar .62s linear both}
+#tr .ico{width:64px;height:64px;color:var(--gold2);opacity:0}
+#tr.run .ico{animation:ico .62s ease both}
+#tr .ico svg{width:100%;height:100%}
+@keyframes trbg{0%{background:rgba(5,5,7,0)}35%,65%{background:rgba(5,5,7,.88)}100%{background:rgba(5,5,7,0)}}
+@keyframes bar{from{top:0}to{top:100%}}
+@keyframes ico{0%{opacity:0;transform:scale(.6) rotate(-30deg)}40%,60%{opacity:1;transform:scale(1) rotate(0)}100%{opacity:0;transform:scale(1.25) rotate(20deg)}}
+
+.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,30px);z-index:120;background:#120e00;border:1px solid var(--gold);
+  color:var(--gold2);padding:10px 18px;opacity:0;transition:.3s;pointer-events:none;font-size:13px;max-width:90vw}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+@media(max-width:860px){
+  main{grid-template-columns:1fr}
+  .profile{display:grid;grid-template-columns:150px 1fr;gap:14px;align-items:start}
+  .profile .cap{grid-column:1/-1;margin:0}
+  .sum{margin-top:0}
+  .exgrid{grid-template-columns:1fr}
+}
+@media(max-width:560px){
+  .grid{grid-template-columns:1fr}
+  .tools{width:100%} .tools .btn{flex:1;justify-content:center;padding:9px 6px}
+  .profile{grid-template-columns:120px 1fr}
+  .tab span{font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01s!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><b>RASYANCUT</b><small>CHARACTER SHEET TERMINAL</small></div>
+  <div class="tools">
+    <button class="btn" id="bSave"></button>
+    <button class="btn" id="bLoad"></button>
+    <button class="btn solid" id="bExport"></button>
+  </div>
+</header>
+
+<main>
+  <aside class="panel profile">
+    <p class="cap">PROFILE</p>
+    <div>
+      <div class="photo" id="photo"><img id="photoImg" alt=""><div class="ph">NO IMAGE<br>탭하여 사진 선택</div></div>
+      <div class="prow">
+        <button class="btn" id="bPhoto">사진 선택</button>
+        <button class="btn danger" id="bPhotoDel">삭제</button>
+      </div>
+      <input type="file" id="file" accept="image/*" hidden>
+    </div>
+    <div class="sum" id="sum"></div>
+  </aside>
+
+  <section>
+    <div class="tabs" id="tabs">
+      <button class="tab on" data-t="basic"></button>
+      <button class="tab" data-t="mind"></button>
+    </div>
+
+    <!-- 필수 정보 -->
+    <div class="page panel on" id="p-basic">
+      <p class="cap">ESSENTIAL DATA / 필수 정보</p>
+      <div class="grid">
+        <div class="f full"><label for="name">이름</label><input type="text" id="name" data-k="name" autocomplete="off"></div>
+        <div class="f full"><span class="lab">출생 시기</span><div class="seg" data-seg="era" data-opts="창세기,구세기,신세기"></div></div>
+        <div class="f full"><span class="lab">성별</span><div class="seg" data-seg="gender" data-opts="남자,여자,논바이너리"></div></div>
+        <div class="f"><label for="age">나이</label><input type="text" id="age" data-k="age" autocomplete="off"></div>
+        <div class="f"><label for="job">직업</label><input type="text" id="job" data-k="job" autocomplete="off"></div>
+        <div class="f"><label for="height">키</label><div class="unit"><input type="number" id="height" data-k="height" inputmode="decimal" min="0" step="0.1"><span>cm</span></div></div>
+        <div class="f"><label for="muscle">근육량</label><div class="unit"><input type="number" id="muscle" data-k="muscle" inputmode="decimal" min="0" max="100" step="0.1"><span>%</span></div></div>
+        <div class="f"><label for="fat">지방량</label><div class="unit"><input type="number" id="fat" data-k="fat" inputmode="decimal" min="0" max="100" step="0.1"><span>%</span></div></div>
+        <div class="f full">
+          <span class="lab">몸무게 / 적정 몸무게</span>
+          <div class="wbox">
+            <div class="wrow">
+              <div class="wbig" id="wOut">—</div>
+              <label class="tog"><input type="checkbox" id="wAuto"> 오토 값 (키·근육량·지방량으로 계산)</label>
+            </div>
+            <div class="unit" id="wManualBox" hidden><input type="number" id="wManual" data-k="weightManual" inputmode="decimal" min="0" step="0.1" placeholder="직접 입력"><span>kg</span></div>
+            <div class="hint" id="wHint"></div>
+          </div>
+        </div>
+        <div class="f"><span class="lab">종족</span><select id="race" data-k="race"></select></div>
+        <div class="f"><span class="lab">출신</span><select id="origin" data-k="origin"></select></div>
+      </div>
+    </div>
+
+    <!-- 성격 -->
+    <div class="page panel" id="p-mind">
+      <p class="cap">PERSONALITY / 성격</p>
+      <div class="f" style="margin-bottom:16px">
+        <span class="lab">성격 키워드</span>
+        <div class="filters" id="filters"></div>
+        <div class="chips" id="chips"></div>
+        <div class="selbox" id="selbox"></div>
+      </div>
+      <div class="grid">
+        <div class="f full"><label for="emotion">감정 반응 방식</label><textarea id="emotion" data-k="emotion"></textarea></div>
+        <div class="f full"><span class="lab">말투</span><div class="seg" data-seg="tone" data-opts="존댓말,반존댓말,반말"></div></div>
+        <div class="f full"><label for="habit">버릇</label><textarea id="habit" data-k="habit"></textarea></div>
+        <div class="f"><label for="likes">좋아하는 것</label><textarea id="likes" data-k="likes"></textarea></div>
+        <div class="f"><label for="dislikes">싫어하는 것</label><textarea id="dislikes" data-k="dislikes"></textarea></div>
+        <div class="f full"><label for="values">중요하게 여기는 것</label><textarea id="values" data-k="values"></textarea></div>
+        <div class="f"><label for="pros">장점</label><textarea id="pros" data-k="pros"></textarea></div>
+        <div class="f"><label for="cons">단점</label><textarea id="cons" data-k="cons"></textarea></div>
+        <div class="f"><label for="trauma">트라우마</label><textarea id="trauma" data-k="trauma"></textarea></div>
+        <div class="f"><label for="secret">비밀</label><textarea id="secret" data-k="secret"></textarea></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- 내보내기 -->
+<div class="modal" id="mExport">
+  <div class="box">
+    <button class="x" data-close>✕</button>
+    <h3>EXPORT / 내보내기</h3>
+    <div class="exgrid">
+      <canvas id="exCanvas"></canvas>
+      <div class="exctl">
+        <div class="f"><span class="lab">형식</span><div class="seg" id="exFmt">
+          <button data-v="png" class="on">PNG</button><button data-v="jpg">JPG</button><button data-v="webp">WEBP</button></div></div>
+        <div class="f"><span class="lab">크기</span><div class="seg" id="exScale">
+          <button data-v="1" class="on">1x</button><button data-v="2">2x</button></div></div>
+        <label class="tog"><input type="checkbox" id="exSecret" checked> 트라우마 / 비밀 포함</label>
+        <button class="btn solid" id="exGo" style="justify-content:center"></button>
+        <div class="hint" id="exInfo"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 저장 / 불러오기 -->
+<div class="modal" id="mSave">
+  <div class="box" style="width:min(640px,100%)">
+    <button class="x" data-close>✕</button>
+    <h3>SAVE / LOAD · 저장 · 불러오기</h3>
+    <div class="prow" style="margin:0 0 14px;flex-wrap:wrap">
+      <button class="btn solid" id="slotSave">현재 시트를 브라우저에 저장</button>
+      <button class="btn" id="fileSave">파일(.json)로 저장</button>
+      <button class="btn" id="fileLoad">파일 불러오기</button>
+      <input type="file" id="jsonFile" accept=".json,application/json" hidden>
+    </div>
+    <span class="lab">브라우저에 저장된 시트</span>
+    <div id="slots" style="margin-top:8px"></div>
+    <div class="hint">브라우저 저장은 이 기기·이 브라우저에만 남아요. 다른 기기로 옮기려면 파일(.json)로 저장하세요.</div>
+  </div>
+</div>
+
+<div id="tr"><div class="bar"></div><div class="ico" id="trIco"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+
+/* ---------- 아이콘 ---------- */
+const I={
+  basic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14"/><circle cx="9" cy="11" r="2.4"/><path d="M5.5 16.5c.6-2 2-3 3.5-3s2.9 1 3.5 3M14 9.5h5M14 12.5h5M14 15.5h3"/></svg>',
+  mind:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l7.5 4.3v8.4L12 20l-7.5-4.3V7.3z"/><circle cx="12" cy="11.5" r="2.6"/><path d="M12 3v6M12 14v6M4.5 7.3l5.2 3M14.3 12.7l5.2 3M19.5 7.3l-5.2 3M9.7 12.7l-5.2 3" opacity=".6"/></svg>',
+  save:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h13l3 3v13H4z"/><path d="M8 4v6h8V4M8 20v-6h8v6"/></svg>',
+  load:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 7h6l2 2h10v10H3z"/><path d="M12 17v-5M9.5 14.5L12 12l2.5 2.5"/></svg>',
+  exp:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v12M7.5 10.5L12 15l4.5-4.5M4 17v3h16v-3"/></svg>'
+};
+$('#bSave').innerHTML=I.save+'저장';
+$('#bLoad').innerHTML=I.load+'불러오기';
+$('#bExport').innerHTML=I.exp+'내보내기';
+$('#exGo').innerHTML=I.exp+'이미지 다운로드';
+$$('.tab').forEach(b=>b.innerHTML=I[b.dataset.t]+'<span>'+(b.dataset.t==='basic'?'필수 정보':'성격')+'</span>');
+
+/* ---------- 데이터 ---------- */
+const ERAS=['창세기','구세기','신세기'], GENDERS=['남자','여자','논바이너리'], TONES=['존댓말','반존댓말','반말'];
+const RACES=['인간','암형체','반암형인','차원 유랑자'];
+const ORIGINS=['백월','루나시아','솔라리아','루벨리아','인페르누스 공화국','비아레카트리아','아스트랄리스','레스렉시온','버믹쿠루시아','은월','엘라렌','코르닉시아','추풍','스텔마레','스텔루비아','글라시카에룰리아','겔루에테르누시아'];
+
+const KW={
+ pos:['다정한','친절한','용감한','정직한','성실한','배려심 깊은','침착한','낙천적인','책임감 있는','의리 있는','호기심 많은','똑똑한','유머러스한','겸손한','너그러운','끈기 있는','사교적인','씩씩한','순수한','신중한','헌신적인','듬직한','온화한','열정적인','창의적인','당당한','상냥한','현명한','대담한','꼼꼼한','믿음직한','청렴한','활발한','긍정적인','예의 바른','결단력 있는'],
+ neu:['조용한','내성적인','외향적인','장난기 많은','현실적인','이상주의적인','고독한','무뚝뚝한','과묵한','변덕스러운','자유분방한','냉정한','직설적인','엉뚱한','느긋한','계산적인','진지한','독립적인','보수적인','감성적인','이성적인','신비로운','능글맞은','털털한','예민한','몽상가적인','완벽주의적인','승부욕 강한','의심 많은','낯을 가리는'],
+ neg:['오만한','이기적인','냉혹한','잔인한','거짓말을 잘하는','소심한','겁 많은','게으른','질투심 많은','집착하는','고집 센','비관적인','폭력적인','충동적인','무책임한','의존적인','속물적인','탐욕스러운','위선적인','비겁한','허영심 많은','신경질적인','음흉한','냉소적인','독선적인','조급한','무심한','우유부단한','앙심을 품는','교활한','자기중심적인','방탕한','불안정한','호전적인','허세 부리는']
+};
+const CATLAB={pos:'긍정',neu:'중립',neg:'부정'};
+const CATOF={}; Object.keys(KW).forEach(c=>KW[c].forEach(k=>CATOF[k]=c));
+
+const DEF=()=>({name:'',era:'',gender:'',age:'',height:'',muscle:'',fat:'',weightAuto:true,weightManual:'',race:'',job:'',origin:'',
+  keywords:[],emotion:'',tone:'',habit:'',likes:'',dislikes:'',values:'',pros:'',cons:'',trauma:'',secret:'',photo:''});
+const DRAFT='rc_charsheet_draft', SLOTS='rc_charsheet_slots';
+let S=DEF();
+try{const d=JSON.parse(localStorage.getItem(DRAFT)||'null'); if(d) S=Object.assign(DEF(),d)}catch(e){}
+let saveT; function draft(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(DRAFT,JSON.stringify(S))}catch(e){}},250)}
+
+/* ---------- 몸무게 오토 ---------- */
+const BASE={'남자':[40,18],'여자':[33,26],'논바이너리':[36,22]};
+function autoWeight(){
+  const h=parseFloat(S.height); if(!(h>0)) return null;
+  const hm=h/100, std=22*hm*hm;
+  const [m0,f0]=BASE[S.gender]||BASE['논바이너리'];
+  const m=S.muscle===''?m0:parseFloat(S.muscle), f=S.fat===''?f0:parseFloat(S.fat);
+  let adj=1+((m-m0)*0.8+(f-f0)*1.0)/100;
+  adj=Math.max(0.55,Math.min(1.9,adj));
+  return {w:std*adj,std,m0,f0};
+}
+function effWeight(){
+  if(S.weightAuto){const a=autoWeight(); return a?a.w:null}
+  const v=parseFloat(S.weightManual); return v>0?v:null;
+}
+const fmt1=n=>(Math.round(n*10)/10).toFixed(1);
+
+/* ---------- UI 구성 ---------- */
+function buildSelect(id,list,ph){
+  const el=$('#'+id); el.innerHTML='<option value="">'+ph+'</option>'+list.map(v=>'<option>'+v+'</option>').join('');
+}
+buildSelect('race',RACES,'선택'); buildSelect('origin',ORIGINS,'선택');
+
+$$('[data-seg]').forEach(box=>{
+  box.dataset.opts.split(',').forEach(v=>{
+    const b=document.createElement('button'); b.type='button'; b.textContent=v; b.dataset.v=v; box.appendChild(b);
+  });
+  box.addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    const k=box.dataset.seg; S[k]=(S[k]===b.dataset.v)?'':b.dataset.v; // 다시 누르면 해제
+    syncAll(); draft();
+  });
+});
+
+$$('[data-k]').forEach(el=>{
+  const ev=el.tagName==='SELECT'?'change':'input';
+  el.addEventListener(ev,()=>{S[el.dataset.k]=el.value; syncDerived(); draft()});
+});
+$('#wAuto').addEventListener('change',e=>{S.weightAuto=e.target.checked; syncDerived(); draft()});
+
+/* 키워드 */
+let filter='all';
+const FL=[['all','전체'],['pos','긍정'],['neu','중립'],['neg','부정']];
+$('#filters').innerHTML=FL.map(([v,t])=>'<button type="button" data-f="'+v+'"'+(v==='all'?' class="on"':'')+'>'+t+'</button>').join('');
+$('#filters').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return; filter=b.dataset.f;
+  $$('#filters button').forEach(x=>x.classList.toggle('on',x===b)); drawChips();
+});
+function drawChips(){
+  const cats=filter==='all'?['pos','neu','neg']:[filter];
+  $('#chips').innerHTML=cats.map(c=>KW[c].map(k=>'<button type="button" class="chip'+(S.keywords.includes(k)?' on':'')+'" data-c="'+c+'" data-kw="'+k+'">'+k+'</button>').join('')).join('');
+}
+$('#chips').addEventListener('click',e=>{
+  const b=e.target.closest('.chip'); if(!b) return; const k=b.dataset.kw, i=S.keywords.indexOf(k);
+  if(i>=0) S.keywords.splice(i,1); else S.keywords.push(k);
+  b.classList.toggle('on'); drawSel(); draft();
+});
+function drawSel(){
+  const n=S.keywords.length;
+  $('#selbox').innerHTML=n?('선택됨 <b>'+n+'</b>개 · '+S.keywords.join(', ')):'선택한 키워드가 없어요. 전체/긍정/중립/부정으로 나눠 골라보세요.';
+}
+
+/* 사진 */
+function drawPhoto(){
+  $('#photo').classList.toggle('has',!!S.photo); $('#photoImg').src=S.photo||'';
+}
+$('#photo').addEventListener('click',()=>$('#file').click());
+$('#bPhoto').addEventListener('click',()=>$('#file').click());
+$('#bPhotoDel').addEventListener('click',()=>{S.photo='';drawPhoto();draft()});
+$('#file').addEventListener('change',e=>{
+  const f=e.target.files[0]; e.target.value=''; if(!f) return;
+  const url=URL.createObjectURL(f), img=new Image();
+  img.onload=()=>{
+    const max=900, r=Math.min(1,max/Math.max(img.width,img.height));
+    const c=document.createElement('canvas'); c.width=Math.round(img.width*r); c.height=Math.round(img.height*r);
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height); URL.revokeObjectURL(url);
+    S.photo=c.toDataURL('image/jpeg',.88); drawPhoto(); draft();
+  };
+  img.onerror=()=>{URL.revokeObjectURL(url);toast('이미지를 읽지 못했어요.')};
+  img.src=url;
+});
+
+/* 동기화 */
+function syncDerived(){
+  const a=autoWeight(), w=effWeight();
+  $('#wAuto').checked=S.weightAuto; $('#wManualBox').hidden=S.weightAuto;
+  $('#wOut').innerHTML=w?fmt1(w)+' <small>kg</small>':'—';
+  let hint='';
+  if(S.weightAuto){
+    hint=a?('표준체중 '+fmt1(a.std)+'kg(BMI 22) 기준, 근육 '+a.m0+'% · 지방 '+a.f0+'%를 기본값으로 보정했어요. 비워 두면 기본값으로 계산해요.'):'키를 입력하면 적정 몸무게가 계산돼요.';
+  }else hint='오토 값을 끄고 직접 입력한 값이에요.';
+  const h=parseFloat(S.height);
+  if(w&&h>0) hint+=' (BMI '+fmt1(w/((h/100)*(h/100)))+')';
+  $('#wHint').textContent=hint;
+  $('#sum').innerHTML=[['NAME',S.name||'—'],['ERA',S.era||'—'],['RACE',S.race||'—'],['ORIGIN',S.origin||'—'],['WEIGHT',w?fmt1(w)+' kg':'—'],['KEYWORDS',S.keywords.length+'개']]
+    .map(([k,v])=>'<div>'+k+' <b></b></div>').join('');
+  $$('#sum b').forEach((b,i)=>b.textContent=[S.name||'—',S.era||'—',S.race||'—',S.origin||'—',w?fmt1(w)+' kg':'—',S.keywords.length+'개'][i]);
+}
+function syncAll(){
+  $$('[data-k]').forEach(el=>{ if(el.value!==String(S[el.dataset.k]??'')) el.value=S[el.dataset.k]??'' });
+  $$('[data-seg]').forEach(box=>$$('button',box).forEach(b=>b.classList.toggle('on',S[box.dataset.seg]===b.dataset.v)));
+  drawPhoto(); drawChips(); drawSel(); syncDerived();
+}
+
+/* ---------- 전환 애니메이션 ---------- */
+let trBusy=false;
+function transition(icon,mid){
+  const t=$('#tr'); if(trBusy){mid&&mid();return} trBusy=true;
+  $('#trIco').innerHTML=I[icon]; t.classList.remove('run'); void t.offsetWidth; t.classList.add('run');
+  setTimeout(()=>{mid&&mid()},300);
+  setTimeout(()=>{t.classList.remove('run');trBusy=false},640);
+}
+$('#tabs').addEventListener('click',e=>{
+  const b=e.target.closest('.tab'); if(!b||b.classList.contains('on')) return;
+  transition(b.dataset.t,()=>{
+    $$('.tab').forEach(x=>x.classList.toggle('on',x===b));
+    $$('.page').forEach(p=>p.classList.toggle('on',p.id==='p-'+b.dataset.t));
+    window.scrollTo({top:0});
+  });
+});
+function openModal(id,icon,after){ transition(icon,()=>{$('#'+id).classList.add('on'); after&&after()}) }
+function closeModal(m){ m.classList.remove('on') }
+$$('.modal').forEach(m=>{
+  m.addEventListener('click',e=>{ if(e.target===m||e.target.closest('[data-close]')) closeModal(m) });
+});
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') $$('.modal.on').forEach(closeModal) });
+
+let tt; function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2400)}
+
+/* ---------- 저장 / 불러오기 ---------- */
+function getSlots(){try{return JSON.parse(localStorage.getItem(SLOTS)||'[]')}catch(e){return[]}}
+function putSlots(a){try{localStorage.setItem(SLOTS,JSON.stringify(a));return true}catch(e){toast('저장 공간이 부족해요. 사진을 지우거나 파일로 저장해 주세요.');return false}}
+function drawSlots(){
+  const a=getSlots(), box=$('#slots');
+  if(!a.length){box.innerHTML='<div class="empty">저장된 시트가 없어요.</div>';return}
+  box.innerHTML=a.map((s,i)=>'<div class="slot"><div class="nm"><span></span><small>'+new Date(s.t).toLocaleString('ko-KR')+'</small></div>'+
+    '<button class="btn" data-a="load" data-i="'+i+'">불러오기</button><button class="btn danger" data-a="del" data-i="'+i+'">삭제</button></div>').join('');
+  $$('.slot .nm span',box).forEach((el,i)=>el.textContent=a[i].name||'이름 없음');
+}
+$('#slots').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return; const a=getSlots(), i=+b.dataset.i;
+  if(b.dataset.a==='del'){a.splice(i,1);putSlots(a);drawSlots()}
+  else if(a[i]){S=Object.assign(DEF(),a[i].data);syncAll();draft();closeModal($('#mSave'));toast('불러왔어요.')}
+});
+$('#slotSave').addEventListener('click',()=>{
+  const a=getSlots(), name=S.name||'이름 없음', i=a.findIndex(s=>s.name===name);
+  const rec={name,t:Date.now(),data:JSON.parse(JSON.stringify(S))};
+  if(i>=0)a[i]=rec; else a.unshift(rec);
+  if(putSlots(a)){drawSlots();toast('저장했어요.')}
+});
+$('#fileSave').addEventListener('click',()=>{
+  const blob=new Blob([JSON.stringify({rasyancut:'charsheet',v:1,data:S},null,1)],{type:'application/json'});
+  dl(blob,'RASYANCUT_'+(S.name||'sheet')+'.json'); toast('파일로 저장했어요.');
+});
+$('#fileLoad').addEventListener('click',()=>$('#jsonFile').click());
+$('#jsonFile').addEventListener('change',e=>{
+  const f=e.target.files[0]; e.target.value=''; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const j=JSON.parse(r.result); const d=j&&j.data?j.data:j;
+      if(!d||typeof d!=='object') throw 0;
+      S=Object.assign(DEF(),d); if(!Array.isArray(S.keywords)) S.keywords=[];
+      syncAll();draft();closeModal($('#mSave'));toast('불러왔어요.');
+    }catch(err){toast('올바른 시트 파일이 아니에요.')}
+  };
+  r.readAsText(f);
+});
+function dl(blob,name){
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name.replace(/[\\/:*?"<>|]/g,'_');
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+}
+$('#bSave').addEventListener('click',()=>openModal('mSave','save',drawSlots));
+$('#bLoad').addEventListener('click',()=>openModal('mSave','load',drawSlots));
+
+/* ---------- 내보내기 (라시안컷 전용 디자인) ---------- */
+const FONT='"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif', MONO='ui-monospace,Menlo,Consolas,monospace';
+const GOLD='#d4af37', GOLD2='#f5d77a', GOLD3='#8a6d1b';
+const CW=1200, M=56;
+
+function wrap(ctx,text,maxW){
+  const out=[]; String(text).split('\n').forEach(par=>{
+    if(par==='') {out.push('');return}
+    let line=''; for(const ch of par){ if(ctx.measureText(line+ch).width>maxW&&line){out.push(line);line=ch.trim()===''?'':ch}else line+=ch }
+    out.push(line);
+  }); return out;
+}
+function fit(ctx,text,maxW,size,weight){
+  let s=size; ctx.font=weight+' '+s+'px '+FONT;
+  while(ctx.measureText(text).width>maxW&&s>13){s-=1;ctx.font=weight+' '+s+'px '+FONT}
+}
+function notch(ctx,x,y,w,h,c){
+  ctx.beginPath();ctx.moveTo(x+c,y);ctx.lineTo(x+w,y);ctx.lineTo(x+w,y+h-c);ctx.lineTo(x+w-c,y+h);ctx.lineTo(x,y+h);ctx.lineTo(x,y+c);ctx.closePath();
+}
+function brackets(ctx,x,y,w,h,l,col,lw){
+  ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.beginPath();
+  ctx.moveTo(x,y+l);ctx.lineTo(x,y);ctx.lineTo(x+l,y);
+  ctx.moveTo(x+w-l,y);ctx.lineTo(x+w,y);ctx.lineTo(x+w,y+l);
+  ctx.moveTo(x+w,y+h-l);ctx.lineTo(x+w,y+h);ctx.lineTo(x+w-l,y+h);
+  ctx.moveTo(x+l,y+h);ctx.lineTo(x,y+h);ctx.lineTo(x,y+h-l);ctx.stroke();
+}
+function hashCode(s){let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return (h>>>0).toString(16).toUpperCase().padStart(8,'0')}
+
+function layout(ctx,H,opt,img,draw){
+  const W=CW;
+  if(draw){
+    ctx.fillStyle='#050507';ctx.fillRect(0,0,W,H);
+    const rg=ctx.createRadialGradient(W*.8,0,0,W*.8,0,700);rg.addColorStop(0,'rgba(212,175,55,.16)');rg.addColorStop(1,'rgba(212,175,55,0)');
+    ctx.fillStyle=rg;ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle='rgba(212,175,55,.045)';ctx.lineWidth=1;
+    for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x+.5,0);ctx.lineTo(x+.5,H);ctx.stroke()}
+    for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y+.5);ctx.lineTo(W,y+.5);ctx.stroke()}
+    // 외곽 프레임
+    ctx.strokeStyle=GOLD3;ctx.lineWidth=2;notch(ctx,18,18,W-36,H-36,28);ctx.stroke();
+    ctx.strokeStyle='rgba(212,175,55,.3)';ctx.lineWidth=1;notch(ctx,28,28,W-56,H-56,22);ctx.stroke();
+    brackets(ctx,12,12,W-24,H-24,46,GOLD,4);
+  }
+  // 헤더
+  let y=60;
+  if(draw){
+    ctx.textBaseline='alphabetic';ctx.fillStyle=GOLD3;ctx.font='500 14px '+MONO;ctx.textAlign='left';
+    ctx.fillText('RASYANCUT // CHARACTER DATA ARCHIVE',M,y);
+    ctx.textAlign='right';ctx.fillText('SHEET No. '+hashCode(S.name+'|'+S.race+'|'+S.origin),W-M,y);ctx.textAlign='left';
+    const g=ctx.createLinearGradient(M,0,M+520,0);g.addColorStop(0,GOLD3);g.addColorStop(.5,GOLD2);g.addColorStop(1,GOLD3);
+    ctx.fillStyle=g;ctx.font='800 46px '+FONT;
+    ctx.save();if('letterSpacing' in ctx)ctx.letterSpacing='6px';ctx.fillText('CHARACTER SHEET',M,y+58);ctx.restore();
+    // 홀로그램 라인
+    const lg=ctx.createLinearGradient(M,0,W-M,0);lg.addColorStop(0,GOLD);lg.addColorStop(.6,'rgba(212,175,55,.35)');lg.addColorStop(1,'rgba(212,175,55,0)');
+    ctx.fillStyle=lg;ctx.fillRect(M,y+78,W-2*M,3);
+    ctx.fillStyle=GOLD;ctx.fillRect(M,y+74,90,11);
+  }
+  y+=116;
+
+  // 프로필
+  const PW=340,PH=440,px=M,py=y;
+  if(draw){
+    ctx.fillStyle='#08080b';ctx.fillRect(px,py,PW,PH);
+    if(img){
+      const r=Math.max(PW/img.width,PH/img.height),dw=img.width*r,dh=img.height*r;
+      ctx.save();ctx.beginPath();ctx.rect(px,py,PW,PH);ctx.clip();ctx.drawImage(img,px+(PW-dw)/2,py+(PH-dh)/2,dw,dh);
+      ctx.fillStyle='rgba(212,175,55,.07)';ctx.fillRect(px,py,PW,PH);
+      for(let yy=py;yy<py+PH;yy+=4){ctx.fillStyle='rgba(0,0,0,.18)';ctx.fillRect(px,yy,PW,1)}
+      ctx.restore();
+    }else{
+      ctx.fillStyle=GOLD3;ctx.font='500 18px '+MONO;ctx.textAlign='center';ctx.fillText('NO IMAGE',px+PW/2,py+PH/2);ctx.textAlign='left';
+    }
+    ctx.strokeStyle=GOLD3;ctx.lineWidth=1;ctx.strokeRect(px+.5,py+.5,PW-1,PH-1);
+    brackets(ctx,px-8,py-8,PW+16,PH+16,26,GOLD,3);
+  }
+  const rx=px+PW+44, rw=W-M-rx;
+  let ry=py;
+  if(draw){
+    ctx.fillStyle=GOLD;ctx.font='500 13px '+MONO;ctx.fillText('NAME',rx,ry+10);
+    ctx.fillStyle='#f4efdd';fit(ctx,S.name||'—',rw,56,'800');ctx.fillText(S.name||'—',rx,ry+70);
+  }
+  ry+=92;
+  const w=effWeight();
+  const cells=[['출생 시기',S.era],['성별',S.gender],['나이',S.age],['종족',S.race],
+    ['키',S.height!==''?S.height+' cm':''],['몸무게',w?fmt1(w)+' kg'+(S.weightAuto?' (AUTO)':''):''],
+    ['근육량',S.muscle!==''?S.muscle+' %':''],['지방량',S.fat!==''?S.fat+' %':''],['직업',S.job],['출신',S.origin]];
+  const cw=(rw-20)/2, ch=70;
+  cells.forEach((c,i)=>{
+    const cx=rx+(i%2)*(cw+20), cy=ry+Math.floor(i/2)*ch;
+    if(draw){
+      ctx.fillStyle='rgba(212,175,55,.05)';notch(ctx,cx,cy,cw,ch-10,10);ctx.fill();
+      ctx.strokeStyle='rgba(212,175,55,.35)';ctx.lineWidth=1;ctx.stroke();
+      ctx.fillStyle=GOLD;ctx.font='500 11px '+MONO;ctx.fillText(c[0],cx+14,cy+19);
+      ctx.fillStyle=c[1]?'#f4efdd':'#5c5744';fit(ctx,c[1]||'—',cw-28,22,'600');ctx.fillText(c[1]||'—',cx+14,cy+46);
+    }
+  });
+  y=Math.max(py+PH+16,ry+5*ch)+24;
+
+  // 섹션 제목
+  const head=(t,sub)=>{
+    if(draw){
+      ctx.fillStyle=GOLD;ctx.fillRect(M,y,10,26);
+      ctx.fillStyle=GOLD2;ctx.font='700 22px '+FONT;ctx.textAlign='left';ctx.fillText(t,M+22,y+22);
+      const tw=ctx.measureText(t).width;
+      ctx.fillStyle=GOLD3;ctx.font='500 12px '+MONO;ctx.fillText(sub,M+22+tw+14,y+21);
+      const lg=ctx.createLinearGradient(M,0,W-M,0);lg.addColorStop(0,'rgba(212,175,55,.55)');lg.addColorStop(1,'rgba(212,175,55,0)');
+      ctx.fillStyle=lg;ctx.fillRect(M,y+34,W-2*M,1);
+    }
+    y+=52;
+  };
+
+  head('성격 키워드','PERSONALITY KEYWORDS');
+  ctx.font='500 18px '+FONT;
+  if(!S.keywords.length){ if(draw){ctx.fillStyle='#5c5744';ctx.fillText('—',M,y+18)} y+=34 }
+  else{
+    let x=M,rowY=y; const cc={pos:GOLD2,neu:'#aeb6c4',neg:'#d86a58'};
+    S.keywords.forEach(k=>{
+      const cw2=ctx.measureText(k).width+30;
+      if(x+cw2>W-M){x=M;rowY+=46}
+      if(draw){
+        const col=cc[CATOF[k]||'neu'];
+        ctx.fillStyle='rgba(0,0,0,.45)';notch(ctx,x,rowY,cw2,36,8);ctx.fill();
+        ctx.strokeStyle=col;ctx.lineWidth=1.4;ctx.stroke();
+        ctx.fillStyle=col;ctx.font='500 18px '+FONT;ctx.fillText(k,x+15,rowY+25);
+      }
+      x+=cw2+10;
+    });
+    y=rowY+36+10;
+    if(draw){ // 범례
+      ctx.font='500 12px '+MONO;let lx=M;
+      [['pos','POSITIVE'],['neu','NEUTRAL'],['neg','NEGATIVE']].forEach(([c,t])=>{
+        ctx.fillStyle=cc[c];ctx.fillRect(lx,y+6,10,10);ctx.fillStyle=GOLD3;ctx.fillText(t,lx+16,y+16);lx+=110;
+      });
+    }
+    y+=30;
+  }
+  y+=14;
+
+  head('성격 · 정보','PERSONALITY DATA');
+  const blocks=[['감정 반응 방식',S.emotion],['말투',S.tone],['버릇',S.habit],['좋아하는 것',S.likes],['싫어하는 것',S.dislikes],
+    ['중요하게 여기는 것',S.values],['장점',S.pros],['단점',S.cons]];
+  if(opt.secret){blocks.push(['트라우마',S.trauma]);blocks.push(['비밀',S.secret])}
+  blocks.forEach(([t,v])=>{
+    ctx.font='400 19px '+FONT;
+    const lines=wrap(ctx,v||'—',W-2*M-40), bh=lines.length*30+50;
+    if(draw){
+      ctx.fillStyle='rgba(212,175,55,.04)';ctx.fillRect(M,y,W-2*M,bh-12);
+      ctx.fillStyle=GOLD;ctx.fillRect(M,y,4,bh-12);
+      ctx.font='500 12px '+MONO;ctx.fillText(t,M+22,y+22);
+      ctx.font='400 19px '+FONT;ctx.fillStyle=v?'#e9e4d3':'#5c5744';
+      lines.forEach((l,i)=>ctx.fillText(l,M+22,y+52+i*30-8));
+    }
+    y+=bh;
+  });
+
+  // 푸터
+  y+=10;
+  if(draw){
+    ctx.fillStyle=GOLD3;ctx.font='500 12px '+MONO;ctx.textAlign='left';ctx.fillText('RASYANCUT ARCHIVE',M,y+20);
+    ctx.textAlign='right';ctx.fillText(new Date().toISOString().slice(0,10),W-M,y+20);ctx.textAlign='left';
+    const lg=ctx.createLinearGradient(M,0,W-M,0);lg.addColorStop(0,'rgba(212,175,55,0)');lg.addColorStop(.5,GOLD);lg.addColorStop(1,'rgba(212,175,55,0)');
+    ctx.fillStyle=lg;ctx.fillRect(M,y,W-2*M,2);
+    // 스캔라인
+    for(let yy=0;yy<H;yy+=4){ctx.fillStyle='rgba(255,220,120,.025)';ctx.fillRect(0,yy,W,1)}
+  }
+  return y+60;
+}
+function buildSheet(scale,opt){
+  return new Promise(res=>{
+    const go=img=>{
+      const tmp=document.createElement('canvas');tmp.width=CW;tmp.height=10;
+      const H=Math.ceil(layout(tmp.getContext('2d'),10,opt,img,false));
+      const c=document.createElement('canvas');c.width=CW*scale;c.height=H*scale;
+      const ctx=c.getContext('2d');ctx.scale(scale,scale);
+      layout(ctx,H,opt,img,true);res(c);
+    };
+    if(S.photo){const im=new Image();im.onload=()=>go(im);im.onerror=()=>go(null);im.src=S.photo}else go(null);
+  });
+}
+const ex={fmt:'png',scale:1};
+function segBind(id,key){
+  $(id).addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b) return; ex[key]=b.dataset.v;
+    $$('button',$(id)).forEach(x=>x.classList.toggle('on',x===b)); renderEx();
+  });
+}
+segBind('#exFmt','fmt'); segBind('#exScale','scale'); $('#exSecret').addEventListener('change',renderEx);
+let lastCanvas=null;
+async function renderEx(){
+  const c=await buildSheet(+ex.scale,{secret:$('#exSecret').checked});
+  lastCanvas=c; const v=$('#exCanvas'); v.width=c.width; v.height=c.height; v.getContext('2d').drawImage(c,0,0);
+  $('#exInfo').textContent=c.width+' × '+c.height+' px';
+}
+$('#bExport').addEventListener('click',()=>openModal('mExport','exp',renderEx));
+$('#exGo').addEventListener('click',()=>{
+  if(!lastCanvas) return;
+  const t={png:'image/png',jpg:'image/jpeg',webp:'image/webp'}[ex.fmt];
+  lastCanvas.toBlob(b=>{ if(!b){toast('이 브라우저는 해당 형식을 지원하지 않아요.');return}
+    dl(b,'RASYANCUT_'+(S.name||'sheet')+'.'+ex.fmt); toast('내보냈어요.') },t,.95);
+});
+
+syncAll();
+window.__rc={get S(){return S},set S(v){S=v}};
+})();
+</script>
+</body>
+</html>
