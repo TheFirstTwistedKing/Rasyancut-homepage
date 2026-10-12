@@ -127,6 +127,7 @@ option{background:#111;color:var(--text)}
 .x{position:absolute;right:10px;top:10px;background:transparent;border:1px solid var(--line);color:var(--dim);width:34px;height:34px}
 .x:hover{color:var(--gold2);border-color:var(--gold)}
 .exgrid{display:grid;grid-template-columns:1fr 280px;gap:16px}
+.exgrid img{width:100%;height:auto;border:1px solid var(--line);max-height:70vh;object-fit:contain;background:#000}
 .exgrid canvas{width:100%;height:auto;border:1px solid var(--line);background:#000;max-height:70vh;object-fit:contain}
 .exctl{display:grid;gap:12px;align-content:start}
 .slot{display:flex;gap:8px;align-items:center;border:1px solid var(--line);padding:8px 10px;margin-bottom:8px;background:#08080b}
@@ -256,7 +257,7 @@ option{background:#111;color:var(--text)}
     <button class="x" data-close>✕</button>
     <h3>EXPORT / 내보내기</h3>
     <div class="exgrid">
-      <canvas id="exCanvas"></canvas>
+      <div class="exview"><canvas id="exCanvas"></canvas><img id="exImg" alt="캐릭터 시트" hidden></div>
       <div class="exctl">
         <div class="f"><span class="lab">형식</span><div class="seg" id="exFmt">
           <button data-v="png" class="on">PNG</button><button data-v="jpg">JPG</button><button data-v="webp">WEBP</button></div></div>
@@ -264,7 +265,9 @@ option{background:#111;color:var(--text)}
           <button data-v="1" class="on">1x</button><button data-v="2">2x</button></div></div>
         <label class="tog"><input type="checkbox" id="exSecret" checked> 트라우마 / 비밀 포함</label>
         <button class="btn solid" id="exGo" style="justify-content:center"></button>
+        <button class="btn" id="exImgBtn" style="justify-content:center">이미지로 보기 (길게 눌러 저장)</button>
         <div class="hint" id="exInfo"></div>
+        <div class="hint">다운로드가 막힌 환경(앱 미리보기 등)에서는 '이미지로 보기'로 연 뒤 이미지를 길게 누르거나 우클릭해 저장하세요.</div>
       </div>
     </div>
   </div>
@@ -695,7 +698,15 @@ async function renderEx(){
   const c=await buildSheet(+ex.scale,{secret:$('#exSecret').checked});
   lastCanvas=c; const v=$('#exCanvas'); v.width=c.width; v.height=c.height; v.getContext('2d').drawImage(c,0,0);
   $('#exInfo').textContent=c.width+' × '+c.height+' px';
+  if(!$('#exImg').hidden) showImg();
 }
+function showImg(){
+  if(!lastCanvas) return; const im=$('#exImg'); im.src=lastCanvas.toDataURL(ex.fmt==='jpg'?'image/jpeg':ex.fmt==='webp'?'image/webp':'image/png',.95);
+  im.hidden=false; $('#exCanvas').hidden=true; $('#exImgBtn').textContent='미리보기로 돌아가기';
+}
+$('#exImgBtn').addEventListener('click',()=>{
+  if($('#exImg').hidden) showImg(); else {$('#exImg').hidden=true;$('#exCanvas').hidden=false;$('#exImgBtn').textContent='이미지로 보기 (길게 눌러 저장)'}
+});
 $('#bExport').addEventListener('click',()=>openModal('mExport','exp',renderEx));
 $('#exGo').addEventListener('click',()=>{
   if(!lastCanvas) return;
