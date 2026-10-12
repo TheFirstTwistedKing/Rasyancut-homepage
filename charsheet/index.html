@@ -239,6 +239,7 @@ option{background:#111;color:var(--text)}
       <div class="grid">
         <div class="f full"><label for="emotion">감정 반응 방식</label><textarea id="emotion" data-k="emotion"></textarea></div>
         <div class="f full"><span class="lab">말투</span><div class="seg" data-seg="tone" data-opts="존댓말,반존댓말,반말"></div></div>
+        <div class="f full"><span class="lab">어록 (대표 대사 3개)</span><input type="text" id="quote1" data-k="quote1" placeholder="어록 1" autocomplete="off"><input type="text" id="quote2" data-k="quote2" placeholder="어록 2" autocomplete="off"><input type="text" id="quote3" data-k="quote3" placeholder="어록 3" autocomplete="off"></div>
         <div class="f full"><label for="habit">버릇</label><textarea id="habit" data-k="habit"></textarea></div>
         <div class="f"><label for="likes">좋아하는 것</label><textarea id="likes" data-k="likes"></textarea></div>
         <div class="f"><label for="dislikes">싫어하는 것</label><textarea id="dislikes" data-k="dislikes"></textarea></div>
@@ -327,7 +328,7 @@ const CATLAB={pos:'긍정',neu:'중립',neg:'부정'};
 const CATOF={}; Object.keys(KW).forEach(c=>KW[c].forEach(k=>CATOF[k]=c));
 
 const DEF=()=>({name:'',era:'',gender:'',age:'',height:'',muscle:'',fat:'',weightAuto:true,weightManual:'',race:'',job:'',origin:'',
-  keywords:[],emotion:'',tone:'',habit:'',likes:'',dislikes:'',values:'',pros:'',cons:'',trauma:'',secret:'',photo:''});
+  keywords:[],emotion:'',tone:'',quote1:'',quote2:'',quote3:'',habit:'',likes:'',dislikes:'',values:'',pros:'',cons:'',trauma:'',secret:'',photo:''});
 const DRAFT='rc_charsheet_draft', SLOTS='rc_charsheet_slots';
 let S=DEF();
 try{const d=JSON.parse(localStorage.getItem(DRAFT)||'null'); if(d) S=Object.assign(DEF(),d)}catch(e){}
@@ -541,8 +542,9 @@ function secTitle(ctx,t,x,y,w){
   const tw=ctx.measureText(t).width;ls(ctx,'0px');
   ctx.fillRect(x+26+tw+14,y-7,Math.max(0,w-(26+tw+14)),1.5);
 }
+function rr(ctx,x,y,w,h,r){r=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
 function box(ctx,x,y,w,h,title){
-  ctx.strokeStyle=INK;ctx.lineWidth=2;ctx.strokeRect(x+1,y+1,w-2,h-2);
+  rr(ctx,x+1,y+1,w-2,h-2,26);ctx.fillStyle='rgba(255,250,236,.5)';ctx.fill();ctx.strokeStyle=INK;ctx.lineWidth=2;ctx.stroke();
   secTitle(ctx,title,x+18,y+38,w-36);
 }
 function textMeasure(ctx,v,w){
@@ -572,10 +574,8 @@ function emblem(ctx,cx,cy){
 }
 function frame(ctx,W,H){
   ctx.fillStyle=INK;ctx.fillRect(0,0,W,H);
-  const x0=18,y0=18,x1=W-18,y1=H-84,c=30;
-  ctx.beginPath();ctx.moveTo(x0+c,y0);ctx.lineTo(x1-c,y0);ctx.lineTo(x1,y0+c);ctx.lineTo(x1,y1-c);ctx.lineTo(x1-c,y1);
-  ctx.lineTo(x0+c,y1);ctx.lineTo(x0,y1-c);ctx.lineTo(x0,y0+c);ctx.closePath();
-  ctx.fillStyle=PAPER;ctx.fill();
+  const x0=18,y0=18,x1=W-18,y1=H-84,R=58;
+  rr(ctx,x0,y0,x1-x0,y1-y0,R);ctx.fillStyle=PAPER;ctx.fill();
   const g=ctx.createRadialGradient(W/2,H/2,H*.25,W/2,H/2,W*.62);g.addColorStop(0,'rgba(120,90,40,0)');g.addColorStop(1,'rgba(120,90,40,.16)');
   ctx.save();ctx.clip();ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.restore();
   // 상단 중앙 노치
@@ -583,13 +583,10 @@ function frame(ctx,W,H){
   ctx.moveTo(mx-225,0);ctx.lineTo(mx+225,0);ctx.lineTo(mx+225,22);ctx.lineTo(mx+135,22);ctx.lineTo(mx+62,66);ctx.lineTo(mx-62,66);ctx.lineTo(mx-135,22);ctx.lineTo(mx-225,22);ctx.closePath();ctx.fill();
   ctx.strokeStyle=GLD;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(mx-120,18);ctx.lineTo(mx-56,58);ctx.lineTo(mx+56,58);ctx.lineTo(mx+120,18);ctx.stroke();
   star(ctx,mx,36,16,GLD);
-  // 모서리 금색 장식
-  ctx.strokeStyle=GLD;ctx.lineWidth=2;
-  [[x0,y0,1,1],[x1,y0,-1,1],[x0,y1,1,-1],[x1,y1,-1,-1]].forEach(([x,y,sx,sy])=>{
-    ctx.beginPath();ctx.moveTo(x+sx*14,y+sy*86);ctx.lineTo(x+sx*14,y+sy*(14+c*.4));ctx.lineTo(x+sx*(14+c*.4),y+sy*14);ctx.lineTo(x+sx*86,y+sy*14);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(x+sx*24,y+sy*58);ctx.lineTo(x+sx*24,y+sy*(24+c*.3));ctx.lineTo(x+sx*(24+c*.3),y+sy*24);ctx.lineTo(x+sx*58,y+sy*24);ctx.stroke();
-    star(ctx,x+sx*32,y+sy*32,6,GLD);
-  });
+  // 안쪽 금색 곡선 테두리
+  rr(ctx,x0+14,y0+14,x1-x0-28,y1-y0-28,R-14);ctx.strokeStyle=GLD;ctx.lineWidth=1.5;ctx.stroke();
+  rr(ctx,x0+22,y0+22,x1-x0-44,y1-y0-44,R-22);ctx.strokeStyle='rgba(184,150,60,.35)';ctx.lineWidth=1;ctx.stroke();
+  [[x0,y0,1,1],[x1,y0,-1,1],[x0,y1,1,-1],[x1,y1,-1,-1]].forEach(([x,y,sx,sy])=>star(ctx,x+sx*40,y+sy*40,8,GLD));
   // 하단 바
   const by=H-42;ctx.fillStyle=GLD;ctx.font='500 14px '+MONO;ctx.textAlign='left';ls(ctx,'3px');
   ctx.fillText('RASYANCUT ARCHIVE  //  No. '+hashCode(S.name+'|'+S.race+'|'+S.origin),M,by+5);
@@ -619,17 +616,15 @@ function layout(ctx,H,opt,img,draw){
     ['종족',S.race],['직업',S.job],['출신',S.origin],['말투',S.tone]];
   const cardH=170+rows.length*40+22;
   if(draw){
-    ctx.strokeStyle=INK;ctx.lineWidth=3;
-    const x=M,y=y1,c=18;ctx.beginPath();ctx.moveTo(x+c,y);ctx.lineTo(x+cw-c,y);ctx.lineTo(x+cw,y+c);ctx.lineTo(x+cw,y+cardH-c);ctx.lineTo(x+cw-c,y+cardH);
-    ctx.lineTo(x+c,y+cardH);ctx.lineTo(x,y+cardH-c);ctx.lineTo(x,y+c);ctx.closePath();ctx.stroke();
+    const x=M,y=y1;rr(ctx,x,y,cw,cardH,44);ctx.fillStyle='rgba(255,250,236,.5)';ctx.fill();ctx.strokeStyle=INK;ctx.lineWidth=3;ctx.stroke();
     ctx.fillStyle=INK;ctx.textAlign='left';
     fit(ctx,S.name||'—',cw-56,38,'700',SERIF);ctx.fillText(S.name||'—',x+26,y+62);
     ctx.font='400 17px '+SERIF;ctx.fillStyle=PDIM;ctx.fillText([S.race,S.job].filter(Boolean).join(' · ')||'—',x+27,y+92);
-    ctx.fillStyle=INK;ctx.fillRect(x+18,y+112,cw-36,2);
+    ctx.fillStyle=INK;rr(ctx,x+26,y+111,cw-52,3,1.5);ctx.fill();
     secTitle(ctx,'PROFILE',x+22,y+150,cw-44);
     rows.forEach(([l,v],i)=>{
       const ry=y+170+i*40;
-      ctx.fillStyle=INK;ctx.fillRect(x+26,ry,96,27);
+      ctx.fillStyle=INK;rr(ctx,x+26,ry,96,27,13.5);ctx.fill();
       ctx.fillStyle=PAPER;ctx.font='700 14px '+FONT;ctx.textAlign='center';ctx.fillText(l,x+26+48,ry+19);
       ctx.textAlign='left';ctx.fillStyle=v?INK:FAINT;fit(ctx,v||'—',cw-26-96-36-10,18,'500',SERIF);ctx.fillText(v||'—',x+26+96+14,ry+20);
     });
@@ -647,14 +642,14 @@ function layout(ctx,H,opt,img,draw){
     ctx.beginPath();ctx.moveTo(bx,py);ctx.lineTo(bx,py+ph);ctx.moveTo(bx-16,py);ctx.lineTo(bx+16,py);ctx.moveTo(bx-16,py+ph);ctx.lineTo(bx+16,py+ph);ctx.stroke();
     ctx.lineWidth=1.2;for(let i=1;i<10;i++){const ty=py+ph*i/10;ctx.beginPath();ctx.moveTo(bx-(i===5?14:8),ty);ctx.lineTo(bx+(i===5?14:8),ty);ctx.stroke()}
     const hl=(S.height!==''?S.height:'—')+' CM';ctx.font='700 21px '+SERIF;const hw=ctx.measureText(hl).width+22;
-    ctx.fillStyle=PAPER;ctx.fillRect(bx-hw/2,py+ph/2-18,hw,36);ctx.fillStyle=INK;ctx.textAlign='center';ctx.fillText(hl,bx,py+ph/2+8);
+    ctx.fillStyle=PAPER;rr(ctx,bx-hw/2,py+ph/2-18,hw,36,18);ctx.fill();ctx.fillStyle=INK;ctx.textAlign='center';ctx.fillText(hl,bx,py+ph/2+8);
     // 사진
     ctx.strokeStyle=INK;ctx.lineWidth=2;
     if(img){
       const r=Math.min(pw/img.width,ph/img.height),dw=img.width*r,dh=img.height*r;
-      ctx.drawImage(img,pfx+(pw-dw)/2,py+(ph-dh)/2,dw,dh);ctx.strokeRect(pfx+1,py+1,pw-2,ph-2);
+      ctx.save();rr(ctx,pfx,py,pw,ph,40);ctx.clip();ctx.drawImage(img,pfx+(pw-dw)/2,py+(ph-dh)/2,dw,dh);ctx.restore();rr(ctx,pfx+1,py+1,pw-2,ph-2,40);ctx.stroke();
     }else{
-      ctx.setLineDash([10,8]);ctx.strokeRect(pfx+1,py+1,pw-2,ph-2);ctx.setLineDash([]);
+      rr(ctx,pfx+1,py+1,pw-2,ph-2,40);ctx.fillStyle='rgba(255,250,236,.4)';ctx.fill();ctx.setLineDash([10,8]);ctx.stroke();ctx.setLineDash([]);
       ctx.fillStyle=FAINT;ctx.font='500 18px '+MONO;ls(ctx,'4px');ctx.fillText('NO IMAGE',pfx+pw/2,py+ph/2);ls(ctx,'0px');
     }
     ctx.textAlign='left';
@@ -673,8 +668,8 @@ function layout(ctx,H,opt,img,draw){
         if(x+kw>cx+cwid){x=cx;yy+=44}
         if(d){
           ctx.lineWidth=2;ctx.strokeStyle=INK;ctx.setLineDash(c==='neg'?[6,4]:[]);
-          if(c==='pos'){ctx.fillStyle=INK;ctx.fillRect(x,yy,kw,34);ctx.fillStyle=PAPER}
-          else{ctx.strokeRect(x+1,yy+1,kw-2,32);ctx.fillStyle=INK}
+          if(c==='pos'){rr(ctx,x,yy,kw,34,17);ctx.fillStyle=INK;ctx.fill();ctx.fillStyle=PAPER}
+          else{rr(ctx,x+1,yy+1,kw-2,32,16);ctx.stroke();ctx.fillStyle=INK}
           ctx.setLineDash([]);ctx.font='500 18px '+SERIF;ctx.textAlign='left';ctx.fillText(k,x+15,yy+24);
         }
         x+=kw+10;
@@ -692,6 +687,21 @@ function layout(ctx,H,opt,img,draw){
   const em=textMeasure(ctx,S.emotion,w3);
   if(draw){box(ctx,x3,y,w3,em.h,'감정 반응 방식');textBody(ctx,em,S.emotion,x3,y)}
   y+=em.h+24;
+  const qs=[S.quote1,S.quote2,S.quote3].map(v=>(v||'').trim()).filter(Boolean);
+  ctx.font='400 21px '+SERIF;
+  const ql=qs.map(q=>wrap(ctx,q,w3-48-44)), qh=Math.max(120,70+(ql.length?ql.reduce((a,l)=>a+l.length*32+16,0):32)+8);
+  if(draw){
+    box(ctx,x3,y,w3,qh,'QUOTES · 어록');
+    let qy=y+84;ctx.textAlign='left';
+    if(!ql.length){ctx.fillStyle=FAINT;ctx.font='400 20px '+SERIF;ctx.fillText('—',x3+24,qy)}
+    ql.forEach(l=>{
+      ctx.fillStyle=GLD;ctx.font='700 44px '+SERIF;ctx.fillText('\u201C',x3+22,qy+10);
+      ctx.fillStyle=INK;ctx.font='400 21px '+SERIF;
+      l.forEach((t,i)=>ctx.fillText(t,x3+64,qy+i*32));
+      qy+=l.length*32+16;
+    });
+  }
+  y+=qh+24;
   const hw2=(w3-24)/2, pr=textMeasure(ctx,S.pros,hw2), cn=textMeasure(ctx,S.cons,hw2), rh=Math.max(pr.h,cn.h);
   if(draw){box(ctx,x3,y,hw2,rh,'장점');textBody(ctx,pr,S.pros,x3,y);box(ctx,x3+hw2+24,y,hw2,rh,'단점');textBody(ctx,cn,S.cons,x3+hw2+24,y)}
   y+=rh;
